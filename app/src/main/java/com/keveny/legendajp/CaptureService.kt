@@ -310,10 +310,7 @@ class CaptureService : Service() {
     private fun showOverlay() {
         if (!prefs.overlay || !Overlay.canDraw(this)) return
         try {
-            overlay = Overlay(this, prefs).also { o ->
-                o.onDismissed = { overlay = null }
-                o.show()
-            }
+            overlay = Overlay(this, prefs).also { it.show() }
         } catch (e: Exception) {
             Log.e(TAG, "overlay", e)
         }

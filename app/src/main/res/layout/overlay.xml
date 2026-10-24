@@ -1,47 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Janela única: legenda + cartão da palavra (abaixo) + bloquinho da borda. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/overlayRoot"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:background="@drawable/bg_overlay"
-    android:paddingStart="18dp"
-    android:paddingEnd="18dp"
-    android:paddingBottom="12dp">
+    android:layout_height="wrap_content">
 
-    <!-- Área de arraste (barrinha) -->
-    <FrameLayout
-        android:id="@+id/handleArea"
-        android:layout_width="match_parent"
-        android:layout_height="28dp">
-
-        <View
-            android:id="@+id/handle"
-            android:layout_width="40dp"
-            android:layout_height="4dp"
-            android:layout_gravity="center"
-            android:background="#66FFFFFF" />
-    </FrameLayout>
-
-    <TextView
-        android:id="@+id/overlayText"
+    <LinearLayout
+        android:id="@+id/expandedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/captionBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_overlay"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:paddingBottom="12dp">
+
+            <FrameLayout
+                android:id="@+id/handleArea"
+                android:layout_width="match_parent"
+                android:layout_height="28dp">
+
+                <View
+                    android:layout_width="40dp"
+                    android:layout_height="4dp"
+                    android:layout_gravity="center"
+                    android:background="#66FFFFFF" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/overlayText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textIsSelectable="false"
+                android:longClickable="false"
+                android:clickable="false"
+                android:textColor="#FFFFFF"
+                android:textSize="19sp"
+                android:lineSpacingExtra="4dp"
+                android:maxLines="2"
+                android:ellipsize="start"
+                android:gravity="start" />
+
+            <TextView
+                android:id="@+id/overlayPartial"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#B3FFFFFF"
+                android:textSize="18sp"
+                android:lineSpacingExtra="4dp"
+                android:maxLines="2"
+                android:ellipsize="start"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Cartão da palavra: segundo balão, logo abaixo -->
+        <FrameLayout
+            android:id="@+id/cardBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_overlay_card"
+            android:visibility="gone">
+
+            <include layout="@layout/word_card" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- Bloquinho grudado na borda quando a legenda está escondida -->
+    <TextView
+        android:id="@+id/dockTab"
+        android:layout_width="34dp"
+        android:layout_height="84dp"
+        android:background="@drawable/bg_dock_tab"
+        android:gravity="center"
+        android:text="字"
         android:textColor="#FFFFFF"
-        android:textSize="19sp"
-        android:lineSpacingExtra="4dp"
-        android:maxLines="2"
-        android:ellipsize="start"
-        android:gravity="start" />
-
-    <TextView
-        android:id="@+id/overlayPartial"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="#B3FFFFFF"
-        android:textSize="18sp"
-        android:lineSpacingExtra="4dp"
-        android:maxLines="2"
-        android:ellipsize="start"
+        android:textSize="16sp"
+        android:textStyle="bold"
         android:visibility="gone" />
-</LinearLayout>
+</FrameLayout>

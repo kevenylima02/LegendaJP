@@ -29,6 +29,15 @@ class Prefs(ctx: Context) {
         get() = sp.getInt("overlayY", -1)
         set(v) = sp.edit().putInt("overlayY", v).apply()
 
+    var overlayX: Int
+        get() = sp.getInt("overlayX", Int.MIN_VALUE)
+        set(v) = sp.edit().putInt("overlayX", v).apply()
+
+    /** 0 = solta, 1 = grudada à esquerda, 2 = grudada à direita. */
+    var overlayDock: Int
+        get() = sp.getInt("overlayDock", 0)
+        set(v) = sp.edit().putInt("overlayDock", v).apply()
+
     var overlayExpanded: Boolean
         get() = sp.getBoolean("overlayExpanded", false)
         set(v) = sp.edit().putBoolean("overlayExpanded", v).apply()
