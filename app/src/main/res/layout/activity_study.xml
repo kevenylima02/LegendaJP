@@ -157,7 +157,36 @@
                 android:textColor="@color/text"
                 android:textSize="15sp"
                 android:lineSpacingExtra="4dp"
+                android:textIsSelectable="true"
                 android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/strokeBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Ordem dos traços (toque num kanji para repetir)"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp">
+
+                    <LinearLayout
+                        android:id="@+id/strokeRow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal" />
+                </HorizontalScrollView>
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 

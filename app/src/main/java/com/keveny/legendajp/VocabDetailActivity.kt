@@ -53,7 +53,47 @@ class VocabDetailActivity : Activity() {
                 findViewById<TextView>(R.id.meta).text = "${w.pos} · kanji ${Score.percent(w.kanjiScore)}% · significado ${Score.percent(w.meaningScore)}%"
                 Score.bind(findViewById(R.id.barKanji), w.kanjiScore)
                 Score.bind(findViewById(R.id.barMeaning), w.meaningScore)
+                showStrokes(w.base)
+                findViewById<android.widget.Button>(R.id.btnStudyWord).setOnClickListener {
+                    startActivity(
+                        Intent(this, StudyActivity::class.java)
+                            .putExtra(StudyActivity.EXTRA_SAVED, true)
+                            .putExtra(StudyActivity.EXTRA_WORD_KEY, w.key)
+                            .putExtra(StudyActivity.EXTRA_WORD_LABEL, w.base)
+                    )
+                }
                 adapter.notifyDataSetChanged()
+            }
+        }.start()
+    }
+
+    private var strokesShownFor = ""
+
+    /** Ordem dos traços de cada kanji da palavra. */
+    private fun showStrokes(word: String) {
+        if (strokesShownFor == word) return
+        strokesShownFor = word
+        val kanji = word.filter(StudyGen::isKanji).toList()
+        val box = findViewById<android.view.View>(R.id.strokeBox)
+        if (kanji.isEmpty()) { box.visibility = android.view.View.GONE; return }
+        Thread {
+            Strokes.load(this, kanji.toSet())
+            val paths = kanji.map { Strokes.get(this, it) }
+            val info = Kanjidic.describe(this, word)
+            runOnUiThread {
+                val sb = android.text.SpannableStringBuilder()
+                for ((i, pair) in info.withIndex()) {
+                    if (i > 0) sb.append("\n")
+                    val a = sb.length
+                    sb.append(pair.first.toString())
+                    sb.setSpan(android.text.style.StyleSpan(android.graphics.Typeface.BOLD), a, sb.length, 0)
+                    sb.append("  ").append(pair.second)
+                }
+                findViewById<TextView>(R.id.kanjiInfo).text = sb
+                val row = findViewById<android.widget.LinearLayout>(R.id.strokeRow)
+                row.removeAllViews()
+                for (p in paths) if (p != null) row.addView(StrokeView(this).also { it.setStrokes(p) })
+                box.visibility = if (row.childCount > 0 || info.isNotEmpty()) android.view.View.VISIBLE else android.view.View.GONE
             }
         }.start()
     }

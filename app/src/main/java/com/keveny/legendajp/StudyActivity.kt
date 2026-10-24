@@ -35,6 +35,8 @@ class StudyActivity : Activity() {
         const val EXTRA_FOCUS = "focus"
         const val EXTRA_SAVED = "saved"
         const val EXTRA_MISTAKES = "mistakes"
+        const val EXTRA_WORD_KEY = "wordKey"
+        const val EXTRA_WORD_LABEL = "wordLabel"
         const val SAVED_RECORDING = "__vocabulario__"
         const val MISTAKES_RECORDING = "__erros__"
         private const val MAX_ITEMS = 12
@@ -63,6 +65,8 @@ class StudyActivity : Activity() {
     private lateinit var btnRecognize: Button
     private lateinit var btnClear: Button
     private lateinit var btnRemember: Button
+    private lateinit var strokeBox: View
+    private lateinit var strokeRow: android.widget.LinearLayout
     private val slotViews = mutableListOf<TextView>()
     private val slotValues = mutableListOf<String>()
     private var activeSlot = 0
@@ -115,6 +119,8 @@ class StudyActivity : Activity() {
         btnRecognize = findViewById(R.id.btnRecognize)
         btnClear = findViewById(R.id.btnClear)
         btnRemember = findViewById(R.id.btnRemember)
+        strokeBox = findViewById(R.id.strokeBox)
+        strokeRow = findViewById(R.id.strokeRow)
         btnClear.setOnClickListener { draw.clear() }
         btnRecognize.setOnClickListener { recognizeSlot() }
         btnRemember.setOnClickListener { draw.flash(700) }
@@ -129,14 +135,24 @@ class StudyActivity : Activity() {
         if (!mistakes && !saved && uri == null) { finish(); return }
         val name = intent.getStringExtra(EXTRA_NAME) ?: ""
         val focus = try { StudyGen.Focus.valueOf(intent.getStringExtra(EXTRA_FOCUS) ?: "MISTO") } catch (_: Exception) { StudyGen.Focus.MISTO }
+        val wordKey = intent.getStringExtra(EXTRA_WORD_KEY)
+        val wordLabel = intent.getStringExtra(EXTRA_WORD_LABEL) ?: ""
         multiRecording = mistakes || saved
         recording = when {
             mistakes -> MISTAKES_RECORDING
             saved -> SAVED_RECORDING
             else -> Recordings.baseName(name)
         }
-        focusLabel = if (mistakes) "Erros" else focus.label
-        title = if (mistakes) "Revisão de erros" else "Estudar · ${focus.label}"
+        focusLabel = when {
+            mistakes -> "Erros"
+            wordKey != null -> "Palavra: $wordLabel"
+            else -> focus.label
+        }
+        title = when {
+            mistakes -> "Revisão de erros"
+            wordKey != null -> "Estudar · $wordLabel"
+            else -> "Estudar · ${focus.label}"
+        }
         prompt.text = "Preparando os exercícios…"
         btnNext.isEnabled = false
 
@@ -152,7 +168,12 @@ class StudyActivity : Activity() {
                     StudyGen.lines(text, recording)
                 }
                 if (!saved) wav = Recordings.find(this, "$recording.wav")?.uri
-                built = StudyGen.build(this, lines, focus, Prefs(this).level, MAX_ITEMS, if (saved) VocabDb.savedKeys else null)
+                val only = when {
+                    wordKey != null -> setOf(wordKey)
+                    saved -> VocabDb.savedKeys
+                    else -> null
+                }
+                built = StudyGen.build(this, lines, focus, Prefs(this).level, MAX_ITEMS, only)
             }
             runOnUiThread {
                 if (isFinishing) return@runOnUiThread
@@ -325,6 +346,8 @@ class StudyActivity : Activity() {
         sentenceView.visibility = View.GONE
         btnAudio.visibility = View.GONE
         btnRemember.visibility = View.GONE
+        strokeBox.visibility = View.GONE
+        strokeRow.removeAllViews()
         draw.guide = null
         draw.showGuide = false
     }
@@ -504,13 +527,31 @@ class StudyActivity : Activity() {
         }
     }
 
+    private fun wordOf(item: Item): Jp.Word? = when (item) {
+        is Item.Cloze -> item.word
+        is Item.Choice -> item.word
+        is Item.Kanji -> item.word
+        is Item.Write -> item.word
+        else -> null
+    }
+
+    /**
+     * Feedback depois de responder: certo/errado, a palavra (leitura, classe, conjugação, significado),
+     * o padrão gramatical quando for o caso, e a frase com a tradução. Traduções que ainda não
+     * estão no cache são pedidas e o feedback é redesenhado quando chegam.
+     */
     private fun showFeedback(item: Item, ok: Boolean, given: String, answer: String) {
         val okColor = getColor(R.color.ok)
         val badColor = getColor(R.color.stop)
+        val sec = getColor(R.color.text_secondary)
         val sb = SpannableStringBuilder()
         fun colored(text: String, color: Int) {
             val a = sb.length; sb.append(text)
             sb.setSpan(ForegroundColorSpan(color), a, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        fun bold(text: String) {
+            val a = sb.length; sb.append(text)
+            sb.setSpan(android.text.style.StyleSpan(android.graphics.Typeface.BOLD), a, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         if (ok) colored("✓ Certo!", okColor) else {
             colored("✗ Sua resposta: ${given.ifEmpty { "(vazio)" }}", badColor)
@@ -518,24 +559,90 @@ class StudyActivity : Activity() {
             colored("Certa: $answer", okColor)
             if (phase == Phase.REVIEW) sb.append("\nEste volta mais tarde na revisão.")
         }
-        sb.append("\n\n")
-        when (item) {
-            is Item.Order -> sb.append(item.sentence)
-            is Item.Cloze -> sb.append(item.sentence).append("\n").append(item.word.base)
-                .append(if (item.word.reading != item.word.base) " (${item.word.reading})" else "").append(" · ").append(item.word.pos)
-            is Item.GrammarCloze -> sb.append(item.sentence).append("\n").append(item.hit.point.name).append(" · ")
-                .append(item.hit.point.level).append("\n").append(item.hit.point.explanation)
-            is Item.Kanji -> sb.append(item.word.base).append(" (").append(item.word.reading).append(") · ").append(item.word.pos)
-                .append("\n").append(item.sentence)
-            is Item.Write -> sb.append(item.word.base).append(" (").append(item.word.reading).append(") · ").append(item.word.pos)
-                .append("\n").append(item.sentence)
-            is Item.Choice -> sb.append(item.note).append("\n").append(item.sentence)
-            is Item.GrammarQ -> sb.append(item.hit.point.name).append(" · ").append(item.hit.point.level)
-                .append("\n").append(item.hit.point.explanation).append("\nEx.: ").append(item.hit.point.example)
+        val pending = mutableListOf<String>()
+
+        // Palavra
+        val w = wordOf(item)
+        if (w != null) {
+            sb.append("\n\n")
+            bold(w.base)
+            if (w.reading != w.base) sb.append("  ").append(w.reading)
+            sb.append("\n")
+            colored(w.pos, sec)
+            if (w.conjugation.isNotEmpty() && w.surface != w.base) {
+                sb.append("\n")
+                colored("Na frase: ${w.surface} = ${w.base} + ${w.conjugation}", sec)
+            }
+            val meaning = Tr.cached(this, w.base)
+            sb.append("\nSignificado: ")
+            if (meaning != null) sb.append(meaning) else { colored("traduzindo…", sec); pending.add(w.base) }
+
+            // Cada kanji: leituras on/kun e significado
+            val kanji = Kanjidic.describe(this, w.base)
+            if (kanji.isNotEmpty()) {
+                sb.append("\n\n")
+                colored("Kanji", sec)
+                for ((c, text) in kanji) {
+                    sb.append("\n")
+                    bold(c.toString())
+                    sb.append("  ").append(text)
+                }
+            }
         }
-        Tr.cached(this, item.sentence)?.let { sb.append("\n").append(it) }
+
+        // Gramática
+        when (item) {
+            is Item.GrammarCloze -> {
+                sb.append("\n\n"); bold("${item.hit.point.name} · ${item.hit.point.level}")
+                sb.append("\n").append(item.hit.point.explanation)
+            }
+            is Item.GrammarQ -> {
+                sb.append("\n\n"); bold("${item.hit.point.name} · ${item.hit.point.level}")
+                sb.append("\n").append(item.hit.point.explanation).append("\nEx.: ").append(item.hit.point.example)
+            }
+            else -> {}
+        }
+
+        // Frase e tradução
+        sb.append("\n\n")
+        colored("Frase", sec)
+        sb.append("\n").append(item.sentence)
+        val trSentence = Tr.cached(this, item.sentence)
+        sb.append("\n")
+        if (trSentence != null) colored(trSentence, sec) else { colored("traduzindo…", sec); pending.add(item.sentence) }
+
         feedback.text = sb
         feedback.visibility = View.VISIBLE
+
+        // Pede o que falta; quando chegar, redesenha se o item ainda estiver na tela
+        for (text in pending) {
+            Tr.translate(this, text) { _ ->
+                if (current === item && answered) showFeedback(item, ok, given, answer)
+            }
+        }
+
+        // Ordem dos traços para exercícios de kanji
+        if (w != null && w.base.any(StudyGen::isKanji)) showStrokes(w.base)
+    }
+
+    private var strokesFor = ""
+
+    private fun showStrokes(word: String) {
+        val kanji = word.filter(StudyGen::isKanji).toList()
+        if (kanji.isEmpty()) return
+        if (strokesFor == word && strokeRow.childCount > 0) { strokeBox.visibility = View.VISIBLE; return }
+        strokesFor = word
+        val item = current
+        Thread {
+            Strokes.load(this, kanji.toSet())
+            val paths = kanji.map { Strokes.get(this, it) }
+            runOnUiThread {
+                if (current !== item) return@runOnUiThread
+                strokeRow.removeAllViews()
+                for (p in paths) if (p != null) strokeRow.addView(StrokeView(this).also { it.setStrokes(p) })
+                strokeBox.visibility = if (strokeRow.childCount > 0) View.VISIBLE else View.GONE
+            }
+        }.start()
     }
 
     // ---------- peças, alternativas, escrita ----------

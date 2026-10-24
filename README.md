@@ -35,6 +35,10 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   voltam até acertar (escrita à mão em 3 passos: traçar sobre o kanji em cinza, sem modelo com botão Lembrar,
   sem ajuda); Refazer repete os mesmos itens; sair no meio pede confirmação; só entra no histórico o que foi
   respondido.
+- **Depois de responder**: significado da palavra, conjugação na frase, leituras on/kun e significado de cada
+  kanji, a frase com tradução e a ordem dos traços animada.
+- **Tela da palavra**: ordem dos traços de cada kanji, leituras e significados, e **Estudar esta palavra**
+  (exercícios de kanji e vocabulário só dela; inclui "Significado do kanji").
 - **Revisar erros** (menu ⋮ e menu Estudar): fila única com tudo que foi errado; sessões de 10 itens
   aleatórios; acertou, sai da fila.
 - **Estudar no Vocabulário**: sessão só com as palavras salvas e as frases de origem (áudio da gravação de
@@ -47,6 +51,12 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
 - **Configurações** (menu ⋮): nível JLPT (os exercícios de gramática preferem padrões do seu nível ou acima),
   página com a gramática do catálogo por nível, tipos de exercício ligados/desligados com a dificuldade de cada
   um, legenda flutuante e salvar .wav.
+
+## Dados de terceiros
+
+- Ordem dos traços: [KanjiVG](https://kanjivg.tagaini.net), Ulrich Apel, CC BY-SA 3.0 (`app/src/main/assets/strokes.txt`).
+- Leituras e significados dos kanji: [KANJIDIC2](https://www.edrdg.org/wiki/index.php/KANJIDIC_Project),
+  Electronic Dictionary Research and Development Group, CC BY-SA 4.0 (`app/src/main/assets/kanjidic.txt`).
 
 ## Compilar localmente (Windows)
 

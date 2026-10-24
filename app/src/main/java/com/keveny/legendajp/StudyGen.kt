@@ -52,6 +52,7 @@ object StudyGen {
         Kind("Palavra → tradução", Focus.VOCAB, Difficulty.FACIL, "Dada a palavra, escolha o significado (precisa de tradução em cache).", TRAINS_MEANING),
         Kind("Palavra em kanji → leitura", Focus.KANJI, Difficulty.FACIL, "Escolha a leitura em kana.", TRAINS_KANJI),
         Kind("Leitura → palavra em kanji", Focus.KANJI, Difficulty.FACIL, "Dada a leitura, escolha a palavra em kanji.", TRAINS_KANJI),
+        Kind("Significado do kanji", Focus.KANJI, Difficulty.FACIL, "Dado um kanji da palavra, escolha o significado.", TRAINS_KANJI),
         Kind("Montar a palavra com kanji", Focus.KANJI, Difficulty.MEDIO, "Peças de kanji e kana; toque na ordem certa.", TRAINS_KANJI),
         Kind("Escrever a palavra à mão", Focus.KANJI, Difficulty.DIFICIL, "Desenhe cada kanji da palavra com o dedo; o app reconhece.", TRAINS_KANJI),
     )
@@ -172,6 +173,23 @@ object StudyGen {
                     if (tiles.size >= 4) out.add(Item.Kanji(line, w, tiles.shuffled(rnd)))
                 }
                 if (hasKanji && simple && w.base.count(::isKanji) in 1..3) out.add(Item.Write(line, w))
+                // Significado de um kanji da palavra (KANJIDIC2)
+                if (hasKanji) {
+                    val k = w.base.filter(::isKanji).toList().shuffled(rnd)
+                        .mapNotNull { Kanjidic.get(ctx, it) }.firstOrNull { it.meanings.isNotEmpty() }
+                    if (k != null) {
+                        val answer = k.shortMeaning
+                        val near = kanjiPool.filter { it != k.char }.mapNotNull { Kanjidic.get(ctx, it) }
+                        val far = Kanjidic.sample(ctx, setOf(k.char), 8, rnd)
+                        val opts = (near.shuffled(rnd) + far).map { it.shortMeaning }
+                            .filter { it.isNotBlank() && it != answer }.distinct().take(3)
+                        if (opts.size == 3) {
+                            val reading = listOf(k.on.joinToString("、"), k.kunPretty.joinToString("、")).filter { it.isNotEmpty() }.joinToString(" · ")
+                            out.add(Item.Choice(Focus.KANJI, "Significado do kanji", line, "O que significa o kanji 「${k.char}」?",
+                                answer, (opts + answer).shuffled(rnd), "${k.char}: $reading (em ${w.base})", w))
+                        }
+                    }
+                }
                 if (hasKanji && w.reading != w.base) {
                     val others = allWords.filter { it.key != w.key && it.reading != it.base && it.base.any(::isKanji) }.shuffled(rnd).take(3)
                     if (others.size == 3) {
