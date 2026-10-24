@@ -5,12 +5,13 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
 
 - Cada push na branch `main` gera um APK em **Releases** (`/releases/latest`).
 - Requer Android 13+.
-- Na primeira vez: toque em **Verificar japonês** para baixar o pacote offline.
-- No diálogo de captura, escolha **Tela inteira**.
-- Junto com o `.txt`, a captura salva um `.wav` (16 kHz mono) com o áudio bruto, para conferir se o áudio chegou.
-- **Testar microfone** usa o mesmo reconhecedor com o microfone: serve para separar problema de captura de problema de transcrição.
-- **Transcrever WAV** reprocessa um `.wav` gerado pelo app.
-- A última linha do `.txt` começa com `#` e traz o diagnóstico (segundos de áudio, pico, frases, reinícios).
+- Na primeira vez: menu ⋮ → **Verificar japonês offline** para baixar o pacote.
+- Fontes de áudio: **Áudio interno** (captura via MediaProjection; no diálogo escolha **Tela inteira**),
+  **Microfone** e **Arquivo WAV** (reprocessa um .wav do app).
+- O Spotify bloqueia a captura interna. Use o **Spotify Web** no Chrome (botão na tela) ou outro app de podcast.
+- Cada transcrição vira `legenda_<data>.txt` (+ `.wav` se "Salvar áudio" estiver ligado, padrão sim).
+  Nada é salvo se nenhuma frase foi reconhecida.
+- **Gravações** lista as transcrições; no visualizador, toque numa frase para ouvir o trecho.
 
 ## Compilar localmente (Windows)
 

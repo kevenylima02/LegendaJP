@@ -11,20 +11,37 @@
         <intent>
             <action android:name="android.speech.RecognitionService" />
         </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
     </queries>
 
     <application
-        android:label="LegendaJP"
-        android:theme="@android:style/Theme.DeviceDefault.DayNight">
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:theme="@style/Theme.LegendaJP"
+        android:allowBackup="false">
 
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".RecordingsActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".ViewerActivity"
+            android:exported="false"
+            android:parentActivityName=".RecordingsActivity" />
 
         <service
             android:name=".CaptureService"

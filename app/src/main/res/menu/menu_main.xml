@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_check"
+        android:title="@string/menu_check_japanese"
+        android:showAsAction="never" />
+    <item
+        android:id="@+id/action_save_wav"
+        android:title="@string/menu_save_wav"
+        android:checkable="true"
+        android:showAsAction="never" />
+</menu>

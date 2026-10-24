@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="icon_background">#1E2A5A</color>
+    <color name="primary">#1E2A5A</color>
+    <color name="accent">#3D5AFE</color>
+    <color name="accent_soft">#2A3D5AFE</color>
+    <color name="stop">#E53935</color>
+    <color name="ok">#2E7D32</color>
+    <color name="warn">#F9A825</color>
+
+    <color name="background">#F4F5FA</color>
+    <color name="card">#FFFFFF</color>
+    <color name="outline">#D5D8E3</color>
+    <color name="text">#1A1C23</color>
+    <color name="text_secondary">#6B7083</color>
+    <color name="level_track">#E3E5EE</color>
+</resources>

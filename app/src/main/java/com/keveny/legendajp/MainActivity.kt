@@ -4,20 +4,27 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.drawable.GradientDrawable
 import android.media.projection.MediaProjectionConfig
 import android.media.projection.MediaProjectionManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.speech.RecognitionSupport
 import android.speech.RecognitionSupportCallback
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
-import android.view.ViewGroup
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.ProgressBar
+import android.widget.RadioGroup
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
 
 class MainActivity : Activity() {
 
@@ -27,52 +34,70 @@ class MainActivity : Activity() {
         private const val REQ_FILE = 1003
     }
 
-    private lateinit var statusView: TextView
-    private lateinit var partialView: TextView
+    private lateinit var prefs: Prefs
+    private lateinit var statusDot: View
+    private lateinit var statusText: TextView
+    private lateinit var statusDetail: TextView
+    private lateinit var timer: TextView
     private lateinit var levelBar: ProgressBar
-    private lateinit var transcriptView: TextView
+    private lateinit var sourceGroup: RadioGroup
+    private lateinit var transcript: TextView
+    private lateinit var partial: TextView
     private lateinit var scroll: ScrollView
+    private lateinit var btnMain: Button
+
+    private val ui = Handler(Looper.getMainLooper())
+    private val tick = object : Runnable {
+        override fun run() {
+            if (TranscriptStore.state == TranscriptStore.State.RUNNING) {
+                val sec = ((System.currentTimeMillis() - TranscriptStore.startedAt) / 1000).toInt()
+                timer.text = CaptureService.formatTime(sec)
+                ui.postDelayed(this, 1000)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val pad = (16 * resources.displayMetrics.density).toInt()
+        setContentView(R.layout.activity_main)
+        prefs = Prefs(this)
 
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(pad, pad * 2, pad, pad)
+        statusDot = findViewById(R.id.statusDot)
+        statusText = findViewById(R.id.statusText)
+        statusDetail = findViewById(R.id.statusDetail)
+        timer = findViewById(R.id.timer)
+        levelBar = findViewById(R.id.levelBar)
+        sourceGroup = findViewById(R.id.sourceGroup)
+        transcript = findViewById(R.id.transcript)
+        partial = findViewById(R.id.partial)
+        scroll = findViewById(R.id.scroll)
+        btnMain = findViewById(R.id.btnMain)
+
+        sourceGroup.check(
+            when (prefs.source) {
+                CaptureService.MODE_MIC -> R.id.sourceMic
+                CaptureService.MODE_FILE -> R.id.sourceFile
+                else -> R.id.sourceInternal
+            }
+        )
+        sourceGroup.setOnCheckedChangeListener { _, id ->
+            prefs.source = when (id) {
+                R.id.sourceMic -> CaptureService.MODE_MIC
+                R.id.sourceFile -> CaptureService.MODE_FILE
+                else -> CaptureService.MODE_CAPTURE
+            }
         }
 
-        statusView = TextView(this).apply { textSize = 14f; setTextIsSelectable(true) }
-        levelBar = ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply { max = 100 }
-        partialView = TextView(this).apply { textSize = 15f; alpha = 0.6f }
-
-        val row1 = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        row1.addView(button("Verificar japonês") { checkJapanese() }, weightParams())
-        row1.addView(button("Compartilhar") { share() }, weightParams())
-
-        val row2 = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        row2.addView(button("Iniciar captura") { startCapture() }, weightParams())
-        row2.addView(button("Parar") { stopCapture() }, weightParams())
-
-        val row3 = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        row3.addView(button("Testar microfone") { startMic() }, weightParams())
-        row3.addView(button("Transcrever WAV") { pickFile() }, weightParams())
-
-        transcriptView = TextView(this).apply {
-            textSize = 18f
-            setTextIsSelectable(true)
+        btnMain.setOnClickListener { onMainButton() }
+        findViewById<Button>(R.id.btnRecordings).setOnClickListener {
+            startActivity(Intent(this, RecordingsActivity::class.java))
         }
-        scroll = ScrollView(this).apply { addView(transcriptView) }
+        findViewById<Button>(R.id.btnShare).setOnClickListener { share() }
+        findViewById<Button>(R.id.btnSpotify).setOnClickListener {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://open.spotify.com/")))
+        }
 
-        root.addView(statusView)
-        root.addView(levelBar)
-        root.addView(row1)
-        root.addView(row2)
-        root.addView(row3)
-        root.addView(partialView)
-        root.addView(scroll, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
-        setContentView(root)
-
+        if (TranscriptStore.status.isEmpty()) TranscriptStore.status = getString(R.string.status_ready)
         requestNeededPermissions()
     }
 
@@ -85,17 +110,99 @@ class MainActivity : Activity() {
     override fun onPause() {
         super.onPause()
         TranscriptStore.listener = null
+        ui.removeCallbacks(tick)
     }
 
-    private fun weightParams() =
-        LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
 
-    private fun button(label: String, action: () -> Unit) =
-        Button(this).apply {
-            text = label
-            isAllCaps = false
-            setOnClickListener { action() }
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        menu.findItem(R.id.action_save_wav).isChecked = prefs.saveWav
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_check -> checkJapanese()
+            R.id.action_save_wav -> {
+                prefs.saveWav = !prefs.saveWav
+                item.isChecked = prefs.saveWav
+                Toast.makeText(
+                    this,
+                    if (prefs.saveWav) "O .wav será salvo junto do .txt" else "Só o .txt será salvo (sem player nas frases)",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            else -> return super.onOptionsItemSelected(item)
         }
+        return true
+    }
+
+    // ---------- UI ----------
+
+    private fun render() {
+        val state = TranscriptStore.state
+        ui.removeCallbacks(tick)
+        if (state == TranscriptStore.State.RUNNING) ui.post(tick)
+        statusText.text = TranscriptStore.status
+        statusDetail.text = TranscriptStore.detail
+        statusDetail.visibility = if (TranscriptStore.detail.isEmpty()) View.GONE else View.VISIBLE
+        levelBar.progress = TranscriptStore.level
+
+        val dotColor = when (state) {
+            TranscriptStore.State.RUNNING -> getColor(R.color.ok)
+            TranscriptStore.State.STOPPING -> getColor(R.color.warn)
+            TranscriptStore.State.IDLE -> getColor(R.color.text_secondary)
+        }
+        (statusDot.background.mutate() as GradientDrawable).setColor(dotColor)
+
+        val running = state != TranscriptStore.State.IDLE
+        btnMain.text = getString(if (running) R.string.stop else R.string.start)
+        btnMain.setBackgroundResource(if (running) R.drawable.bg_button_stop else R.drawable.bg_button_primary)
+        btnMain.isEnabled = state != TranscriptStore.State.STOPPING
+        for (i in 0 until sourceGroup.childCount) sourceGroup.getChildAt(i).isEnabled = !running
+        if (!running) timer.text = CaptureService.formatTime(
+            if (TranscriptStore.startedAt == 0L) 0
+            else ((System.currentTimeMillis() - TranscriptStore.startedAt) / 1000).toInt()
+        )
+
+        val lines = TranscriptStore.lines
+        val text = lines.joinToString("\n")
+        if (lines.isEmpty()) {
+            transcript.text = getString(R.string.empty_transcript)
+            transcript.setTextColor(getColor(R.color.text_secondary))
+        } else if (transcript.text.toString() != text) {
+            transcript.text = text
+            transcript.setTextColor(getColor(R.color.text))
+            scroll.post { scroll.fullScroll(ScrollView.FOCUS_DOWN) }
+        }
+        val p = TranscriptStore.partial
+        partial.text = if (p.isEmpty() && running) getString(R.string.partial_hint) else p
+        partial.visibility = if (running) View.VISIBLE else View.GONE
+        if (running && p.isNotEmpty()) scroll.post { scroll.fullScroll(ScrollView.FOCUS_DOWN) }
+    }
+
+    private fun setStatus(msg: String, detail: String = "") {
+        TranscriptStore.status = msg
+        TranscriptStore.detail = detail
+        render()
+    }
+
+    // ---------- Ações ----------
+
+    private fun onMainButton() {
+        if (TranscriptStore.state != TranscriptStore.State.IDLE) {
+            startService(Intent(this, CaptureService::class.java).setAction(CaptureService.ACTION_STOP))
+            return
+        }
+        when (prefs.source) {
+            CaptureService.MODE_MIC -> startMic()
+            CaptureService.MODE_FILE -> pickFile()
+            else -> startCapture()
+        }
+    }
 
     private fun requestNeededPermissions(): Boolean {
         val needed = arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.POST_NOTIFICATIONS)
@@ -107,59 +214,10 @@ class MainActivity : Activity() {
     private fun hasMic() =
         checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
 
-    private fun render() {
-        statusView.text = TranscriptStore.status
-        levelBar.progress = TranscriptStore.level
-        partialView.text = TranscriptStore.partial
-        val text = TranscriptStore.lines.joinToString("\n")
-        if (transcriptView.text.toString() != text) {
-            transcriptView.text = text
-            scroll.post { scroll.fullScroll(ScrollView.FOCUS_DOWN) }
-        }
-    }
-
-    private fun setStatus(msg: String) {
-        TranscriptStore.status = msg
-        render()
-    }
-
-    private fun checkJapanese() {
-        val diag = Diag.summary(this)
-        if (!SpeechRecognizer.isOnDeviceRecognitionAvailable(this)) {
-            setStatus("Reconhecimento on-device indisponível neste aparelho. O app vai tentar o reconhecedor padrão.\n$diag")
-            return
-        }
-        val rec = SpeechRecognizer.createOnDeviceSpeechRecognizer(this)
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
-            .putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ja-JP")
-        setStatus("Verificando suporte a japonês...")
-        rec.checkRecognitionSupport(intent, mainExecutor, object : RecognitionSupportCallback {
-            override fun onSupportResult(support: RecognitionSupport) {
-                fun hasJa(list: List<String>) = list.any { it.startsWith("ja") }
-                val msg = when {
-                    hasJa(support.installedOnDeviceLanguages) -> "Japonês offline instalado ✓ Pode iniciar."
-                    hasJa(support.pendingOnDeviceLanguages) -> "Pacote de japonês baixando. Espere e verifique de novo."
-                    hasJa(support.supportedOnDeviceLanguages) -> {
-                        rec.triggerModelDownload(intent)
-                        "Download do pacote de japonês solicitado. Verifique de novo em alguns minutos."
-                    }
-                    else -> "Japonês não suportado offline. Instalados: ${support.installedOnDeviceLanguages}"
-                }
-                setStatus("$msg\n$diag")
-                rec.destroy()
-            }
-
-            override fun onError(error: Int) {
-                setStatus("Erro ao verificar idioma: ${CaptureService.errorText(error)}\n$diag")
-                rec.destroy()
-            }
-        })
-    }
-
     private fun startCapture() {
         if (!hasMic()) {
             requestNeededPermissions()
-            setStatus("Permita o acesso ao microfone (o Android exige para capturar áudio interno).")
+            setStatus("Permita o microfone", "O Android exige essa permissão para capturar áudio interno.")
             return
         }
         val mpm = getSystemService(MediaProjectionManager::class.java)
@@ -175,7 +233,7 @@ class MainActivity : Activity() {
     private fun startMic() {
         if (!hasMic()) {
             requestNeededPermissions()
-            setStatus("Permita o acesso ao microfone.")
+            setStatus("Permita o microfone")
             return
         }
         startForegroundService(
@@ -199,7 +257,7 @@ class MainActivity : Activity() {
         when (requestCode) {
             REQ_PROJECTION -> {
                 if (resultCode != RESULT_OK || data == null) {
-                    setStatus("Captura cancelada.")
+                    setStatus("Captura cancelada")
                     return
                 }
                 startForegroundService(
@@ -212,7 +270,7 @@ class MainActivity : Activity() {
             REQ_FILE -> {
                 val uri = data?.data
                 if (resultCode != RESULT_OK || uri == null) {
-                    setStatus("Nenhum arquivo escolhido.")
+                    setStatus("Nenhum arquivo escolhido")
                     return
                 }
                 startForegroundService(
@@ -224,17 +282,46 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun stopCapture() {
-        startService(Intent(this, CaptureService::class.java).setAction(CaptureService.ACTION_STOP))
-    }
-
     private fun share() {
         val text = TranscriptStore.lines.joinToString("\n")
         if (text.isBlank()) {
-            setStatus("Nada transcrito ainda.")
+            Toast.makeText(this, "Nada transcrito ainda", Toast.LENGTH_SHORT).show()
             return
         }
         val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)
-        startActivity(Intent.createChooser(send, "Compartilhar transcrição"))
+        startActivity(Intent.createChooser(send, getString(R.string.share)))
+    }
+
+    private fun checkJapanese() {
+        val diag = Diag.summary(this)
+        if (!SpeechRecognizer.isOnDeviceRecognitionAvailable(this)) {
+            setStatus("Reconhecimento on-device indisponível", diag)
+            return
+        }
+        val rec = SpeechRecognizer.createOnDeviceSpeechRecognizer(this)
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+            .putExtra(RecognizerIntent.EXTRA_LANGUAGE, prefs.language)
+        setStatus("Verificando japonês offline")
+        rec.checkRecognitionSupport(intent, mainExecutor, object : RecognitionSupportCallback {
+            override fun onSupportResult(support: RecognitionSupport) {
+                fun hasJa(list: List<String>) = list.any { it.startsWith("ja") }
+                val msg = when {
+                    hasJa(support.installedOnDeviceLanguages) -> "Japonês offline instalado ✓"
+                    hasJa(support.pendingOnDeviceLanguages) -> "Pacote de japonês baixando, verifique de novo em instantes"
+                    hasJa(support.supportedOnDeviceLanguages) -> {
+                        rec.triggerModelDownload(intent)
+                        "Download do pacote de japonês solicitado"
+                    }
+                    else -> "Japonês não suportado offline (instalados: ${support.installedOnDeviceLanguages})"
+                }
+                setStatus(msg, diag)
+                rec.destroy()
+            }
+
+            override fun onError(error: Int) {
+                setStatus("Erro ao verificar idioma: ${CaptureService.errorText(error)}", diag)
+                rec.destroy()
+            }
+        })
     }
 }
