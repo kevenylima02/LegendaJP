@@ -39,7 +39,6 @@
                 android:layout_height="wrap_content"
                 android:textIsSelectable="false"
                 android:longClickable="false"
-                android:clickable="false"
                 android:textColor="#FFFFFF"
                 android:textSize="19sp"
                 android:lineSpacingExtra="4dp"

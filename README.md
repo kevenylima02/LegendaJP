@@ -15,7 +15,7 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
 - **Legenda sobre os apps** (menu ⋮): legenda flutuante por cima de qualquer app durante a captura,
   como a legenda instantânea do Galaxy. Arraste pela barrinha para mover em qualquer direção; toque na
   barrinha alterna 2/5 linhas; jogue para a lateral para esconder num bloquinho na borda (toque nele para
-  reabrir). Encoste o dedo numa palavra, arraste até a palavra certa e solte para abrir o cartão.
+  reabrir). Toque numa palavra para abrir o cartão logo abaixo.
   Precisa da permissão "Exibir sobre outros apps".
 - **Vocabulário**: toque numa palavra (legenda flutuante, tela principal ou visualizador) para ver forma de
   dicionário, leitura, classe e conjugação (análise morfológica com Kuromoji, offline) e salvar. Palavras salvas

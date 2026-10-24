@@ -2,16 +2,14 @@ package com.keveny.legendajp
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
-import android.text.Spannable
 import android.text.SpannableStringBuilder
-import android.text.Spanned
-import android.text.style.BackgroundColorSpan
-import android.text.style.ForegroundColorSpan
+import android.text.method.LinkMovementMethod
 import android.view.Gravity
 import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
@@ -26,21 +24,17 @@ import kotlin.math.abs
  * - Arraste (pela barrinha ou pelas bordas) para mover em qualquer direção.
  * - Jogue para fora pela lateral: a legenda vira um bloquinho grudado na borda;
  *   toque no bloquinho para abrir de novo.
- * - Encoste o dedo no texto: a palavra sob o dedo fica marcada e o cartão abre logo
- *   abaixo; arraste para trocar de palavra; solte e o cartão fica para salvar.
+ * - Toque numa palavra: abre o cartão logo abaixo (mesmo mecanismo de dentro do app).
  */
 class Overlay(private val ctx: Context, private val prefs: Prefs) {
 
     companion object {
         fun canDraw(ctx: Context) = Settings.canDrawOverlays(ctx)
         private const val CARD_TIMEOUT_MS = 8000L
-        private const val SELECT_BG = 0x55C5CBFF
         const val DOCK_NONE = 0
         const val DOCK_LEFT = 1
         const val DOCK_RIGHT = 2
     }
-
-    private data class Entry(val start: Int, val end: Int, val word: Jp.Word, val sentence: String, val sec: Int)
 
     private val wm = ctx.getSystemService(WindowManager::class.java)
     private val ui = Handler(Looper.getMainLooper())
@@ -54,21 +48,18 @@ class Overlay(private val ctx: Context, private val prefs: Prefs) {
 
     private var root: View? = null
     private lateinit var expandedBox: View
-    private lateinit var captionBox: View
     private lateinit var handleArea: View
     private lateinit var text: TextView
     private lateinit var partial: TextView
     private lateinit var cardBox: View
-    private lateinit var dockTab: View
+    private lateinit var dockTab: TextView
     private lateinit var params: WindowManager.LayoutParams
 
     private var expanded = prefs.overlayExpanded
     private var dock = prefs.overlayDock
     private var lastRendered = ""
-    private var entries: List<Entry> = emptyList()
-    private var selected: Entry? = null
-    private var selectionSpan: BackgroundColorSpan? = null
-    private val closeCard = Runnable { clearSelection() }
+    private var cardWord: Jp.Word? = null
+    private val closeCard = Runnable { hideCard() }
 
     private val listener: () -> Unit = { ui.post { render() } }
 
@@ -79,12 +70,15 @@ class Overlay(private val ctx: Context, private val prefs: Prefs) {
         if (root != null) return
         val v = LayoutInflater.from(ctx).inflate(R.layout.overlay, null)
         expandedBox = v.findViewById(R.id.expandedBox)
-        captionBox = v.findViewById(R.id.captionBox)
         handleArea = v.findViewById(R.id.handleArea)
         text = v.findViewById(R.id.overlayText)
         partial = v.findViewById(R.id.overlayPartial)
         cardBox = v.findViewById(R.id.cardBox)
         dockTab = v.findViewById(R.id.dockTab)
+
+        // Palavras tocáveis: mesmo mecanismo do visualizador e da tela principal
+        text.movementMethod = LinkMovementMethod.getInstance()
+        text.highlightColor = Color.TRANSPARENT
 
         params = WindowManager.LayoutParams(
             fullWidth,
@@ -122,77 +116,60 @@ class Overlay(private val ctx: Context, private val prefs: Prefs) {
         partial.maxLines = if (expanded) 3 else 2
     }
 
-    // ---------- toque: arrastar, esfregar palavras, bloquinho ----------
+    // ---------- toque: arrastar e bloquinho ----------
 
     private var downX = 0f
     private var downY = 0f
     private var startX = 0
     private var startY = 0
-    private var mode = 0 // 0 nada, 1 arrastar, 2 esfregar palavras, 3 bloquinho
+    private var dragging = false
     private var moved = false
 
     private fun hit(view: View, ev: MotionEvent): Boolean {
         if (view.visibility != View.VISIBLE) return false
-        val r = Rect()
         val loc = IntArray(2)
         view.getLocationInWindow(loc)
-        r.set(loc[0], loc[1], loc[0] + view.width, loc[1] + view.height)
-        return r.contains(ev.x.toInt(), ev.y.toInt())
+        return Rect(loc[0], loc[1], loc[0] + view.width, loc[1] + view.height).contains(ev.x.toInt(), ev.y.toInt())
     }
 
     private fun onTouch(ev: MotionEvent): Boolean {
         val r = root ?: return false
         when (ev.actionMasked) {
-            MotionEvent.ACTION_OUTSIDE -> { clearSelection(); return false }
+            MotionEvent.ACTION_OUTSIDE -> { hideCard(); return false }
             MotionEvent.ACTION_DOWN -> {
+                // Toques no cartão e nas palavras são tratados pelos próprios views
+                if (hit(cardBox, ev) || hit(text, ev)) return false
                 downX = ev.rawX; downY = ev.rawY
                 startX = params.x; startY = params.y
                 moved = false
-                mode = when {
-                    dock != DOCK_NONE -> 3
-                    hit(cardBox, ev) -> 0 // os botões do cartão tratam o toque
-                    hit(text, ev) -> 2
-                    else -> 1
-                }
-                if (mode == 2) {
-                    ui.removeCallbacks(closeCard)
-                    entryAt(ev)?.let { e -> if (e !== selected) { select(e); r.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK) } }
-                }
-                return mode != 0
+                dragging = true
+                return true
             }
             MotionEvent.ACTION_MOVE -> {
+                if (!dragging) return false
                 val dx = (ev.rawX - downX).toInt()
                 val dy = (ev.rawY - downY).toInt()
-                when (mode) {
-                    1, 3 -> {
-                        if (abs(dx) > 8 || abs(dy) > 8) moved = true
-                        if (moved) {
-                            if (mode == 1) clearSelection()
-                            params.x = startX + dx
-                            params.y = (startY + dy).coerceIn(0, screenH - r.height)
-                            if (mode == 3) params.x = params.x.coerceIn(0, screenW - tabW)
-                            update()
-                        }
-                        return true
-                    }
-                    2 -> {
-                        entryAt(ev)?.let { e -> if (e !== selected) { select(e); r.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK) } }
-                        return true
-                    }
+                if (abs(dx) > 8 || abs(dy) > 8) moved = true
+                if (moved) {
+                    hideCard()
+                    params.x = startX + dx
+                    params.y = (startY + dy).coerceIn(0, screenH - r.height)
+                    if (dock != DOCK_NONE) params.x = params.x.coerceIn(0, screenW - tabW)
+                    update()
                 }
-                return false
+                return true
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                if (!dragging) return false
+                dragging = false
                 val up = ev.actionMasked == MotionEvent.ACTION_UP
-                when (mode) {
-                    1 -> {
-                        if (moved) settleAfterDrag() else if (up && hit(handleArea, ev)) toggleExpanded()
-                        else if (up) clearSelection()
-                    }
-                    2 -> if (selected != null) { openCard(); ui.postDelayed(closeCard, CARD_TIMEOUT_MS) } else clearSelection()
-                    3 -> if (moved) { prefs.overlayY = params.y; update() } else if (up) undock()
+                if (dock != DOCK_NONE) {
+                    if (moved) { prefs.overlayY = params.y; update() } else if (up) undock()
+                } else if (moved) {
+                    settleAfterDrag()
+                } else if (up) {
+                    if (hit(handleArea, ev)) toggleExpanded() else hideCard()
                 }
-                mode = 0
                 return true
             }
         }
@@ -232,7 +209,7 @@ class Overlay(private val ctx: Context, private val prefs: Prefs) {
     // ---------- bloquinho na borda ----------
 
     private fun dockTo(side: Int) {
-        clearSelection()
+        hideCard()
         dock = side
         prefs.overlayDock = side
         root?.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
@@ -265,7 +242,7 @@ class Overlay(private val ctx: Context, private val prefs: Prefs) {
             params.width = tabW
             params.x = if (dock == DOCK_LEFT) 0 else screenW - tabW
             params.y = params.y.coerceIn(0, screenH - tabH)
-            (dockTab as TextView).text = if (dock == DOCK_LEFT) "字›" else "‹字"
+            dockTab.text = if (dock == DOCK_LEFT) "字›" else "‹字"
         }
     }
 
@@ -277,7 +254,7 @@ class Overlay(private val ctx: Context, private val prefs: Prefs) {
         val wanted = if (TranscriptStore.appVisible) View.GONE else View.VISIBLE
         if (r.visibility != wanted) {
             r.visibility = wanted
-            if (wanted == View.GONE) clearSelection()
+            if (wanted == View.GONE) hideCard()
         }
         val lines = TranscriptStore.lines.takeLast(if (expanded) 4 else 2)
         val p = TranscriptStore.partial
@@ -285,73 +262,38 @@ class Overlay(private val ctx: Context, private val prefs: Prefs) {
         if (key == lastRendered) return
         lastRendered = key
         if (lines.isEmpty()) {
-            entries = emptyList()
             text.text = ctx.getString(R.string.partial_hint)
             text.alpha = 0.6f
         } else {
             val sb = SpannableStringBuilder()
-            val list = mutableListOf<Entry>()
             for ((i, line) in lines.withIndex()) {
                 val (sec, sentence) = Recordings.parseLine(line)
                 if (i > 0) sb.append("\n")
-                val base = sb.length
-                sb.append(sentence)
-                val words = try { Jp.words(sentence) } catch (_: Exception) { emptyList() }
-                for (w in words) {
-                    list.add(Entry(base + w.start, base + w.end, w, sentence, sec))
-                    if (w.key in VocabDb.savedKeys) {
-                        sb.setSpan(ForegroundColorSpan(Jp.OVERLAY_SAVED_COLOR), base + w.start, base + w.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    }
-                }
+                sb.append(Jp.decorate(sentence, VocabDb.savedKeys, Jp.OVERLAY_SAVED_COLOR) { w ->
+                    openCard(w, sentence, sec)
+                })
             }
-            entries = list
-            val keep = selected?.let { s -> list.firstOrNull { it.word == s.word && it.sentence == s.sentence } }
-            selected = null
-            selectionSpan = null
             text.text = sb
             text.alpha = 1f
-            val cardWasOpen = cardBox.visibility == View.VISIBLE
-            if (keep != null) { select(keep); if (cardWasOpen) openCard() } else if (cardWasOpen) clearSelection()
         }
         partial.text = p
         partial.visibility = if (p.isEmpty()) View.GONE else View.VISIBLE
     }
 
-    // ---------- seleção de palavra e cartão ----------
+    // ---------- cartão da palavra ----------
 
-    private fun entryAt(ev: MotionEvent): Entry? {
-        val layout = text.layout ?: return null
-        val loc = IntArray(2)
-        text.getLocationInWindow(loc)
-        val lx = (ev.x - loc[0] - text.totalPaddingLeft + text.scrollX).toInt()
-        val ly = (ev.y - loc[1] - text.totalPaddingTop + text.scrollY).toInt().coerceIn(0, layout.height - 1)
-        val line = layout.getLineForVertical(ly)
-        if (lx < layout.getLineLeft(line) - 20 || lx > layout.getLineRight(line) + 20) return null
-        val off = layout.getOffsetForHorizontal(line, lx.toFloat())
-        return entries.firstOrNull { off >= it.start && off < it.end }
-            ?: entries.firstOrNull { off == it.end }
-    }
-
-    private fun select(e: Entry) {
-        val sp = text.text as? Spannable ?: return
-        selectionSpan?.let { sp.removeSpan(it) }
-        val span = BackgroundColorSpan(SELECT_BG)
-        sp.setSpan(span, e.start, e.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        selectionSpan = span
-        selected = e
-        cardBox.visibility = View.GONE
-    }
-
-    /** Abre o cartão da palavra marcada (ao soltar o dedo). */
-    private fun openCard() {
-        val e = selected ?: return
+    private fun openCard(w: Jp.Word, sentence: String, sec: Int) {
+        cardWord = w
         WordCard.bind(
-            ctx, cardBox, e.word, e.sentence, TranscriptStore.recording, e.sec,
+            ctx, cardBox, w, sentence, TranscriptStore.recording, sec,
             onPlay = null,
-            onChanged = { lastRendered = ""; clearSelection(); render() },
+            onChanged = { lastRendered = ""; hideCard(); render() },
             light = true
         )
         cardBox.visibility = View.VISIBLE
+        root?.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+        ui.removeCallbacks(closeCard)
+        ui.postDelayed(closeCard, CARD_TIMEOUT_MS)
         // Se o cartão não couber embaixo, sobe a janela para ele aparecer
         cardBox.post {
             val r = root ?: return@post
@@ -360,11 +302,9 @@ class Overlay(private val ctx: Context, private val prefs: Prefs) {
         }
     }
 
-    private fun clearSelection() {
+    private fun hideCard() {
         ui.removeCallbacks(closeCard)
-        (text.text as? Spannable)?.let { sp -> selectionSpan?.let { sp.removeSpan(it) } }
-        selectionSpan = null
-        selected = null
+        cardWord = null
         if (::cardBox.isInitialized) cardBox.visibility = View.GONE
     }
 }
