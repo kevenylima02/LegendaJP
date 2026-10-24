@@ -51,6 +51,7 @@ class CaptureService : Service() {
         const val MODE_MIC = 1
         const val MODE_FILE = 2
         const val ACTION_STOP = "com.keveny.legendajp.STOP"
+        const val ACTION_OVERLAY = "com.keveny.legendajp.OVERLAY"
         private const val CHANNEL_ID = "captura"
         private const val NOTIF_ID = 1
         const val SAMPLE_RATE = 16000
@@ -137,6 +138,14 @@ class CaptureService : Service() {
             stopCapture()
             return START_NOT_STICKY
         }
+        if (intent?.action == ACTION_OVERLAY) {
+            // Botão "Legenda" da notificação: mostra ou esconde a legenda flutuante
+            if (capturing) {
+                if (overlay == null) { prefs.overlay = true; showOverlay() }
+                else { overlay?.hide(); overlay = null }
+            }
+            return START_NOT_STICKY
+        }
         if (capturing) return START_NOT_STICKY
 
         mode = intent?.getIntExtra(EXTRA_MODE, MODE_CAPTURE) ?: MODE_CAPTURE
@@ -181,12 +190,17 @@ class CaptureService : Service() {
         val openIntent = PendingIntent.getActivity(
             this, 2, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE
         )
+        val overlayIntent = PendingIntent.getService(
+            this, 3, Intent(this, CaptureService::class.java).setAction(ACTION_OVERLAY),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
         val notification = Notification.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.app_name))
             .setContentText("Transcrevendo (${modeName(mode)})")
             .setSmallIcon(android.R.drawable.ic_btn_speak_now)
             .setContentIntent(openIntent)
             .addAction(Notification.Action.Builder(null, getString(R.string.stop), stopIntent).build())
+            .addAction(Notification.Action.Builder(null, "Legenda", overlayIntent).build())
             .setOngoing(true)
             .build()
         val type = if (mode == MODE_CAPTURE)
@@ -294,7 +308,10 @@ class CaptureService : Service() {
     private fun showOverlay() {
         if (!prefs.overlay || !Overlay.canDraw(this)) return
         try {
-            overlay = Overlay(this, prefs).also { it.show() }
+            overlay = Overlay(this, prefs).also { o ->
+                o.onDismissed = { overlay = null }
+                o.show()
+            }
         } catch (e: Exception) {
             Log.e(TAG, "overlay", e)
         }

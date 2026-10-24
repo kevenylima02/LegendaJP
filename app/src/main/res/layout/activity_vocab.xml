@@ -53,7 +53,7 @@
             android:layout_gravity="center"
             android:gravity="center"
             android:padding="32dp"
-            android:text="Nenhuma palavra salva.\nToque numa palavra da legenda e escolha Salvar."
+            android:text="Nenhuma palavra salva.\nToque numa palavra da legenda e escolha Salvar.\n\nNa lista, toque longo copia a palavra."
             android:textColor="@color/text_secondary"
             android:textSize="16sp"
             android:visibility="gone" />

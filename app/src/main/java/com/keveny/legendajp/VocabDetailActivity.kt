@@ -82,6 +82,12 @@ class VocabDetailActivity : Activity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
+            R.id.action_copy -> {
+                val w = word ?: return true
+                getSystemService(android.content.ClipboardManager::class.java)
+                    .setPrimaryClip(android.content.ClipData.newPlainText("Michi", w.base))
+                Toast.makeText(this, "${w.base} copiada", Toast.LENGTH_SHORT).show()
+            }
             R.id.action_delete -> {
                 AlertDialog.Builder(this)
                     .setMessage("Remover ${word?.base} do vocabulário?")

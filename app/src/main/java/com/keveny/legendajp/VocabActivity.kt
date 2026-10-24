@@ -43,6 +43,10 @@ class VocabActivity : Activity() {
         list.setOnItemClickListener { _, _, pos, _ ->
             startActivity(Intent(this, VocabDetailActivity::class.java).putExtra(VocabDetailActivity.EXTRA_ID, rows[pos].id))
         }
+        list.setOnItemLongClickListener { _, _, pos, _ ->
+            copyWord(rows[pos])
+            true
+        }
         search.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -85,6 +89,12 @@ class VocabActivity : Activity() {
             else -> return super.onOptionsItemSelected(item)
         }
         return true
+    }
+
+    private fun copyWord(w: VocabDb.Word) {
+        getSystemService(android.content.ClipboardManager::class.java)
+            .setPrimaryClip(android.content.ClipData.newPlainText("Michi", w.base))
+        Toast.makeText(this, "${w.base} copiada", Toast.LENGTH_SHORT).show()
     }
 
     private fun export() {
