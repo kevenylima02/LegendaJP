@@ -123,7 +123,13 @@ class Overlay(private val ctx: Context, private val prefs: Prefs) {
     }
 
     private fun render() {
-        if (root == null) return
+        val r = root ?: return
+        // Com o Michi aberto a legenda já está na tela; esconde o balão
+        val wanted = if (TranscriptStore.appVisible) View.GONE else View.VISIBLE
+        if (r.visibility != wanted) {
+            r.visibility = wanted
+            if (wanted == View.GONE) hideCard()
+        }
         val lines = TranscriptStore.lines.takeLast(if (expanded) 4 else 2)
         val p = TranscriptStore.partial
         val key = lines.joinToString("\n") + "\u0000" + p + "\u0000" + VocabDb.savedKeys.size

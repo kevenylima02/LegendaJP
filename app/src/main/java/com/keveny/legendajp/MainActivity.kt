@@ -114,6 +114,8 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
         TranscriptStore.listener = { runOnUiThread { render() } }
+        TranscriptStore.appVisible = true
+        TranscriptStore.notifyChanged()
         render()
     }
 
@@ -121,6 +123,8 @@ class MainActivity : Activity() {
         super.onPause()
         TranscriptStore.listener = null
         ui.removeCallbacks(tick)
+        TranscriptStore.appVisible = false
+        TranscriptStore.notifyChanged()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -356,34 +360,47 @@ class MainActivity : Activity() {
         startActivity(Intent.createChooser(send, getString(R.string.share)))
     }
 
+    private val resetStatus = Runnable {
+        if (TranscriptStore.state == TranscriptStore.State.IDLE) setStatus(getString(R.string.status_ready))
+    }
+
+    /** Mostra uma mensagem no cartão e volta ao estado normal depois de alguns segundos. */
+    private fun flashStatus(msg: String, ms: Long = 6000) {
+        setStatus(msg)
+        ui.removeCallbacks(resetStatus)
+        ui.postDelayed(resetStatus, ms)
+    }
+
     private fun checkJapanese() {
-        val diag = Diag.summary(this)
+        android.util.Log.i(CaptureService.TAG, Diag.summary(this))
         if (!SpeechRecognizer.isOnDeviceRecognitionAvailable(this)) {
-            setStatus("Reconhecimento on-device indisponível", diag)
+            flashStatus("Reconhecimento offline indisponível neste aparelho")
             return
         }
         val rec = SpeechRecognizer.createOnDeviceSpeechRecognizer(this)
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
             .putExtra(RecognizerIntent.EXTRA_LANGUAGE, prefs.language)
-        setStatus("Verificando japonês offline")
+        flashStatus("Verificando japonês offline…", ms = 15000)
         rec.checkRecognitionSupport(intent, mainExecutor, object : RecognitionSupportCallback {
             override fun onSupportResult(support: RecognitionSupport) {
                 fun hasJa(list: List<String>) = list.any { it.startsWith("ja") }
+                android.util.Log.i(CaptureService.TAG, "suporte: instalados=${support.installedOnDeviceLanguages} " +
+                    "pendentes=${support.pendingOnDeviceLanguages} suportados=${support.supportedOnDeviceLanguages}")
                 val msg = when {
-                    hasJa(support.installedOnDeviceLanguages) -> "Japonês offline instalado ✓"
-                    hasJa(support.pendingOnDeviceLanguages) -> "Pacote de japonês baixando, verifique de novo em instantes"
+                    hasJa(support.installedOnDeviceLanguages) -> "Japonês offline pronto ✓"
+                    hasJa(support.pendingOnDeviceLanguages) -> "Baixando o pacote de japonês…"
                     hasJa(support.supportedOnDeviceLanguages) -> {
                         rec.triggerModelDownload(intent)
-                        "Download do pacote de japonês solicitado"
+                        "Baixando o pacote de japonês…"
                     }
-                    else -> "Japonês não suportado offline (instalados: ${support.installedOnDeviceLanguages})"
+                    else -> "Japonês não disponível offline neste aparelho"
                 }
-                setStatus(msg, diag)
+                flashStatus(msg)
                 rec.destroy()
             }
 
             override fun onError(error: Int) {
-                setStatus("Erro ao verificar idioma: ${CaptureService.errorText(error)}", diag)
+                flashStatus("Não consegui verificar o idioma (${CaptureService.errorText(error)})")
                 rec.destroy()
             }
         })

@@ -13,6 +13,8 @@ object TranscriptStore {
     @Volatile var startedAt: Long = 0L
     /** Nome base da gravação em andamento (legenda_...). */
     @Volatile var recording: String = ""
+    /** Tela principal visível: a legenda flutuante se esconde para não duplicar. */
+    @Volatile var appVisible: Boolean = false
     /** Linhas já formatadas ("[mm:ss] texto"); só alteradas na main thread. */
     val lines: MutableList<String> = mutableListOf()
 
