@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 /** Vocabulário salvo: palavras (forma de dicionário) e as frases onde apareceram. */
-class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 1) {
+class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 2) {
 
     companion object {
         @Volatile private var instance: VocabDb? = null
@@ -45,9 +45,27 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
                 sec INTEGER NOT NULL, created INTEGER NOT NULL,
                 UNIQUE(word_id, sentence, recording))"""
         )
+        createTr(db)
     }
 
-    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {}
+    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        if (oldVersion < 2) createTr(db)
+    }
+
+    private fun createTr(db: SQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS tr (text TEXT PRIMARY KEY, translation TEXT NOT NULL, created INTEGER NOT NULL)")
+    }
+
+    fun translation(text: String): String? =
+        readableDatabase.rawQuery("SELECT translation FROM tr WHERE text=?", arrayOf(text)).use { c ->
+            if (c.moveToFirst()) c.getString(0) else null
+        }
+
+    fun putTranslation(text: String, translation: String) {
+        writableDatabase.insertWithOnConflict("tr", null, ContentValues().apply {
+            put("text", text); put("translation", translation); put("created", System.currentTimeMillis())
+        }, SQLiteDatabase.CONFLICT_REPLACE)
+    }
 
     override fun onOpen(db: SQLiteDatabase) {
         db.execSQL("PRAGMA foreign_keys = ON")
@@ -117,6 +135,15 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
                 put("recording", recording); put("sec", sec); put("created", now)
             }, SQLiteDatabase.CONFLICT_IGNORE)
         }
+    }
+
+    /** Desloca os tempos das ocorrências de uma gravação (quando o começo do áudio foi cortado). */
+    fun shiftOccurrences(recording: String, offsetSec: Int) {
+        if (offsetSec <= 0) return
+        writableDatabase.execSQL(
+            "UPDATE occ SET sec = MAX(0, sec - ?) WHERE recording = ?",
+            arrayOf(offsetSec, recording)
+        )
     }
 
     fun words(query: String = "", byDate: Boolean = true): List<Word> {

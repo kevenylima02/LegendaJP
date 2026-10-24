@@ -19,6 +19,10 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   dicionário, leitura, classe e conjugação (análise morfológica com Kuromoji, offline) e salvar. Palavras salvas
   ficam em lavanda em todas as legendas, em qualquer conjugação. A tela Vocabulário lista as palavras com as
   frases onde apareceram (com Ouvir) e exporta CSV para o Anki.
+- **Tradução offline** (ML Kit, japonês → português): o cartão da palavra mostra a tradução da forma de
+  dicionário; nas frases do Vocabulário há um botão Traduzir. O modelo (~60 MB) é baixado na primeira vez e
+  cada texto só é traduzido uma vez (cache). Por isso o APK é por arquitetura (arm64-v8a para o celular).
+- O .wav salvo é cortado no silêncio antes da primeira frase e depois da última; os tempos do .txt são ajustados.
 
 ## Compilar localmente (Windows)
 

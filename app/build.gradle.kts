@@ -11,8 +11,8 @@ android {
         applicationId = "com.keveny.legendajp"
         minSdk = 33          // EXTRA_AUDIO_SOURCE e sessões segmentadas exigem Android 13+
         targetSdk = 34
-        versionCode = 7
-        versionName = "0.7"
+        versionCode = 8
+        versionName = "0.8"
     }
 
     signingConfigs {
@@ -22,6 +22,16 @@ android {
             storePassword = "android"
             keyAlias = "androiddebugkey"
             keyPassword = "android"
+        }
+    }
+
+    // Um APK por arquitetura: o S26 Ultra usa arm64-v8a; x86_64 só para o emulador.
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "x86_64")
+            isUniversalApk = false
         }
     }
 
@@ -46,4 +56,6 @@ android {
 dependencies {
     // Analisador morfológico de japonês (forma de dicionário, classe, conjugação, leitura). Puro Java.
     implementation("com.atilika.kuromoji:kuromoji-ipadic:0.9.0")
+    // Tradução japonês → português offline (modelo baixado na primeira vez)
+    implementation("com.google.mlkit:translate:17.0.3")
 }

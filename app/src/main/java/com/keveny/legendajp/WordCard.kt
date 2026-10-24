@@ -22,6 +22,7 @@ object WordCard {
         val reading = view.findViewById<TextView>(R.id.cardReading)
         val pos = view.findViewById<TextView>(R.id.cardPos)
         val conj = view.findViewById<TextView>(R.id.cardConj)
+        val tr = view.findViewById<TextView>(R.id.cardTr)
         val save = view.findViewById<Button>(R.id.cardSave)
         val play = view.findViewById<Button>(R.id.cardPlay)
 
@@ -39,7 +40,21 @@ object WordCard {
         }
         val fg = if (light) 0xFFFFFFFF.toInt() else ctx.getColor(R.color.text)
         val fg2 = if (light) 0xB3FFFFFF.toInt() else ctx.getColor(R.color.text_secondary)
-        base.setTextColor(fg); reading.setTextColor(fg2); pos.setTextColor(fg2); conj.setTextColor(fg)
+        base.setTextColor(fg); reading.setTextColor(fg2); pos.setTextColor(fg2); conj.setTextColor(fg); tr.setTextColor(fg)
+
+        // Tradução da forma de dicionário (cache primeiro; senão traduz e mostra quando chegar)
+        tr.visibility = View.GONE
+        val cachedTr = Tr.cached(ctx, w.base)
+        if (cachedTr != null) {
+            tr.text = cachedTr; tr.visibility = View.VISIBLE
+        } else {
+            tr.text = "Traduzindo…"; tr.visibility = View.VISIBLE; tr.alpha = 0.6f
+            Tr.translate(ctx, w.base) { t ->
+                if (view.findViewById<TextView>(R.id.cardBase).text != w.base) return@translate
+                tr.alpha = 1f
+                if (t != null) tr.text = t else tr.visibility = View.GONE
+            }
+        }
 
         fun refresh() {
             val saved = db.isSaved(w)

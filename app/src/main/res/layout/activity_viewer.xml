@@ -57,7 +57,7 @@
         android:layout_marginBottom="4dp"
         android:textColor="@color/text_secondary"
         android:textSize="12sp"
-        android:text="Toque numa frase para ouvir o trecho." />
+        android:text="Toque no tempo para ouvir o trecho; toque nas palavras para ver e salvar." />
 
     <ListView
         android:id="@+id/lines"

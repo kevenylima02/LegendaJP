@@ -109,6 +109,8 @@ class CaptureService : Service() {
     // Posição no áudio (em bytes PCM) e início da frase em andamento
     @Volatile private var totalBytes = 0L
     private var phraseStartSec = -1
+    private var firstPhraseSec = -1
+    private var lastPhraseEndSec = -1
     @Volatile private var peakLevel = 0
     private var segments = 0
     private var restarts = 0
@@ -517,6 +519,8 @@ class CaptureService : Service() {
         segments++
         val start = if (phraseStartSec >= 0) phraseStartSec else maxOf(0, audioSec - 3)
         phraseStartSec = -1
+        if (firstPhraseSec < 0) firstPhraseSec = start
+        lastPhraseEndSec = audioSec
         val line = "[${formatTime(start)}] $text"
         TranscriptStore.lines.add(line)
         TranscriptStore.partial = ""
@@ -543,18 +547,33 @@ class CaptureService : Service() {
     // ---------- WAV ----------
 
     /** Converte o PCM temporário em WAV dentro de Download/LegendaJP. Retorna a descrição ou "". */
-    private fun saveWav(keep: Boolean): String {
+    private fun saveWav(keep: Boolean, fromSec: Int = 0, toSec: Int = Int.MAX_VALUE): String {
         try { wavOut?.close() } catch (_: Exception) {}
         wavOut = null
         val pcm = wavTemp ?: return ""
-        val dataLen = pcm.length()
-        if (!keep || dataLen <= 0) { pcm.delete(); return "" }
+        val total = pcm.length()
+        if (!keep || total <= 0) { pcm.delete(); return "" }
+        val from = (fromSec.toLong() * BYTES_PER_SEC).coerceIn(0, total)
+        val to = if (toSec == Int.MAX_VALUE) total else (toSec.toLong() * BYTES_PER_SEC).coerceIn(from, total)
+        val dataLen = to - from
+        if (dataLen <= 0) { pcm.delete(); return "" }
         val wavName = "$baseName.wav"
         val uri = Recordings.create(this, wavName, "audio/wav") ?: return ""
         try {
             contentResolver.openOutputStream(uri)!!.use { out ->
                 out.write(wavHeader(dataLen))
-                pcm.inputStream().use { it.copyTo(out, 64 * 1024) }
+                pcm.inputStream().use { input ->
+                    var skipped = 0L
+                    while (skipped < from) { val n = input.skip(from - skipped); if (n <= 0) break; skipped += n }
+                    val buf = ByteArray(64 * 1024)
+                    var left = dataLen
+                    while (left > 0) {
+                        val n = input.read(buf, 0, minOf(buf.size.toLong(), left).toInt())
+                        if (n < 0) break
+                        out.write(buf, 0, n)
+                        left -= n
+                    }
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "erro ao salvar wav", e)
@@ -563,6 +582,27 @@ class CaptureService : Service() {
             pcm.delete()
         }
         return "áudio ${Recordings.prettySize(dataLen + 44)}"
+    }
+
+    /** Reescreve o .txt com os tempos deslocados (quando o começo do áudio foi cortado). */
+    private fun shiftTranscript(offsetSec: Int) {
+        if (offsetSec <= 0) return
+        val shifted = TranscriptStore.lines.map { line ->
+            val (sec, text) = Recordings.parseLine(line)
+            if (sec < 0) line else "[${formatTime(maxOf(0, sec - offsetSec))}] $text"
+        }
+        TranscriptStore.lines.clear()
+        TranscriptStore.lines.addAll(shifted)
+        val uri = txtUri ?: return
+        try {
+            contentResolver.openOutputStream(uri, "wt")!!.use { out ->
+                out.write((shifted.joinToString("\n") + "\n").toByteArray(Charsets.UTF_8))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "erro ao reescrever txt", e)
+        }
+        val rec = baseName
+        Thread { try { VocabDb.get(this).shiftOccurrences(rec, offsetSec) } catch (_: Exception) {} }.start()
     }
 
     private fun wavHeader(dataLen: Long): ByteArray {
@@ -618,7 +658,16 @@ class CaptureService : Service() {
         try { projection?.stop() } catch (_: Exception) {}
 
         val hasText = TranscriptStore.lines.isNotEmpty()
-        val wavInfo = saveWav(keep = hasText)
+        // Corta o silêncio antes da primeira frase e depois da última (com folga)
+        var trimStart = 0
+        var trimEnd = Int.MAX_VALUE
+        if (hasText && mode != MODE_FILE && firstPhraseSec >= 0) {
+            trimStart = maxOf(0, firstPhraseSec - 2)
+            trimEnd = minOf(audioSec, lastPhraseEndSec + 3)
+            if (trimEnd <= trimStart) { trimStart = 0; trimEnd = Int.MAX_VALUE }
+        }
+        val wavInfo = saveWav(keep = hasText, fromSec = trimStart, toSec = trimEnd)
+        if (wavInfo.isNotEmpty()) shiftTranscript(trimStart)
         val diag = "${modeName(mode)} · ${formatTime(audioSec)} de áudio · pico $peakLevel% · $restarts reinícios"
         Log.i(TAG, diag)
 

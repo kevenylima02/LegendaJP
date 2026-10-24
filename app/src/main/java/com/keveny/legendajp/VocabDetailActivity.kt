@@ -116,6 +116,25 @@ class VocabDetailActivity : Activity() {
             v.findViewById<TextView>(R.id.meta).text =
                 "${Recordings.prettyName(o.recording)} · ${CaptureService.formatTime(o.sec)}"
             v.findViewById<TextView>(R.id.play).setOnClickListener { play(o) }
+            val trView = v.findViewById<TextView>(R.id.translation)
+            val trBtn = v.findViewById<TextView>(R.id.translate)
+            val cached = Tr.cached(this@VocabDetailActivity, o.sentence)
+            if (cached != null) {
+                trView.text = cached; trView.visibility = View.VISIBLE; trBtn.visibility = View.GONE
+            } else {
+                trView.visibility = View.GONE; trBtn.visibility = View.VISIBLE
+                trBtn.setOnClickListener {
+                    trBtn.text = "Traduzindo…"
+                    Tr.translate(this@VocabDetailActivity, o.sentence) { t ->
+                        if (t != null) {
+                            trView.text = t; trView.visibility = View.VISIBLE; trBtn.visibility = View.GONE
+                        } else {
+                            trBtn.text = "Traduzir"
+                            Toast.makeText(this@VocabDetailActivity, "Não consegui traduzir agora", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
             return v
         }
     }

@@ -238,7 +238,9 @@ class ViewerActivity : Activity() {
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             val v = convertView ?: LayoutInflater.from(parent.context).inflate(R.layout.item_line, parent, false)
             val l = lines[position]
-            v.findViewById<TextView>(R.id.stamp).text = if (l.sec >= 0) CaptureService.formatTime(l.sec) else ""
+            val stamp = v.findViewById<TextView>(R.id.stamp)
+            stamp.text = if (l.sec >= 0) CaptureService.formatTime(l.sec) else ""
+            stamp.setOnClickListener { playFrom(l.sec) }
             val tv = v.findViewById<TextView>(R.id.text)
             tv.movementMethod = LinkMovementMethod.getInstance()
             tv.highlightColor = Color.TRANSPARENT
