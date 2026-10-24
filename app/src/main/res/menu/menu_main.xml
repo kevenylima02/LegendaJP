@@ -5,6 +5,11 @@
         android:title="@string/menu_check_japanese"
         android:showAsAction="never" />
     <item
+        android:id="@+id/action_overlay"
+        android:title="@string/menu_overlay"
+        android:checkable="true"
+        android:showAsAction="never" />
+    <item
         android:id="@+id/action_save_wav"
         android:title="@string/menu_save_wav"
         android:checkable="true"

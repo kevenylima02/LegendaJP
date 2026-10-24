@@ -15,6 +15,24 @@ class Prefs(ctx: Context) {
         get() = sp.getBoolean("saveWav", true)
         set(v) = sp.edit().putBoolean("saveWav", v).apply()
 
+    /** Mostrar a legenda flutuante sobre outros apps durante a captura. */
+    var overlay: Boolean
+        get() = sp.getBoolean("overlay", true)
+        set(v) = sp.edit().putBoolean("overlay", v).apply()
+
+    /** Já perguntamos sobre a permissão de sobreposição? */
+    var overlayAsked: Boolean
+        get() = sp.getBoolean("overlayAsked", false)
+        set(v) = sp.edit().putBoolean("overlayAsked", v).apply()
+
+    var overlayY: Int
+        get() = sp.getInt("overlayY", -1)
+        set(v) = sp.edit().putInt("overlayY", v).apply()
+
+    var overlayExpanded: Boolean
+        get() = sp.getBoolean("overlayExpanded", false)
+        set(v) = sp.edit().putBoolean("overlayExpanded", v).apply()
+
     var language: String
         get() = sp.getString("language", "ja-JP") ?: "ja-JP"
         set(v) = sp.edit().putString("language", v).apply()

@@ -15,9 +15,11 @@ object TranscriptStore {
     val lines: MutableList<String> = mutableListOf()
 
     @Volatile var listener: (() -> Unit)? = null
+    @Volatile var overlayListener: (() -> Unit)? = null
 
     fun notifyChanged() {
         listener?.invoke()
+        overlayListener?.invoke()
     }
 
     fun reset(mode: Int) {

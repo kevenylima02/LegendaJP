@@ -1,4 +1,4 @@
-# LegendaJP
+# Michi (LegendaJP)
 
 Captura o áudio interno do celular, transcreve em japonês com o SpeechRecognizer
 on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
@@ -12,6 +12,9 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
 - Cada transcrição vira `legenda_<data>.txt` (+ `.wav` se "Salvar áudio" estiver ligado, padrão sim).
   Nada é salvo se nenhuma frase foi reconhecida.
 - **Gravações** lista as transcrições; no visualizador, toque numa frase para ouvir o trecho.
+- **Legenda sobre os apps** (menu ⋮): legenda flutuante por cima de qualquer app durante a captura,
+  como a legenda instantânea do Galaxy. Arraste para mover, toque para mostrar mais linhas.
+  Precisa da permissão "Exibir sobre outros apps".
 
 ## Compilar localmente (Windows)
 

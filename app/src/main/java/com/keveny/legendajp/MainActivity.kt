@@ -2,6 +2,7 @@ package com.keveny.legendajp
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.GradientDrawable
@@ -12,6 +13,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.speech.RecognitionSupport
 import android.speech.RecognitionSupportCallback
 import android.speech.RecognizerIntent
@@ -120,12 +122,23 @@ class MainActivity : Activity() {
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         menu.findItem(R.id.action_save_wav).isChecked = prefs.saveWav
+        menu.findItem(R.id.action_overlay).isChecked = prefs.overlay && Overlay.canDraw(this)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_check -> checkJapanese()
+            R.id.action_overlay -> {
+                if (item.isChecked) {
+                    prefs.overlay = false
+                    item.isChecked = false
+                } else {
+                    prefs.overlay = true
+                    prefs.overlayAsked = true
+                    if (Overlay.canDraw(this)) item.isChecked = true else openOverlaySettings()
+                }
+            }
             R.id.action_save_wav -> {
                 prefs.saveWav = !prefs.saveWav
                 item.isChecked = prefs.saveWav
@@ -197,11 +210,42 @@ class MainActivity : Activity() {
             startService(Intent(this, CaptureService::class.java).setAction(CaptureService.ACTION_STOP))
             return
         }
+        if (prefs.source != CaptureService.MODE_FILE && prefs.overlay && !Overlay.canDraw(this) && !prefs.overlayAsked) {
+            askOverlayPermission()
+            return
+        }
+        startSelectedSource()
+    }
+
+    private fun startSelectedSource() {
         when (prefs.source) {
             CaptureService.MODE_MIC -> startMic()
             CaptureService.MODE_FILE -> pickFile()
             else -> startCapture()
         }
+    }
+
+    private fun askOverlayPermission() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.overlay_dialog_title)
+            .setMessage(R.string.overlay_dialog_text)
+            .setPositiveButton(R.string.overlay_allow) { _, _ ->
+                prefs.overlayAsked = true
+                openOverlaySettings()
+            }
+            .setNegativeButton(R.string.overlay_later) { _, _ ->
+                prefs.overlayAsked = true
+                prefs.overlay = false
+                startSelectedSource()
+            }
+            .show()
+    }
+
+    private fun openOverlaySettings() {
+        startActivity(
+            Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
+        )
+        Toast.makeText(this, "Ative \"Exibir sobre outros apps\" para o Michi e volte", Toast.LENGTH_LONG).show()
     }
 
     private fun requestNeededPermissions(): Boolean {

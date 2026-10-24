@@ -86,6 +86,7 @@ class CaptureService : Service() {
 
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var prefs: Prefs
+    private var overlay: Overlay? = null
     private var mode = MODE_CAPTURE
     private var projection: MediaProjection? = null
     private var audioRecord: AudioRecord? = null
@@ -181,7 +182,7 @@ class CaptureService : Service() {
             this, 2, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE
         )
         val notification = Notification.Builder(this, CHANNEL_ID)
-            .setContentTitle("LegendaJP")
+            .setContentTitle(getString(R.string.app_name))
             .setContentText("Transcrevendo (${modeName(mode)})")
             .setSmallIcon(android.R.drawable.ic_btn_speak_now)
             .setContentIntent(openIntent)
@@ -286,7 +287,17 @@ class CaptureService : Service() {
         record.startRecording()
         capturing = true
         setStatus(msg)
+        showOverlay()
         Thread({ audioLoop(record) }, "audio-capture").start()
+    }
+
+    private fun showOverlay() {
+        if (!prefs.overlay || !Overlay.canDraw(this)) return
+        try {
+            overlay = Overlay(this, prefs).also { it.show() }
+        } catch (e: Exception) {
+            Log.e(TAG, "overlay", e)
+        }
     }
 
     private fun prepareSession(saveWav: Boolean) {
@@ -577,6 +588,8 @@ class CaptureService : Service() {
         capturing = false
         stopRequested = true
         handler.removeCallbacks(watchdog)
+        overlay?.hide()
+        overlay = null
         try { recognizer?.destroy() } catch (_: Exception) {}
         try { audioRecord?.release() } catch (_: Exception) {}
         closePipe()

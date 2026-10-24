@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">LegendaJP</string>
+    <string name="app_name">Michi</string>
     <string name="status_ready">Pronto para transcrever</string>
     <string name="source_internal">Áudio interno</string>
     <string name="source_mic">Microfone</string>
@@ -19,4 +19,9 @@
     <string name="partial_hint">Ouvindo…</string>
     <string name="empty_transcript">As frases transcritas aparecem aqui.</string>
     <string name="notif_channel">Transcrição em andamento</string>
+    <string name="menu_overlay">Legenda sobre os apps</string>
+    <string name="overlay_dialog_title">Legenda sobre outros apps</string>
+    <string name="overlay_dialog_text">O Michi pode mostrar a legenda flutuante por cima do Spotify e de qualquer app, como a legenda instantânea do Galaxy. Para isso o Android pede a permissão \"Exibir sobre outros apps\".</string>
+    <string name="overlay_allow">Permitir</string>
+    <string name="overlay_later">Sem legenda flutuante</string>
 </resources>
