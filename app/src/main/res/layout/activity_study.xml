@@ -106,6 +106,15 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:text="Limpar" />
+
+                        <Button
+                            android:id="@+id/btnRemember"
+                            style="@style/Button.Outline"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="Lembrar"
+                            android:visibility="gone" />
                     </LinearLayout>
                 </LinearLayout>
 
@@ -152,11 +161,30 @@
         </LinearLayout>
     </ScrollView>
 
-    <Button
-        android:id="@+id/btnNext"
-        style="@style/Button.Primary"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="Verificar" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <Button
+            android:id="@+id/btnPrev"
+            style="@style/Button.Outline"
+            android:layout_width="wrap_content"
+            android:layout_height="56dp"
+            android:layout_marginEnd="8dp"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:text="Anterior"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btnNext"
+            style="@style/Button.Primary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Verificar" />
+    </LinearLayout>
 </LinearLayout>

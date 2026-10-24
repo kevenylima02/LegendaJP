@@ -137,6 +137,7 @@ class MainActivity : Activity() {
             R.id.action_share -> share()
             R.id.action_check -> checkJapanese()
             R.id.action_settings -> startActivity(Intent(this, SettingsActivity::class.java))
+            R.id.action_mistakes -> startActivity(Intent(this, MistakesActivity::class.java))
             else -> return super.onOptionsItemSelected(item)
         }
         return true

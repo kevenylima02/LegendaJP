@@ -23,7 +23,7 @@ object StudyGen {
             Item(Focus.GRAMATICA, "Lacuna gramatical", s.text, s.sec, s.endSec, levelNum(hit.point.level), null, s.recording)
         class Cloze(s: Line, val word: Jp.Word, val options: List<String>) :
             Item(Focus.VOCAB, "Lacuna com áudio", s.text, s.sec, s.endSec, Jlpt.wordLevel(word.base), word.key, s.recording)
-        class Choice(f: Focus, kind: String, s: Line, val prompt: String, val answer: String, val options: List<String>, val note: String, word: Jp.Word) :
+        class Choice(f: Focus, kind: String, s: Line, val prompt: String, val answer: String, val options: List<String>, val note: String, val word: Jp.Word) :
             Item(f, kind, s.text, s.sec, s.endSec, Jlpt.wordLevel(word.base), word.key, s.recording)
         class Kanji(s: Line, val word: Jp.Word, val tiles: List<String>) :
             Item(Focus.KANJI, "Montar a palavra com kanji", s.text, s.sec, s.endSec, Jlpt.wordLevel(word.base), word.key, s.recording)
@@ -187,12 +187,12 @@ object StudyGen {
     }
 
     /** Lê o .txt da gravação e monta as linhas com fim estimado (início da próxima frase). */
-    fun lines(text: String): List<Line> {
+    fun lines(text: String, recording: String? = null): List<Line> {
         val parsed = text.lines().filter { it.isNotBlank() && !it.startsWith("#") }.map { Recordings.parseLine(it) }
         return parsed.mapIndexed { i, (sec, t) ->
             val next = parsed.getOrNull(i + 1)?.first ?: -1
             val end = if (next > sec) next else sec + 6
-            Line(sec, t, end)
+            Line(sec, t, end, recording)
         }
     }
 

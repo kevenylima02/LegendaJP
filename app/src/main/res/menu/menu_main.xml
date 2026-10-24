@@ -9,6 +9,10 @@
         android:title="@string/menu_check_japanese"
         android:showAsAction="never" />
     <item
+        android:id="@+id/action_mistakes"
+        android:title="Revisar erros"
+        android:showAsAction="never" />
+    <item
         android:id="@+id/action_settings"
         android:title="Configurações"
         android:showAsAction="never" />

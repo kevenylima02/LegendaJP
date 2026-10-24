@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 /** Vocabulário salvo: palavras (forma de dicionário) e as frases onde apareceram. */
-class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 4) {
+class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 5) {
 
     companion object {
         @Volatile private var instance: VocabDb? = null
@@ -48,13 +48,50 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         )
         createTr(db)
         createStudy(db)
+        createMistakes(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         if (oldVersion < 2) createTr(db)
         if (oldVersion < 3) createStudy(db)
         if (oldVersion < 4) addScores(db)
+        if (oldVersion < 5) createMistakes(db)
     }
+
+    // ---------- fila de erros ----------
+
+    private fun createMistakes(db: SQLiteDatabase) {
+        db.execSQL("""CREATE TABLE IF NOT EXISTS mistakes (
+            identity TEXT PRIMARY KEY, json TEXT NOT NULL, kind TEXT NOT NULL, prompt TEXT NOT NULL,
+            answer TEXT NOT NULL, sentence TEXT NOT NULL, created INTEGER NOT NULL)""")
+    }
+
+    data class Mistake(val identity: String, val json: String, val kind: String, val prompt: String,
+                       val answer: String, val sentence: String, val created: Long)
+
+    fun addMistake(m: Mistake) {
+        writableDatabase.insertWithOnConflict("mistakes", null, ContentValues().apply {
+            put("identity", m.identity); put("json", m.json); put("kind", m.kind); put("prompt", m.prompt)
+            put("answer", m.answer); put("sentence", m.sentence); put("created", m.created)
+        }, SQLiteDatabase.CONFLICT_REPLACE)
+    }
+
+    fun removeMistake(identity: String) {
+        writableDatabase.delete("mistakes", "identity=?", arrayOf(identity))
+    }
+
+    fun mistakes(): List<Mistake> {
+        val out = mutableListOf<Mistake>()
+        readableDatabase.rawQuery(
+            "SELECT identity, json, kind, prompt, answer, sentence, created FROM mistakes ORDER BY created DESC", null
+        ).use { c ->
+            while (c.moveToNext()) out.add(Mistake(c.getString(0), c.getString(1), c.getString(2), c.getString(3), c.getString(4), c.getString(5), c.getLong(6)))
+        }
+        return out
+    }
+
+    fun mistakeCount(): Int =
+        readableDatabase.rawQuery("SELECT COUNT(*) FROM mistakes", null).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
 
     private fun addScores(db: SQLiteDatabase) {
         db.execSQL("ALTER TABLE words ADD COLUMN kanji_score INTEGER NOT NULL DEFAULT 0")
@@ -111,6 +148,8 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
             put("given", it.given); put("correct", if (it.correct) 1 else 0); put("sentence", it.sentence)
         })
         if (it.correct) db.execSQL("UPDATE study_session SET correct = correct + 1 WHERE id = ?", arrayOf(sessionId))
+        db.execSQL("UPDATE study_session SET total = (SELECT COUNT(*) FROM study_item WHERE session_id = ?) WHERE id = ?",
+            arrayOf(sessionId, sessionId))
     }
 
     fun sessions(recording: String): List<StudySession> {

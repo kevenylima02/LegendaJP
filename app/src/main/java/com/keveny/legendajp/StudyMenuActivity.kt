@@ -66,12 +66,15 @@ class StudyMenuActivity : Activity() {
             }
         }
         findViewById<TextView>(R.id.level).text = "Nível atual: N${Prefs(this).level} (mude em Configurações)"
+        findViewById<Button>(R.id.btnMistakes).setOnClickListener {
+            startActivity(Intent(this, MistakesActivity::class.java))
+        }
 
         // Contagem de exercícios disponíveis por foco
         Thread {
             val lines = if (saved) StudyGen.linesFromVocab(this) else {
                 val text = try { Recordings.readText(this, uri!!) } catch (_: Exception) { "" }
-                StudyGen.lines(text)
+                StudyGen.lines(text, Recordings.baseName(name))
             }
             val counts = StudyGen.counts(this, lines, Prefs(this).level, if (saved) VocabDb.savedKeys else null)
             runOnUiThread {
@@ -96,7 +99,9 @@ class StudyMenuActivity : Activity() {
     private fun loadHistory() {
         Thread {
             val s = VocabDb.get(this).sessions(if (saved) StudyActivity.SAVED_RECORDING else Recordings.baseName(name))
+            val errors = VocabDb.get(this).mistakeCount()
             runOnUiThread {
+                findViewById<Button>(R.id.btnMistakes).text = "Revisar erros  ·  $errors"
                 sessions = s
                 adapter.notifyDataSetChanged()
                 findViewById<TextView>(R.id.historyEmpty).visibility = if (s.isEmpty()) View.VISIBLE else View.GONE

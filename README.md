@@ -31,6 +31,12 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   exercícios disponíveis; sessão de até 12 itens (ordenar a frase, lacuna gramatical, identificar o padrão,
   lacuna com áudio, tradução↔palavra, montar a palavra com kanji, leitura↔palavra em kanji). O áudio toca só o
   trecho da frase. Cada sessão fica no histórico da gravação, item a item, com a resposta dada e a certa.
+- **Sessão de estudo**: botão Anterior para rever itens já respondidos (só leitura); ao terminar, os errados
+  voltam até acertar (escrita à mão em 3 passos: traçar sobre o kanji em cinza, sem modelo com botão Lembrar,
+  sem ajuda); Refazer repete os mesmos itens; sair no meio pede confirmação; só entra no histórico o que foi
+  respondido.
+- **Revisar erros** (menu ⋮ e menu Estudar): fila única com tudo que foi errado; sessões de 10 itens
+  aleatórios; acertou, sai da fila.
 - **Estudar no Vocabulário**: sessão só com as palavras salvas e as frases de origem (áudio da gravação de
   origem, escolhida ao acaso quando a frase aparece em várias). Cada palavra tem duas barrinhas, kanji e
   significado (0 a 1000: +10 por acerto, −5 por erro).

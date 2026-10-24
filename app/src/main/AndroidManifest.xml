@@ -56,6 +56,11 @@
             android:parentActivityName=".StudyMenuActivity" />
 
         <activity
+            android:name=".MistakesActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
             android:name=".StudyHistoryActivity"
             android:exported="false"
             android:parentActivityName=".StudyMenuActivity" />

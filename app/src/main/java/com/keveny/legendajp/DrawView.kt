@@ -21,7 +21,7 @@ class DrawView @JvmOverloads constructor(ctx: Context, attrs: AttributeSet? = nu
         strokeCap = Paint.Cap.ROUND
         isAntiAlias = true
     }
-    private val guide = Paint().apply {
+    private val gridPaint = Paint().apply {
         color = Color.parseColor("#33000000")
         strokeWidth = 2f
         style = Paint.Style.STROKE
@@ -33,6 +33,20 @@ class DrawView @JvmOverloads constructor(ctx: Context, attrs: AttributeSet? = nu
     private var strokeBuilder: Ink.Stroke.Builder? = null
 
     var onChanged: (() -> Unit)? = null
+
+    /** Kanji de referência (revisão): desenhado bem claro no fundo quando showGuide ou durante flash(). */
+    var guide: String? = null
+        set(v) { field = v; invalidate() }
+    var showGuide = false
+        set(v) { field = v; invalidate() }
+    private var flashing = false
+    private val guidePaint = Paint().apply { isAntiAlias = true; textAlign = Paint.Align.CENTER }
+
+    fun flash(ms: Long) {
+        flashing = true
+        invalidate()
+        postDelayed({ flashing = false; invalidate() }, ms)
+    }
     val hasStrokes get() = paths.isNotEmpty()
 
     fun setStrokeColor(color: Int) { paint.color = color; invalidate() }
@@ -76,8 +90,15 @@ class DrawView @JvmOverloads constructor(ctx: Context, attrs: AttributeSet? = nu
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         val w = width.toFloat(); val h = height.toFloat()
-        canvas.drawLine(w / 2, 0f, w / 2, h, guide)
-        canvas.drawLine(0f, h / 2, w, h / 2, guide)
+        canvas.drawLine(w / 2, 0f, w / 2, h, gridPaint)
+        canvas.drawLine(0f, h / 2, w, h / 2, gridPaint)
+        val g = this.guide
+        if (g != null && (showGuide || flashing)) {
+            guidePaint.color = (paint.color and 0x00FFFFFF) or 0x40000000
+            guidePaint.textSize = h * 0.8f
+            val y = h / 2 - (guidePaint.descent() + guidePaint.ascent()) / 2
+            canvas.drawText(g, w / 2, y, guidePaint)
+        }
         for (p in paths) canvas.drawPath(p, paint)
         current?.let { canvas.drawPath(it, paint) }
     }
