@@ -46,6 +46,11 @@
             android:parentActivityName=".RecordingsActivity" />
 
         <activity
+            android:name=".StudyActivity"
+            android:exported="false"
+            android:parentActivityName=".ViewerActivity" />
+
+        <activity
             android:name=".VocabActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />

@@ -87,6 +87,7 @@ class ViewerActivity : Activity() {
         time = findViewById(R.id.time)
         listView.adapter = adapter
         listView.setOnItemClickListener { _, _, pos, _ -> playFrom(lines[pos].sec) }
+        listView.setOnItemLongClickListener { _, _, pos, _ -> showGrammar(lines[pos].text); true }
 
         btnPlay.setOnClickListener {
             val p = player ?: return@setOnClickListener
@@ -194,6 +195,47 @@ class ViewerActivity : Activity() {
         if (prepared) try { player?.pause() } catch (_: IllegalStateException) {}
     }
 
+    /** Pontos gramaticais da frase (toque longo). */
+    private fun showGrammar(sentence: String) {
+        val hits = try { Grammar.find(sentence) } catch (_: Exception) { emptyList() }
+        val sb = android.text.SpannableStringBuilder()
+        if (hits.isEmpty()) {
+            sb.append("Nenhum padrão do catálogo foi encontrado nesta frase.")
+        } else {
+            for ((i, h) in hits.withIndex()) {
+                if (i > 0) sb.append("\n\n")
+                val start = sb.length
+                sb.append(h.point.name).append("  ").append(h.point.level)
+                sb.setSpan(android.text.style.StyleSpan(android.graphics.Typeface.BOLD), start, sb.length, 0)
+                sb.append("\n").append(h.point.explanation)
+                sb.append("\nEx.: ").append(h.point.example)
+            }
+        }
+        val tv = TextView(this).apply {
+            text = sb
+            textSize = 15f
+            setLineSpacing(0f, 1.15f)
+            setTextColor(getColor(R.color.text))
+            setPadding(dp(24), dp(16), dp(24), dp(8))
+            setTextIsSelectable(true)
+        }
+        val head = TextView(this).apply {
+            text = Jp.highlight(sentence, VocabDb.savedKeys, getColor(R.color.saved_word))
+            textSize = 20f
+            setTextColor(getColor(R.color.text))
+            setPadding(dp(24), dp(20), dp(24), dp(4))
+        }
+        val box = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            addView(head); addView(tv)
+        }
+        val scroll = android.widget.ScrollView(this).apply { addView(box) }
+        AlertDialog.Builder(this).setTitle("Gramática da frase").setView(scroll)
+            .setPositiveButton("Fechar", null).show()
+    }
+
+    private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
+
     // ---------- Menu ----------
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -204,6 +246,13 @@ class ViewerActivity : Activity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
+            R.id.action_study -> {
+                startActivity(
+                    Intent(this, StudyActivity::class.java)
+                        .putExtra(StudyActivity.EXTRA_URI, txtUri)
+                        .putExtra(StudyActivity.EXTRA_NAME, name)
+                )
+            }
             R.id.action_share -> {
                 val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, fullText)
                 startActivity(Intent.createChooser(send, getString(R.string.share)))
@@ -251,6 +300,13 @@ class ViewerActivity : Activity() {
                     onChanged = { notifyDataSetChanged() }
                 )
             }
+            // Toque longo (no texto ou no tempo) mostra a gramática da frase
+            val longPress = View.OnLongClickListener {
+                Jp.suppressTapUntil = android.os.SystemClock.uptimeMillis() + 1000
+                showGrammar(l.text); true
+            }
+            tv.setOnLongClickListener(longPress)
+            stamp.setOnLongClickListener(longPress)
             // Toque fora de uma palavra toca o trecho
             tv.setOnClickListener {
                 if (android.os.SystemClock.uptimeMillis() - Jp.lastWordTap > 400) playFrom(l.sec)

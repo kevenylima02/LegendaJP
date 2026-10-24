@@ -25,6 +25,10 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   dicionário; nas frases do Vocabulário há um botão Traduzir. O modelo (~60 MB) é baixado na primeira vez e
   cada texto só é traduzido uma vez (cache). Por isso o APK é por arquitetura (arm64-v8a para o celular).
 - O .wav salvo é cortado no silêncio antes da primeira frase e depois da última; os tempos do .txt são ajustados.
+- **Gramática da frase**: toque longo numa frase do visualizador lista os padrões gramaticais usados
+  (catálogo N5–N3 com regras sobre o Kuromoji e explicações em português).
+- **Estudar** (botão no visualizador): sessão de até 12 exercícios gerados da própria gravação: ordenar a frase,
+  lacuna com áudio, montar a palavra com kanji, múltipla escolha de leitura e identificar o padrão gramatical.
 
 ## Compilar localmente (Windows)
 

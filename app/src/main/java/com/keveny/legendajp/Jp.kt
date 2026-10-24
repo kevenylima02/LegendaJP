@@ -34,6 +34,8 @@ object Jp {
 
     /** Momento do último toque numa palavra, para o clique "fora da palavra" não disparar junto. */
     @Volatile var lastWordTap = 0L
+    /** Toques em palavras são ignorados até este instante (depois de um toque longo). */
+    @Volatile var suppressTapUntil = 0L
 
     @Volatile private var tokenizer: Tokenizer? = null
     private val cache = LruCache<String, List<Word>>(300)
@@ -44,6 +46,33 @@ object Jp {
     @Synchronized
     fun warmUp() {
         if (tokenizer == null) tokenizer = Tokenizer()
+    }
+
+    /** Tokens brutos do Kuromoji (para gramática e exercícios). */
+    fun tokenize(sentence: String): List<Token> {
+        val tk = tokenizer ?: run { warmUp(); tokenizer!! }
+        return tk.tokenize(sentence)
+    }
+
+    /** Pedaços da frase para o exercício de ordenar: palavra de conteúdo + auxiliares, partículas soltas. */
+    fun chunks(sentence: String): List<String> {
+        val tokens = tokenize(sentence)
+        val ws = words(sentence)
+        val out = mutableListOf<String>()
+        var pos = 0
+        var wi = 0
+        for (t in tokens) {
+            if (t.partOfSpeechLevel1 == "記号") continue
+            if (t.position < pos) continue
+            while (wi < ws.size && ws[wi].start < t.position) wi++
+            val w = ws.getOrNull(wi)
+            if (w != null && t.position == w.start) {
+                out.add(w.surface); pos = w.end; wi++
+            } else {
+                out.add(t.surface); pos = t.position + t.surface.length
+            }
+        }
+        return out
     }
 
     fun words(sentence: String): List<Word> {
@@ -266,7 +295,12 @@ object Jp {
         for (w in list) {
             val isSaved = w.key in saved
             sb.setSpan(object : ClickableSpan() {
-                override fun onClick(widget: View) { lastWordTap = android.os.SystemClock.uptimeMillis(); onTap(w) }
+                override fun onClick(widget: View) {
+                    val now = android.os.SystemClock.uptimeMillis()
+                    if (now < suppressTapUntil) return
+                    lastWordTap = now
+                    onTap(w)
+                }
                 override fun updateDrawState(ds: TextPaint) {
                     ds.isUnderlineText = false
                     if (isSaved) ds.color = savedColor
