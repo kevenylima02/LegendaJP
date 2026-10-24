@@ -276,7 +276,10 @@ object Grammar {
                     val first = tokens[i]
                     val last = tokens[i + n - 1]
                     if (seen.add(rule.point.id)) {
-                        hits.add(Hit(rule.point, first.position, last.position + last.surface.length))
+                        var end = last.position + last.surface.length
+                        // Não inclui pontuação final no trecho do padrão
+                        while (end > first.position && sentence[end - 1] in "。、？！?!") end--
+                        hits.add(Hit(rule.point, first.position, end))
                     }
                     i += n
                 } else i++

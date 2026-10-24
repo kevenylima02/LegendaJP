@@ -132,35 +132,11 @@ class MainActivity : Activity() {
         return true
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        menu.findItem(R.id.action_save_wav).isChecked = prefs.saveWav
-        menu.findItem(R.id.action_overlay).isChecked = prefs.overlay && Overlay.canDraw(this)
-        return true
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_share -> share()
             R.id.action_check -> checkJapanese()
-            R.id.action_overlay -> {
-                if (item.isChecked) {
-                    prefs.overlay = false
-                    item.isChecked = false
-                } else {
-                    prefs.overlay = true
-                    prefs.overlayAsked = true
-                    if (Overlay.canDraw(this)) item.isChecked = true else openOverlaySettings()
-                }
-            }
-            R.id.action_save_wav -> {
-                prefs.saveWav = !prefs.saveWav
-                item.isChecked = prefs.saveWav
-                Toast.makeText(
-                    this,
-                    if (prefs.saveWav) "O .wav será salvo junto do .txt" else "Só o .txt será salvo (sem player nas frases)",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+            R.id.action_settings -> startActivity(Intent(this, SettingsActivity::class.java))
             else -> return super.onOptionsItemSelected(item)
         }
         return true

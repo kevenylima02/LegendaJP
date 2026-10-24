@@ -27,8 +27,12 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
 - O .wav salvo é cortado no silêncio antes da primeira frase e depois da última; os tempos do .txt são ajustados.
 - **Gramática da frase**: toque longo numa frase do visualizador lista os padrões gramaticais usados
   (catálogo N5–N3 com regras sobre o Kuromoji e explicações em português).
-- **Estudar** (botão no visualizador): sessão de até 12 exercícios gerados da própria gravação: ordenar a frase,
-  lacuna com áudio, montar a palavra com kanji, múltipla escolha de leitura e identificar o padrão gramatical.
+- **Estudar** (botão no visualizador): menu com foco (Misto, Gramática, Vocabulário, Kanji) e contagem de
+  exercícios disponíveis; sessão de até 12 itens (ordenar a frase, lacuna gramatical, identificar o padrão,
+  lacuna com áudio, tradução↔palavra, montar a palavra com kanji, leitura↔palavra em kanji). O áudio toca só o
+  trecho da frase. Cada sessão fica no histórico da gravação, item a item, com a resposta dada e a certa.
+- **Configurações** (menu ⋮): nível JLPT (os exercícios de gramática preferem padrões do seu nível ou acima),
+  página com a gramática do catálogo por nível, legenda flutuante e salvar .wav.
 
 ## Compilar localmente (Windows)
 

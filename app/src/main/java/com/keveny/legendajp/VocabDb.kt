@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 /** Vocabulário salvo: palavras (forma de dicionário) e as frases onde apareceram. */
-class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 2) {
+class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 3) {
 
     companion object {
         @Volatile private var instance: VocabDb? = null
@@ -46,10 +46,64 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
                 UNIQUE(word_id, sentence, recording))"""
         )
         createTr(db)
+        createStudy(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         if (oldVersion < 2) createTr(db)
+        if (oldVersion < 3) createStudy(db)
+    }
+
+    private fun createStudy(db: SQLiteDatabase) {
+        db.execSQL("""CREATE TABLE IF NOT EXISTS study_session (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, recording TEXT NOT NULL, focus TEXT NOT NULL,
+            total INTEGER NOT NULL, correct INTEGER NOT NULL, created INTEGER NOT NULL)""")
+        db.execSQL("""CREATE TABLE IF NOT EXISTS study_item (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, session_id INTEGER NOT NULL REFERENCES study_session(id) ON DELETE CASCADE,
+            kind TEXT NOT NULL, prompt TEXT NOT NULL, answer TEXT NOT NULL, given TEXT NOT NULL,
+            correct INTEGER NOT NULL, sentence TEXT NOT NULL)""")
+    }
+
+    data class StudySession(val id: Long, val recording: String, val focus: String, val total: Int, val correct: Int, val created: Long)
+    data class StudyItem(val kind: String, val prompt: String, val answer: String, val given: String, val correct: Boolean, val sentence: String)
+
+    fun startSession(recording: String, focus: String, total: Int): Long =
+        writableDatabase.insert("study_session", null, ContentValues().apply {
+            put("recording", recording); put("focus", focus); put("total", total); put("correct", 0)
+            put("created", System.currentTimeMillis())
+        })
+
+    fun addStudyItem(sessionId: Long, it: StudyItem) {
+        val db = writableDatabase
+        db.insert("study_item", null, ContentValues().apply {
+            put("session_id", sessionId); put("kind", it.kind); put("prompt", it.prompt); put("answer", it.answer)
+            put("given", it.given); put("correct", if (it.correct) 1 else 0); put("sentence", it.sentence)
+        })
+        if (it.correct) db.execSQL("UPDATE study_session SET correct = correct + 1 WHERE id = ?", arrayOf(sessionId))
+    }
+
+    fun sessions(recording: String): List<StudySession> {
+        val out = mutableListOf<StudySession>()
+        readableDatabase.rawQuery(
+            "SELECT id, recording, focus, total, correct, created FROM study_session WHERE recording=? ORDER BY created DESC",
+            arrayOf(recording)
+        ).use { c -> while (c.moveToNext()) out.add(StudySession(c.getLong(0), c.getString(1), c.getString(2), c.getInt(3), c.getInt(4), c.getLong(5))) }
+        return out
+    }
+
+    fun studyItems(sessionId: Long): List<StudyItem> {
+        val out = mutableListOf<StudyItem>()
+        readableDatabase.rawQuery(
+            "SELECT kind, prompt, answer, given, correct, sentence FROM study_item WHERE session_id=? ORDER BY id",
+            arrayOf(sessionId.toString())
+        ).use { c -> while (c.moveToNext()) out.add(StudyItem(c.getString(0), c.getString(1), c.getString(2), c.getString(3), c.getInt(4) == 1, c.getString(5))) }
+        return out
+    }
+
+    fun deleteSession(id: Long) {
+        val db = writableDatabase
+        db.delete("study_item", "session_id=?", arrayOf(id.toString()))
+        db.delete("study_session", "id=?", arrayOf(id.toString()))
     }
 
     private fun createTr(db: SQLiteDatabase) {

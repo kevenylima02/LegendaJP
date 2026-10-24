@@ -42,6 +42,11 @@ class Prefs(ctx: Context) {
         get() = sp.getBoolean("overlayExpanded", false)
         set(v) = sp.edit().putBoolean("overlayExpanded", v).apply()
 
+    /** Nível JLPT que o usuário está estudando: 5 (N5) … 1 (N1). */
+    var level: Int
+        get() = sp.getInt("level", 5)
+        set(v) = sp.edit().putInt("level", v).apply()
+
     var language: String
         get() = sp.getString("language", "ja-JP") ?: "ja-JP"
         set(v) = sp.edit().putString("language", v).apply()

@@ -248,7 +248,7 @@ class ViewerActivity : Activity() {
             android.R.id.home -> finish()
             R.id.action_study -> {
                 startActivity(
-                    Intent(this, StudyActivity::class.java)
+                    Intent(this, StudyMenuActivity::class.java)
                         .putExtra(StudyActivity.EXTRA_URI, txtUri)
                         .putExtra(StudyActivity.EXTRA_NAME, name)
                 )

@@ -7,30 +7,24 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import com.keveny.legendajp.StudyGen.Item
 
-/**
- * Sessão de estudo gerada a partir de uma gravação: ordenar a frase, lacuna com áudio,
- * montar a palavra com kanji, múltipla escolha (leitura/palavra) e gramática da frase.
- */
+/** Sessão de exercícios de uma gravação (foco escolhido no menu Estudar). */
 class StudyActivity : Activity() {
 
     companion object {
         const val EXTRA_URI = "uri"
         const val EXTRA_NAME = "name"
+        const val EXTRA_FOCUS = "focus"
         private const val MAX_ITEMS = 12
-    }
-
-    private sealed class Item(val sentence: String, val sec: Int) {
-        class Order(sentence: String, sec: Int, val chunks: List<String>) : Item(sentence, sec)
-        class Cloze(sentence: String, sec: Int, val word: Jp.Word, val options: List<String>) : Item(sentence, sec)
-        class Kanji(sentence: String, sec: Int, val word: Jp.Word, val tiles: List<String>) : Item(sentence, sec)
-        class Choice(sentence: String, sec: Int, val prompt: String, val answer: String, val options: List<String>, val note: String) : Item(sentence, sec)
-        class GrammarQ(sentence: String, sec: Int, val hit: Grammar.Hit, val options: List<Grammar.Point>) : Item(sentence, sec)
     }
 
     private lateinit var progress: TextView
@@ -52,12 +46,14 @@ class StudyActivity : Activity() {
     private var player: MediaPlayer? = null
     private var prepared = false
     private val ui = Handler(Looper.getMainLooper())
+    private var sessionId = -1L
+    private var recording = ""
+    private var focus = StudyGen.Focus.MISTO
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_study)
         actionBar?.setDisplayHomeAsUpEnabled(true)
-        title = "Estudar"
         progress = findViewById(R.id.progress)
         prompt = findViewById(R.id.prompt)
         sentenceView = findViewById(R.id.sentence)
@@ -70,108 +66,37 @@ class StudyActivity : Activity() {
 
         val uri = intent.getParcelableExtra(EXTRA_URI, Uri::class.java) ?: run { finish(); return }
         val name = intent.getStringExtra(EXTRA_NAME) ?: ""
+        focus = try { StudyGen.Focus.valueOf(intent.getStringExtra(EXTRA_FOCUS) ?: "MISTO") } catch (_: Exception) { StudyGen.Focus.MISTO }
+        recording = Recordings.baseName(name)
+        title = "Estudar · ${focus.label}"
         btnUndo.setOnClickListener { undoTile() }
         btnNext.setOnClickListener { onNext() }
         prompt.text = "Preparando os exercícios…"
 
         Thread {
             val text = try { Recordings.readText(this, uri) } catch (_: Exception) { "" }
-            val lines = text.lines().filter { it.isNotBlank() && !it.startsWith("#") }
-                .map { Recordings.parseLine(it) }
-            val wav = Recordings.find(this, Recordings.baseName(name) + ".wav")?.uri
-            val built = buildItems(lines)
+            val lines = StudyGen.lines(text)
+            val wav = Recordings.find(this, recording + ".wav")?.uri
+            val built = StudyGen.build(this, lines, focus, Prefs(this).level, MAX_ITEMS)
             runOnUiThread {
                 if (wav != null) setupPlayer(wav)
                 if (built.isEmpty()) {
-                    prompt.text = "Esta gravação não tem frases suficientes para montar exercícios."
+                    prompt.text = "Esta gravação não tem material suficiente para este foco."
                     btnNext.text = "Fechar"
                     btnNext.setOnClickListener { finish() }
                 } else {
                     items = built
+                    sessionId = VocabDb.get(this).startSession(recording, focus.label, built.size)
                     next()
                 }
             }
         }.start()
     }
 
-    // ---------- geração dos itens ----------
-
-    private fun isKanji(c: Char) = c in '一'..'鿿'
-
-    private fun buildItems(lines: List<Pair<Int, String>>): List<Item> {
-        val rnd = kotlin.random.Random(System.nanoTime())
-        val sentences = lines.filter { it.second.length >= 4 }
-        if (sentences.isEmpty()) return emptyList()
-        val wordsBySentence = sentences.map { (sec, s) -> Triple(sec, s, try { Jp.words(s) } catch (_: Exception) { emptyList() }) }
-        val allWords = wordsBySentence.flatMap { it.third }
-            .filter { it.posKey in setOf("名詞", "動詞", "形容詞", "副詞") && it.base.length >= 1 }
-            .distinctBy { it.key }
-        val kanjiPool = allWords.flatMap { w -> w.base.filter(::isKanji).toList() }.distinct()
-        val saved = VocabDb.savedKeys
-
-        val order = mutableListOf<Item>()
-        val cloze = mutableListOf<Item>()
-        val kanji = mutableListOf<Item>()
-        val choice = mutableListOf<Item>()
-        val grammar = mutableListOf<Item>()
-
-        for ((sec, s, ws) in wordsBySentence.shuffled(rnd)) {
-            // Ordenar: frases de 4 a 9 pedaços
-            val chunks = try { Jp.chunks(s) } catch (_: Exception) { emptyList() }
-            if (chunks.size in 4..9 && order.size < 4) order.add(Item.Order(s, sec, chunks))
-
-            // Lacuna: prefere palavra salva; alternativas da mesma classe
-            val candidates = ws.filter { it.posKey in setOf("名詞", "動詞", "形容詞") && it.surface.length >= 2 }
-            val target = candidates.firstOrNull { it.key in saved } ?: candidates.randomOrNull(rnd)
-            if (target != null && cloze.size < 4) {
-                val distractors = allWords.filter { it.key != target.key && it.posKey == target.posKey }
-                    .shuffled(rnd).take(3).map { it.surface }
-                val fallback = allWords.filter { it.key != target.key }.shuffled(rnd).map { it.surface }
-                val opts = (distractors + fallback).distinct().take(3)
-                if (opts.size == 3) cloze.add(Item.Cloze(s, sec, target, (opts + target.surface).shuffled(rnd)))
-            }
-
-            // Kanji: palavra com 2+ kanji; 8 peças
-            val kw = ws.filter { w -> w.base.count(::isKanji) >= 2 && w.base.all { isKanji(it) || it in '぀'..'ヿ' } }
-                .randomOrNull(rnd)
-            if (kw != null && kanji.size < 3) {
-                val need = kw.base.filter(::isKanji).toList()
-                val extra = kanjiPool.filter { it !in need }.shuffled(rnd).take(maxOf(0, 8 - need.size))
-                if (need.size + extra.size >= 4) kanji.add(Item.Kanji(s, sec, kw, (need + extra).map { it.toString() }.shuffled(rnd)))
-            }
-
-            // Múltipla escolha: leitura → palavra, ou palavra → leitura
-            val cw = ws.filter { it.posKey in setOf("名詞", "動詞", "形容詞") && it.reading != it.base && it.base.any(::isKanji) }
-                .randomOrNull(rnd)
-            if (cw != null && choice.size < 3) {
-                val others = allWords.filter { it.key != cw.key && it.reading != it.base }.shuffled(rnd).take(3)
-                if (others.size == 3) {
-                    if (rnd.nextBoolean()) {
-                        choice.add(Item.Choice(s, sec, "Qual palavra se lê 「${cw.reading}」?", cw.base,
-                            (others.map { it.base } + cw.base).shuffled(rnd), "${cw.base}: ${cw.pos}"))
-                    } else {
-                        choice.add(Item.Choice(s, sec, "Como se lê 「${cw.base}」?", cw.reading,
-                            (others.map { it.reading } + cw.reading).shuffled(rnd), "${cw.base}: ${cw.pos}"))
-                    }
-                }
-            }
-
-            // Gramática: qual padrão aparece na frase
-            val hits = try { Grammar.find(s) } catch (_: Exception) { emptyList() }
-            val hit = hits.filter { it.point.level != "N5" || hits.size == 1 }.randomOrNull(rnd) ?: hits.randomOrNull(rnd)
-            if (hit != null && grammar.size < 3) {
-                val present = hits.map { it.point.id }.toSet()
-                val wrong = Grammar.all.filter { it.id !in present }.shuffled(rnd).take(3)
-                grammar.add(Item.GrammarQ(s, sec, hit, (wrong + hit.point).shuffled(rnd)))
-            }
-        }
-        val mixed = (order + cloze + kanji + choice + grammar).shuffled(rnd)
-        return mixed.take(MAX_ITEMS)
-    }
-
     // ---------- apresentação ----------
 
     private fun next() {
+        stopAudio()
         index++
         if (index >= items.size) { summary(); return }
         val item = items[index]
@@ -181,11 +106,12 @@ class StudyActivity : Activity() {
         choices.removeAllViews()
         feedback.visibility = View.GONE
         built.visibility = View.GONE
+        built.text = ""
         btnUndo.visibility = View.GONE
         sentenceView.visibility = View.GONE
         btnAudio.visibility = if (prepared) View.VISIBLE else View.GONE
-        btnAudio.setOnClickListener { playFrom(item.sec) }
-        progress.text = "${index + 1} de ${items.size} · $correct certas"
+        btnAudio.setOnClickListener { play(item) }
+        progress.text = "${index + 1} de ${items.size} · $correct certas · ${item.kind}"
         btnNext.text = "Verificar"
         btnNext.isEnabled = true
 
@@ -193,7 +119,6 @@ class StudyActivity : Activity() {
             is Item.Order -> {
                 prompt.text = "Monte a frase na ordem certa (ouça o áudio se precisar)."
                 built.visibility = View.VISIBLE
-                built.text = ""
                 btnUndo.visibility = View.VISIBLE
                 for (c in item.chunks.shuffled()) addTile(c)
             }
@@ -201,27 +126,33 @@ class StudyActivity : Activity() {
                 prompt.text = "Qual palavra completa a frase?"
                 sentenceView.visibility = View.VISIBLE
                 sentenceView.text = item.sentence.replaceRange(item.word.start, item.word.end, "＿＿＿")
-                for (o in item.options) addChoice(o) { chosen -> chosen == item.word.surface }
+                for (o in item.options) addChoice(o, item.word.surface)
+                btnNext.text = "Próxima"; btnNext.isEnabled = false
+            }
+            is Item.GrammarCloze -> {
+                prompt.text = "O que completa a frase? (padrão gramatical)"
+                sentenceView.visibility = View.VISIBLE
+                sentenceView.text = item.sentence.replaceRange(item.hit.start, item.hit.end, "＿＿＿")
+                for (o in item.options) addChoice(o, item.sentence.substring(item.hit.start, item.hit.end))
                 btnNext.text = "Próxima"; btnNext.isEnabled = false
             }
             is Item.Kanji -> {
                 val tr = Tr.cached(this, item.word.base)
                 prompt.text = "Monte a palavra 「${item.word.reading}」" + (if (tr != null) " ($tr)" else "") + " com os kanji."
                 built.visibility = View.VISIBLE
-                built.text = ""
                 btnUndo.visibility = View.VISIBLE
                 for (t in item.tiles) addTile(t)
             }
             is Item.Choice -> {
                 prompt.text = item.prompt
-                for (o in item.options) addChoice(o) { chosen -> chosen == item.answer }
+                for (o in item.options) addChoice(o, item.answer)
                 btnNext.text = "Próxima"; btnNext.isEnabled = false
             }
             is Item.GrammarQ -> {
                 prompt.text = "Qual padrão gramatical aparece nesta frase?"
                 sentenceView.visibility = View.VISIBLE
                 sentenceView.text = item.sentence
-                for (o in item.options) addChoice(o.name) { chosen -> chosen == item.hit.point.name }
+                for (o in item.options) addChoice(o.name, item.hit.point.name)
                 btnNext.text = "Próxima"; btnNext.isEnabled = false
             }
         }
@@ -255,7 +186,7 @@ class StudyActivity : Activity() {
         built.text = builtParts.joinToString("")
     }
 
-    private fun addChoice(label: String, isRight: (String) -> Boolean) {
+    private fun addChoice(label: String, answer: String) {
         val b = Button(this).apply {
             text = label
             isAllCaps = false
@@ -269,15 +200,18 @@ class StudyActivity : Activity() {
         b.setOnClickListener {
             if (answered) return@setOnClickListener
             answered = true
-            val ok = isRight(label)
+            stopAudio()
+            val ok = label == answer
             if (ok) correct++
-            // Marca a escolhida e a certa
             for (i in 0 until choices.childCount) {
                 val c = choices.getChildAt(i) as Button
-                if (isRight(c.text.toString())) { c.setBackgroundResource(R.drawable.bg_button_primary); c.setTextColor(0xFFFFFFFF.toInt()) }
-                else if (c === b) { c.setBackgroundResource(R.drawable.bg_button_stop); c.setTextColor(0xFFFFFFFF.toInt()) }
+                when {
+                    c.text.toString() == answer -> { c.setBackgroundResource(R.drawable.bg_choice_right); c.setTextColor(0xFFFFFFFF.toInt()) }
+                    c === b -> { c.setBackgroundResource(R.drawable.bg_button_stop); c.setTextColor(0xFFFFFFFF.toInt()) }
+                }
             }
-            showFeedback(ok)
+            record(ok, label, answer)
+            showFeedback(ok, label, answer)
             btnNext.isEnabled = true
         }
         choices.addView(b)
@@ -286,43 +220,69 @@ class StudyActivity : Activity() {
     private fun onNext() {
         val item = items.getOrNull(index) ?: return
         if (!answered) {
-            when (item) {
-                is Item.Order -> {
-                    answered = true
-                    val target = item.chunks.joinToString("")
-                    val ok = builtParts.joinToString("") == target
-                    if (ok) correct++
-                    built.text = target
-                    showFeedback(ok)
-                }
-                is Item.Kanji -> {
-                    answered = true
-                    val target = item.word.base.filter(::isKanji)
-                    val ok = builtParts.joinToString("") == target
-                    if (ok) correct++
-                    built.text = item.word.base
-                    showFeedback(ok)
-                }
+            val given = builtParts.joinToString("")
+            val target = when (item) {
+                is Item.Order -> item.chunks.joinToString("")
+                is Item.Kanji -> item.word.base.filter(StudyGen::isKanji)
                 else -> { Toast.makeText(this, "Escolha uma alternativa", Toast.LENGTH_SHORT).show(); return }
             }
+            answered = true
+            stopAudio()
+            val ok = given == target
+            if (ok) correct++
+            // Resposta dada fica no campo, colorida; a certa aparece no feedback
+            val sb = SpannableStringBuilder(given.ifEmpty { "(vazio)" })
+            sb.setSpan(ForegroundColorSpan(getColor(if (ok) R.color.ok else R.color.stop)), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            built.text = sb
+            record(ok, given, if (item is Item.Kanji) item.word.base else target)
+            showFeedback(ok, given, target)
             btnNext.text = "Próxima"
-            progress.text = "${index + 1} de ${items.size} · $correct certas"
+            progress.text = "${index + 1} de ${items.size} · $correct certas · ${item.kind}"
             return
         }
         next()
     }
 
-    private fun showFeedback(ok: Boolean) {
+    private fun record(ok: Boolean, given: String, answer: String) {
         val item = items[index]
-        val sb = StringBuilder(if (ok) "✓ Certo!" else "✗ Não foi dessa vez.")
+        val promptText = when (item) {
+            is Item.Choice -> item.prompt
+            is Item.GrammarQ -> "Padrão da frase"
+            is Item.GrammarCloze -> "Lacuna gramatical"
+            is Item.Cloze -> "Palavra que completa a frase"
+            is Item.Kanji -> "Montar 「${item.word.reading}」"
+            is Item.Order -> "Ordenar a frase"
+        }
+        if (sessionId >= 0) Thread {
+            VocabDb.get(this).addStudyItem(sessionId, VocabDb.StudyItem(item.kind, promptText, answer, given, ok, item.sentence))
+        }.start()
+    }
+
+    private fun showFeedback(ok: Boolean, given: String, answer: String) {
+        val item = items[index]
+        val okColor = getColor(R.color.ok)
+        val badColor = getColor(R.color.stop)
+        val sb = SpannableStringBuilder()
+        fun colored(text: String, color: Int) {
+            val a = sb.length; sb.append(text)
+            sb.setSpan(ForegroundColorSpan(color), a, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        if (ok) colored("✓ Certo!", okColor) else {
+            colored("✗ Sua resposta: ${given.ifEmpty { "(vazio)" }}", badColor)
+            sb.append("\n")
+            colored("Certa: $answer", okColor)
+        }
+        sb.append("\n\n")
         when (item) {
-            is Item.Order -> sb.append("\n\n").append(item.sentence)
-            is Item.Cloze -> sb.append("\n\n").append(item.sentence).append("\n").append(item.word.base)
+            is Item.Order -> sb.append(item.sentence)
+            is Item.Cloze -> sb.append(item.sentence).append("\n").append(item.word.base)
                 .append(if (item.word.reading != item.word.base) " (${item.word.reading})" else "").append(" · ").append(item.word.pos)
-            is Item.Kanji -> sb.append("\n\n").append(item.word.base).append(" (").append(item.word.reading).append(") · ").append(item.word.pos)
+            is Item.GrammarCloze -> sb.append(item.sentence).append("\n").append(item.hit.point.name).append(" · ")
+                .append(item.hit.point.level).append("\n").append(item.hit.point.explanation)
+            is Item.Kanji -> sb.append(item.word.base).append(" (").append(item.word.reading).append(") · ").append(item.word.pos)
                 .append("\n").append(item.sentence)
-            is Item.Choice -> sb.append("\n\n").append(item.note).append("\n").append(item.sentence)
-            is Item.GrammarQ -> sb.append("\n\n").append(item.hit.point.name).append(" · ").append(item.hit.point.level)
+            is Item.Choice -> sb.append(item.note).append("\n").append(item.sentence)
+            is Item.GrammarQ -> sb.append(item.hit.point.name).append(" · ").append(item.hit.point.level)
                 .append("\n").append(item.hit.point.explanation).append("\nEx.: ").append(item.hit.point.example)
         }
         Tr.cached(this, item.sentence)?.let { sb.append("\n").append(it) }
@@ -339,13 +299,14 @@ class StudyActivity : Activity() {
         feedback.visibility = View.GONE
         progress.text = ""
         prompt.textSize = 18f
-        prompt.text = "Sessão concluída: $correct de ${items.size} certas."
-        btnNext.text = "Repetir"
+        prompt.text = "Sessão concluída: $correct de ${items.size} certas.\nO resultado está no histórico desta gravação."
+        btnNext.text = "Nova sessão"
         btnNext.isEnabled = true
         btnNext.setOnClickListener {
             prompt.textSize = 14f
             correct = 0; index = -1
             items = items.shuffled()
+            sessionId = VocabDb.get(this).startSession(recording, focus.label, items.size)
             btnNext.setOnClickListener { onNext() }
             next()
         }
@@ -361,7 +322,7 @@ class StudyActivity : Activity() {
             AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build()
         )
-        p.setOnPreparedListener { prepared = true; if (index >= 0) btnAudio.visibility = View.VISIBLE }
+        p.setOnPreparedListener { prepared = true; if (index >= 0 && index < items.size) btnAudio.visibility = View.VISIBLE }
         p.setOnErrorListener { _, _, _ -> true }
         try {
             p.setDataSource(this, uri)
@@ -372,22 +333,29 @@ class StudyActivity : Activity() {
 
     private var stopAt = Runnable {}
 
-    private fun playFrom(sec: Int) {
+    /** Toca só o trecho da frase: do início dela até o início da próxima. */
+    private fun play(item: Item) {
         val p = player ?: return
-        if (!prepared || sec < 0) return
+        if (!prepared || item.sec < 0) return
         try {
-            p.seekTo(maxOf(0, sec * 1000 - 500))
+            val startMs = maxOf(0, item.sec * 1000 - 500)
+            val endMs = maxOf(startMs + 1500, item.endSec * 1000 - 300)
+            p.seekTo(startMs)
             p.start()
-            // Toca uns 8 s (a frase e um pouco do que vem depois) e para
             ui.removeCallbacks(stopAt)
             stopAt = Runnable { try { if (p.isPlaying) p.pause() } catch (_: IllegalStateException) {} }
-            ui.postDelayed(stopAt, 8000)
+            ui.postDelayed(stopAt, (endMs - startMs).toLong())
         } catch (_: IllegalStateException) {}
+    }
+
+    private fun stopAudio() {
+        ui.removeCallbacks(stopAt)
+        try { if (prepared && player?.isPlaying == true) player?.pause() } catch (_: IllegalStateException) {}
     }
 
     override fun onPause() {
         super.onPause()
-        try { if (prepared) player?.pause() } catch (_: IllegalStateException) {}
+        stopAudio()
     }
 
     override fun onDestroy() {
