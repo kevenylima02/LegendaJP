@@ -47,6 +47,11 @@ class Prefs(ctx: Context) {
         get() = sp.getInt("level", 5)
         set(v) = sp.edit().putInt("level", v).apply()
 
+    /** Tipos de exercício desligados (nomes dos tipos). */
+    var disabledKinds: Set<String>
+        get() = sp.getStringSet("disabledKinds", emptySet()) ?: emptySet()
+        set(v) = sp.edit().putStringSet("disabledKinds", v).apply()
+
     var language: String
         get() = sp.getString("language", "ja-JP") ?: "ja-JP"
         set(v) = sp.edit().putString("language", v).apply()

@@ -31,8 +31,11 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   exercícios disponíveis; sessão de até 12 itens (ordenar a frase, lacuna gramatical, identificar o padrão,
   lacuna com áudio, tradução↔palavra, montar a palavra com kanji, leitura↔palavra em kanji). O áudio toca só o
   trecho da frase. Cada sessão fica no histórico da gravação, item a item, com a resposta dada e a certa.
+- **Escrever a palavra à mão** (exercício de kanji, difícil): uma lacuna por kanji; desenhe com o dedo e o app
+  reconhece (ML Kit Digital Ink, modelo de japonês baixado na primeira vez, ~20 MB).
 - **Configurações** (menu ⋮): nível JLPT (os exercícios de gramática preferem padrões do seu nível ou acima),
-  página com a gramática do catálogo por nível, legenda flutuante e salvar .wav.
+  página com a gramática do catálogo por nível, tipos de exercício ligados/desligados com a dificuldade de cada
+  um, legenda flutuante e salvar .wav.
 
 ## Compilar localmente (Windows)
 

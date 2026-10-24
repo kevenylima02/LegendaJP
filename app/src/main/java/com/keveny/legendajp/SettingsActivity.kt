@@ -44,10 +44,46 @@ class SettingsActivity : Activity() {
                 Toast.makeText(this, "Ative \"Exibir sobre outros apps\" para o Michi e volte", Toast.LENGTH_LONG).show()
             }
         }
+        // Tipos de exercício com dificuldade
+        val box = findViewById<android.widget.LinearLayout>(R.id.kindsBox)
+        var lastFocus: StudyGen.Focus? = null
+        for (k in StudyGen.allKinds) {
+            if (k.focus != lastFocus) {
+                lastFocus = k.focus
+                box.addView(android.widget.TextView(this).apply {
+                    text = k.focus.label
+                    textSize = 13f
+                    setTextColor(getColor(R.color.accent))
+                    setPadding(0, dp(10), 0, dp(2))
+                })
+            }
+            val cb = android.widget.CheckBox(this).apply {
+                text = "${k.name}  ·  ${k.difficulty.label}"
+                textSize = 15f
+                setTextColor(getColor(R.color.text))
+                isChecked = k.name !in prefs.disabledKinds
+                setPadding(dp(4), dp(6), 0, dp(6))
+                setOnCheckedChangeListener { _, on ->
+                    val set = prefs.disabledKinds.toMutableSet()
+                    if (on) set.remove(k.name) else set.add(k.name)
+                    prefs.disabledKinds = set
+                }
+            }
+            box.addView(cb)
+            box.addView(android.widget.TextView(this).apply {
+                text = k.description
+                textSize = 12f
+                setTextColor(getColor(R.color.text_secondary))
+                setPadding(dp(36), 0, 0, dp(4))
+            })
+        }
+
         val wav = findViewById<Switch>(R.id.swWav)
         wav.isChecked = prefs.saveWav
         wav.setOnCheckedChangeListener { _, on -> prefs.saveWav = on }
     }
+
+    private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 
     override fun onResume() {
         super.onResume()

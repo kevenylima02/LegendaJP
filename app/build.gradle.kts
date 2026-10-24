@@ -11,8 +11,8 @@ android {
         applicationId = "com.keveny.legendajp"
         minSdk = 33          // EXTRA_AUDIO_SOURCE e sessões segmentadas exigem Android 13+
         targetSdk = 34
-        versionCode = 12
-        versionName = "0.12"
+        versionCode = 13
+        versionName = "0.13"
     }
 
     signingConfigs {
@@ -58,4 +58,6 @@ dependencies {
     implementation("com.atilika.kuromoji:kuromoji-ipadic:0.9.0")
     // Tradução japonês → português offline (modelo baixado na primeira vez)
     implementation("com.google.mlkit:translate:17.0.3")
+    // Reconhecimento de escrita à mão (modelo de japonês baixado na primeira vez)
+    implementation("com.google.mlkit:digital-ink-recognition:19.0.0")
 }

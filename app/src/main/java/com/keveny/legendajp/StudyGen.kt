@@ -23,14 +23,31 @@ object StudyGen {
             Item(f, kind, s.text, s.sec, s.endSec)
         class Kanji(s: Line, val word: Jp.Word, val tiles: List<String>) :
             Item(Focus.KANJI, "Montar a palavra com kanji", s.text, s.sec, s.endSec)
+        class Write(s: Line, val word: Jp.Word) :
+            Item(Focus.KANJI, "Escrever a palavra à mão", s.text, s.sec, s.endSec)
     }
 
-    /** Tipos de exercício por foco (para a tela do menu). */
-    val kinds: Map<Focus, List<String>> = mapOf(
-        Focus.GRAMATICA to listOf("Identificar o padrão", "Lacuna gramatical", "Ordenar a frase"),
-        Focus.VOCAB to listOf("Lacuna com áudio", "Tradução → palavra", "Palavra → tradução"),
-        Focus.KANJI to listOf("Montar a palavra com kanji", "Palavra em kanji → leitura", "Leitura → palavra em kanji"),
+    enum class Difficulty(val label: String) { FACIL("Fácil"), MEDIO("Médio"), DIFICIL("Difícil") }
+
+    data class Kind(val name: String, val focus: Focus, val difficulty: Difficulty, val description: String)
+
+    /** Todos os tipos de exercício, com foco e dificuldade. */
+    val allKinds: List<Kind> = listOf(
+        Kind("Identificar o padrão", Focus.GRAMATICA, Difficulty.FACIL, "A frase e 4 nomes de padrão gramatical."),
+        Kind("Lacuna gramatical", Focus.GRAMATICA, Difficulty.MEDIO, "O trecho do padrão é apagado; escolha o que completa."),
+        Kind("Ordenar a frase", Focus.GRAMATICA, Difficulty.MEDIO, "Monte a frase com os pedaços embaralhados."),
+        Kind("Lacuna com áudio", Focus.VOCAB, Difficulty.FACIL, "Uma palavra escondida na frase, 4 opções, com áudio."),
+        Kind("Tradução → palavra", Focus.VOCAB, Difficulty.FACIL, "Dada a tradução, escolha a palavra (precisa de tradução em cache)."),
+        Kind("Palavra → tradução", Focus.VOCAB, Difficulty.FACIL, "Dada a palavra, escolha o significado (precisa de tradução em cache)."),
+        Kind("Palavra em kanji → leitura", Focus.KANJI, Difficulty.FACIL, "Escolha a leitura em kana."),
+        Kind("Leitura → palavra em kanji", Focus.KANJI, Difficulty.FACIL, "Dada a leitura, escolha a palavra em kanji."),
+        Kind("Montar a palavra com kanji", Focus.KANJI, Difficulty.MEDIO, "8 peças de kanji; toque na ordem certa."),
+        Kind("Escrever a palavra à mão", Focus.KANJI, Difficulty.DIFICIL, "Desenhe cada kanji da palavra com o dedo; o app reconhece."),
     )
+
+    /** Tipos de exercício por foco (para a tela do menu). */
+    val kinds: Map<Focus, List<String>> = Focus.values().filter { it != Focus.MISTO }
+        .associateWith { f -> allKinds.filter { it.focus == f }.map { it.name } }
 
     fun isKanji(c: Char) = c in '一'..'鿿'
 
@@ -38,7 +55,8 @@ object StudyGen {
 
     /** Quantos exercícios cada foco consegue gerar desta gravação. */
     fun counts(ctx: Context, lines: List<Line>, level: Int): Map<Focus, Int> {
-        val all = generateAll(ctx, lines, level, kotlin.random.Random(1))
+        val disabled = Prefs(ctx).disabledKinds
+        val all = generateAll(ctx, lines, level, kotlin.random.Random(1)).filter { it.kind !in disabled }
         return Focus.values().associateWith { f ->
             if (f == Focus.MISTO) all.size else all.count { it.focus == f }
         }
@@ -46,7 +64,8 @@ object StudyGen {
 
     fun build(ctx: Context, lines: List<Line>, focus: Focus, level: Int, max: Int): List<Item> {
         val rnd = kotlin.random.Random(System.nanoTime())
-        val all = generateAll(ctx, lines, level, rnd)
+        val disabled = Prefs(ctx).disabledKinds
+        val all = generateAll(ctx, lines, level, rnd).filter { it.kind !in disabled }
         val pool = if (focus == Focus.MISTO) all else all.filter { it.focus == focus }
         // Mistura mantendo variedade de tipos: intercala por tipo
         val byKind = pool.groupBy { it.kind }.values.map { it.shuffled(rnd).toMutableList() }.shuffled(rnd)
@@ -131,6 +150,10 @@ object StudyGen {
                 val extra = kanjiPool.filter { it !in need }.shuffled(rnd).take(maxOf(0, 8 - need.size))
                 if (need.size + extra.size >= 4) out.add(Item.Kanji(line, kw, (need + extra).map { it.toString() }.shuffled(rnd)))
             }
+            // Escrever à mão: palavra com 1 a 3 kanji
+            val ww = ws.filter { w -> w.base.count(::isKanji) in 1..3 && w.base.all { isKanji(it) || it in '\u3040'..'\u30FF' } }
+                .randomOrNull(rnd)
+            if (ww != null) out.add(Item.Write(line, ww))
             val cw = ws.filter { it.posKey in setOf("名詞", "動詞", "形容詞") && it.reading != it.base && it.base.any(::isKanji) }
                 .randomOrNull(rnd)
             if (cw != null) {

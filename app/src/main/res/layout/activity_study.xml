@@ -62,6 +62,53 @@
                     android:textSize="22sp"
                     android:visibility="gone" />
 
+                <!-- Escrever à mão: lacunas (uma por kanji) + área de desenho -->
+                <LinearLayout
+                    android:id="@+id/writeBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <com.keveny.legendajp.FlowLayout
+                        android:id="@+id/slots"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <com.keveny.legendajp.DrawView
+                        android:id="@+id/draw"
+                        android:layout_width="match_parent"
+                        android:layout_height="240dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/bg_draw" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/btnRecognize"
+                            style="@style/Button.Primary"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:minHeight="44dp"
+                            android:textSize="15sp"
+                            android:text="Reconhecer" />
+
+                        <Button
+                            android:id="@+id/btnClear"
+                            style="@style/Button.Outline"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="Limpar" />
+                    </LinearLayout>
+                </LinearLayout>
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

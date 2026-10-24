@@ -36,6 +36,14 @@ class StudyActivity : Activity() {
     private lateinit var choices: FlowLayout
     private lateinit var feedback: TextView
     private lateinit var btnNext: Button
+    private lateinit var writeBox: View
+    private lateinit var slots: FlowLayout
+    private lateinit var draw: DrawView
+    private lateinit var btnRecognize: Button
+    private lateinit var btnClear: Button
+    private val slotViews = mutableListOf<TextView>()
+    private val slotValues = mutableListOf<String>()
+    private var activeSlot = 0
 
     private var items: List<Item> = emptyList()
     private var index = -1
@@ -63,6 +71,14 @@ class StudyActivity : Activity() {
         choices = findViewById(R.id.choices)
         feedback = findViewById(R.id.feedback)
         btnNext = findViewById(R.id.btnNext)
+        writeBox = findViewById(R.id.writeBox)
+        slots = findViewById(R.id.slots)
+        draw = findViewById(R.id.draw)
+        btnRecognize = findViewById(R.id.btnRecognize)
+        btnClear = findViewById(R.id.btnClear)
+        btnClear.setOnClickListener { draw.clear() }
+        btnRecognize.setOnClickListener { recognizeSlot() }
+        draw.setStrokeColor(getColor(R.color.text))
 
         val uri = intent.getParcelableExtra(EXTRA_URI, Uri::class.java) ?: run { finish(); return }
         val name = intent.getStringExtra(EXTRA_NAME) ?: ""
@@ -108,6 +124,7 @@ class StudyActivity : Activity() {
         built.visibility = View.GONE
         built.text = ""
         btnUndo.visibility = View.GONE
+        writeBox.visibility = View.GONE
         sentenceView.visibility = View.GONE
         btnAudio.visibility = if (prepared) View.VISIBLE else View.GONE
         btnAudio.setOnClickListener { play(item) }
@@ -155,6 +172,81 @@ class StudyActivity : Activity() {
                 for (o in item.options) addChoice(o.name, item.hit.point.name)
                 btnNext.text = "Próxima"; btnNext.isEnabled = false
             }
+            is Item.Write -> {
+                val tr = Tr.cached(this, item.word.base)
+                prompt.text = "Escreva 「${item.word.reading}」" + (if (tr != null) " ($tr)" else "") +
+                    ": toque numa lacuna, desenhe o kanji e toque em Reconhecer."
+                setupSlots(item)
+                writeBox.visibility = View.VISIBLE
+                InkJp.ensureModel(this) { }
+            }
+        }
+    }
+
+    // ---------- escrever à mão ----------
+
+    private fun setupSlots(item: Item.Write) {
+        slots.removeAllViews()
+        slotViews.clear()
+        slotValues.clear()
+        draw.clear()
+        activeSlot = -1
+        for (c in item.word.base) {
+            val isK = StudyGen.isKanji(c)
+            val tv = TextView(this).apply {
+                textSize = 30f
+                gravity = android.view.Gravity.CENTER
+                minWidth = dp(64); minHeight = dp(64)
+                setPadding(dp(8), dp(4), dp(8), dp(4))
+                if (isK) {
+                    text = ""
+                    setBackgroundResource(R.drawable.bg_slot)
+                    setTextColor(getColor(R.color.text))
+                } else {
+                    text = c.toString()
+                    setTextColor(getColor(R.color.text_secondary))
+                }
+            }
+            if (isK) {
+                val idx = slotViews.size
+                slotViews.add(tv)
+                slotValues.add("")
+                tv.setOnClickListener { if (!answered) selectSlot(idx) }
+            }
+            slots.addView(tv)
+        }
+        if (slotViews.isNotEmpty()) selectSlot(0)
+    }
+
+    private fun selectSlot(idx: Int) {
+        activeSlot = idx
+        for ((i, v) in slotViews.withIndex()) {
+            v.setBackgroundResource(if (i == idx) R.drawable.bg_slot_active else R.drawable.bg_slot)
+        }
+        draw.clear()
+    }
+
+    private fun recognizeSlot() {
+        val item = items.getOrNull(index) as? Item.Write ?: return
+        if (answered || activeSlot < 0 || !draw.hasStrokes) return
+        val expected = item.word.base.filter(StudyGen::isKanji).getOrNull(activeSlot)?.toString()
+        btnRecognize.isEnabled = false
+        btnRecognize.text = "Reconhecendo…"
+        InkJp.recognize(this, draw.ink(), null) { cands ->
+            btnRecognize.isEnabled = true
+            btnRecognize.text = "Reconhecer"
+            if (cands.isEmpty()) {
+                Toast.makeText(this, "Não reconheci o traçado; tente de novo", Toast.LENGTH_SHORT).show()
+                return@recognize
+            }
+            // Se o kanji esperado estiver entre os 3 primeiros candidatos, aceita (tolerância ao traço)
+            val top3 = cands.take(3).map { it.take(1) }
+            val chosen = if (expected != null && expected in top3) expected else cands[0].take(1)
+            slotValues[activeSlot] = chosen
+            slotViews[activeSlot].text = chosen
+            draw.clear()
+            val nextEmpty = slotValues.indexOfFirst { it.isEmpty() }
+            if (nextEmpty >= 0) selectSlot(nextEmpty)
         }
     }
 
@@ -224,18 +316,30 @@ class StudyActivity : Activity() {
             val target = when (item) {
                 is Item.Order -> item.chunks.joinToString("")
                 is Item.Kanji -> item.word.base.filter(StudyGen::isKanji)
+                is Item.Write -> item.word.base.filter(StudyGen::isKanji)
                 else -> { Toast.makeText(this, "Escolha uma alternativa", Toast.LENGTH_SHORT).show(); return }
             }
+            val givenText = if (item is Item.Write) {
+                if (slotValues.any { it.isEmpty() }) { Toast.makeText(this, "Preencha todas as lacunas", Toast.LENGTH_SHORT).show(); return }
+                slotValues.joinToString("")
+            } else given
             answered = true
             stopAudio()
-            val ok = given == target
+            val ok = givenText == target
             if (ok) correct++
-            // Resposta dada fica no campo, colorida; a certa aparece no feedback
-            val sb = SpannableStringBuilder(given.ifEmpty { "(vazio)" })
-            sb.setSpan(ForegroundColorSpan(getColor(if (ok) R.color.ok else R.color.stop)), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            built.text = sb
-            record(ok, given, if (item is Item.Kanji) item.word.base else target)
-            showFeedback(ok, given, target)
+            if (item is Item.Write) {
+                // Cada lacuna fica verde ou vermelha
+                for ((i, v) in slotViews.withIndex()) {
+                    v.setBackgroundResource(if (slotValues[i] == target.getOrNull(i)?.toString()) R.drawable.bg_slot_right else R.drawable.bg_slot_wrong)
+                }
+            } else {
+                // Resposta dada fica no campo, colorida; a certa aparece no feedback
+                val sb = SpannableStringBuilder(given.ifEmpty { "(vazio)" })
+                sb.setSpan(ForegroundColorSpan(getColor(if (ok) R.color.ok else R.color.stop)), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                built.text = sb
+            }
+            record(ok, givenText, if (item is Item.Kanji || item is Item.Write) (item as? Item.Kanji)?.word?.base ?: (item as Item.Write).word.base else target)
+            showFeedback(ok, givenText, target)
             btnNext.text = "Próxima"
             progress.text = "${index + 1} de ${items.size} · $correct certas · ${item.kind}"
             return
@@ -251,6 +355,7 @@ class StudyActivity : Activity() {
             is Item.GrammarCloze -> "Lacuna gramatical"
             is Item.Cloze -> "Palavra que completa a frase"
             is Item.Kanji -> "Montar 「${item.word.reading}」"
+            is Item.Write -> "Escrever 「${item.word.reading}」"
             is Item.Order -> "Ordenar a frase"
         }
         if (sessionId >= 0) Thread {
@@ -281,6 +386,8 @@ class StudyActivity : Activity() {
                 .append(item.hit.point.level).append("\n").append(item.hit.point.explanation)
             is Item.Kanji -> sb.append(item.word.base).append(" (").append(item.word.reading).append(") · ").append(item.word.pos)
                 .append("\n").append(item.sentence)
+            is Item.Write -> sb.append(item.word.base).append(" (").append(item.word.reading).append(") · ").append(item.word.pos)
+                .append("\n").append(item.sentence)
             is Item.Choice -> sb.append(item.note).append("\n").append(item.sentence)
             is Item.GrammarQ -> sb.append(item.hit.point.name).append(" · ").append(item.hit.point.level)
                 .append("\n").append(item.hit.point.explanation).append("\nEx.: ").append(item.hit.point.example)
@@ -295,6 +402,7 @@ class StudyActivity : Activity() {
         sentenceView.visibility = View.GONE
         built.visibility = View.GONE
         btnUndo.visibility = View.GONE
+        writeBox.visibility = View.GONE
         btnAudio.visibility = View.GONE
         feedback.visibility = View.GONE
         progress.text = ""
