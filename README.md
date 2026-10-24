@@ -7,6 +7,10 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
 - Requer Android 13+.
 - Na primeira vez: toque em **Verificar japonês** para baixar o pacote offline.
 - No diálogo de captura, escolha **Tela inteira**.
+- Junto com o `.txt`, a captura salva um `.wav` (16 kHz mono) com o áudio bruto, para conferir se o áudio chegou.
+- **Testar microfone** usa o mesmo reconhecedor com o microfone: serve para separar problema de captura de problema de transcrição.
+- **Transcrever WAV** reprocessa um `.wav` gerado pelo app.
+- A última linha do `.txt` começa com `#` e traz o diagnóstico (segundos de áudio, pico, frases, reinícios).
 
 ## Compilar localmente (Windows)
 

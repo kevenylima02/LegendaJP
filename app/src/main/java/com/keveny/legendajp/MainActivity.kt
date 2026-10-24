@@ -24,6 +24,7 @@ class MainActivity : Activity() {
     companion object {
         private const val REQ_PERMS = 1001
         private const val REQ_PROJECTION = 1002
+        private const val REQ_FILE = 1003
     }
 
     private lateinit var statusView: TextView
@@ -41,7 +42,7 @@ class MainActivity : Activity() {
             setPadding(pad, pad * 2, pad, pad)
         }
 
-        statusView = TextView(this).apply { textSize = 15f }
+        statusView = TextView(this).apply { textSize = 14f; setTextIsSelectable(true) }
         levelBar = ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply { max = 100 }
         partialView = TextView(this).apply { textSize = 15f; alpha = 0.6f }
 
@@ -50,8 +51,12 @@ class MainActivity : Activity() {
         row1.addView(button("Compartilhar") { share() }, weightParams())
 
         val row2 = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        row2.addView(button("Iniciar") { startCapture() }, weightParams())
+        row2.addView(button("Iniciar captura") { startCapture() }, weightParams())
         row2.addView(button("Parar") { stopCapture() }, weightParams())
+
+        val row3 = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        row3.addView(button("Testar microfone") { startMic() }, weightParams())
+        row3.addView(button("Transcrever WAV") { pickFile() }, weightParams())
 
         transcriptView = TextView(this).apply {
             textSize = 18f
@@ -63,6 +68,7 @@ class MainActivity : Activity() {
         root.addView(levelBar)
         root.addView(row1)
         root.addView(row2)
+        root.addView(row3)
         root.addView(partialView)
         root.addView(scroll, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
         setContentView(root)
@@ -87,6 +93,7 @@ class MainActivity : Activity() {
     private fun button(label: String, action: () -> Unit) =
         Button(this).apply {
             text = label
+            isAllCaps = false
             setOnClickListener { action() }
         }
 
@@ -96,6 +103,9 @@ class MainActivity : Activity() {
         if (needed.isNotEmpty()) requestPermissions(needed.toTypedArray(), REQ_PERMS)
         return needed.isEmpty()
     }
+
+    private fun hasMic() =
+        checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
 
     private fun render() {
         statusView.text = TranscriptStore.status
@@ -114,8 +124,9 @@ class MainActivity : Activity() {
     }
 
     private fun checkJapanese() {
+        val diag = Diag.summary(this)
         if (!SpeechRecognizer.isOnDeviceRecognitionAvailable(this)) {
-            setStatus("Reconhecimento on-device indisponível neste aparelho. O app vai tentar o reconhecedor padrão.")
+            setStatus("Reconhecimento on-device indisponível neste aparelho. O app vai tentar o reconhecedor padrão.\n$diag")
             return
         }
         val rec = SpeechRecognizer.createOnDeviceSpeechRecognizer(this)
@@ -134,19 +145,19 @@ class MainActivity : Activity() {
                     }
                     else -> "Japonês não suportado offline. Instalados: ${support.installedOnDeviceLanguages}"
                 }
-                setStatus(msg)
+                setStatus("$msg\n$diag")
                 rec.destroy()
             }
 
             override fun onError(error: Int) {
-                setStatus("Erro ao verificar idioma: ${CaptureService.errorText(error)}")
+                setStatus("Erro ao verificar idioma: ${CaptureService.errorText(error)}\n$diag")
                 rec.destroy()
             }
         })
     }
 
     private fun startCapture() {
-        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+        if (!hasMic()) {
             requestNeededPermissions()
             setStatus("Permita o acesso ao microfone (o Android exige para capturar áudio interno).")
             return
@@ -161,19 +172,56 @@ class MainActivity : Activity() {
         startActivityForResult(captureIntent, REQ_PROJECTION)
     }
 
+    private fun startMic() {
+        if (!hasMic()) {
+            requestNeededPermissions()
+            setStatus("Permita o acesso ao microfone.")
+            return
+        }
+        startForegroundService(
+            Intent(this, CaptureService::class.java)
+                .putExtra(CaptureService.EXTRA_MODE, CaptureService.MODE_MIC)
+        )
+    }
+
+    private fun pickFile() {
+        val pick = Intent(Intent.ACTION_OPEN_DOCUMENT)
+            .addCategory(Intent.CATEGORY_OPENABLE)
+            .setType("audio/*")
+        @Suppress("DEPRECATION")
+        startActivityForResult(pick, REQ_FILE)
+    }
+
     @Deprecated("Activity simples sem AndroidX")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         @Suppress("DEPRECATION")
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode != REQ_PROJECTION) return
-        if (resultCode != RESULT_OK || data == null) {
-            setStatus("Captura cancelada.")
-            return
+        when (requestCode) {
+            REQ_PROJECTION -> {
+                if (resultCode != RESULT_OK || data == null) {
+                    setStatus("Captura cancelada.")
+                    return
+                }
+                startForegroundService(
+                    Intent(this, CaptureService::class.java)
+                        .putExtra(CaptureService.EXTRA_MODE, CaptureService.MODE_CAPTURE)
+                        .putExtra(CaptureService.EXTRA_CODE, resultCode)
+                        .putExtra(CaptureService.EXTRA_DATA, data)
+                )
+            }
+            REQ_FILE -> {
+                val uri = data?.data
+                if (resultCode != RESULT_OK || uri == null) {
+                    setStatus("Nenhum arquivo escolhido.")
+                    return
+                }
+                startForegroundService(
+                    Intent(this, CaptureService::class.java)
+                        .putExtra(CaptureService.EXTRA_MODE, CaptureService.MODE_FILE)
+                        .putExtra(CaptureService.EXTRA_FILE, uri)
+                )
+            }
         }
-        val svc = Intent(this, CaptureService::class.java)
-            .putExtra(CaptureService.EXTRA_CODE, resultCode)
-            .putExtra(CaptureService.EXTRA_DATA, data)
-        startForegroundService(svc)
     }
 
     private fun stopCapture() {
