@@ -50,7 +50,9 @@ class VocabDetailActivity : Activity() {
                 title = w.base
                 findViewById<TextView>(R.id.base).text = w.base
                 findViewById<TextView>(R.id.reading).text = if (w.reading != w.base) w.reading else ""
-                findViewById<TextView>(R.id.meta).text = w.pos
+                findViewById<TextView>(R.id.meta).text = "${w.pos} · kanji ${Score.percent(w.kanjiScore)}% · significado ${Score.percent(w.meaningScore)}%"
+                Score.bind(findViewById(R.id.barKanji), w.kanjiScore)
+                Score.bind(findViewById(R.id.barMeaning), w.meaningScore)
                 adapter.notifyDataSetChanged()
             }
         }.start()

@@ -2,81 +2,104 @@ package com.keveny.legendajp
 
 import android.content.Context
 
-/** Gera os exercícios de uma gravação por foco (gramática, vocabulário, kanji ou misto). */
+/** Gera os exercícios de uma gravação (ou do vocabulário salvo) por foco. */
 object StudyGen {
 
     enum class Focus(val label: String) { MISTO("Misto"), GRAMATICA("Gramática"), VOCAB("Vocabulário"), KANJI("Kanji") }
 
-    /** Uma frase da gravação com início e fim (em segundos) no áudio. */
-    data class Line(val sec: Int, val text: String, val endSec: Int)
+    /** Uma frase com início e fim (em segundos) no áudio; sec < 0 quando não há áudio. recording = gravação de origem. */
+    data class Line(val sec: Int, val text: String, val endSec: Int, val recording: String? = null)
 
-    sealed class Item(val focus: Focus, val kind: String, val sentence: String, val sec: Int, val endSec: Int) {
-        class Order(s: Line, val chunks: List<String>) :
-            Item(Focus.GRAMATICA, "Ordenar a frase", s.text, s.sec, s.endSec)
+    /**
+     * @param level nível JLPT do conteúdo (5 = N5 … 3 = N3 ou acima); itens do nível do usuário ou acima têm prioridade.
+     * @param wordKey palavra do vocabulário a que o item se refere (para a pontuação), se houver.
+     */
+    sealed class Item(val focus: Focus, val kind: String, val sentence: String, val sec: Int, val endSec: Int, val level: Int, val wordKey: String?, val recording: String? = null) {
+        class Order(s: Line, val chunks: List<String>, level: Int) :
+            Item(Focus.GRAMATICA, "Ordenar a frase", s.text, s.sec, s.endSec, level, null, s.recording)
         class GrammarQ(s: Line, val hit: Grammar.Hit, val options: List<Grammar.Point>) :
-            Item(Focus.GRAMATICA, "Identificar o padrão", s.text, s.sec, s.endSec)
+            Item(Focus.GRAMATICA, "Identificar o padrão", s.text, s.sec, s.endSec, levelNum(hit.point.level), null, s.recording)
         class GrammarCloze(s: Line, val hit: Grammar.Hit, val options: List<String>) :
-            Item(Focus.GRAMATICA, "Lacuna gramatical", s.text, s.sec, s.endSec)
+            Item(Focus.GRAMATICA, "Lacuna gramatical", s.text, s.sec, s.endSec, levelNum(hit.point.level), null, s.recording)
         class Cloze(s: Line, val word: Jp.Word, val options: List<String>) :
-            Item(Focus.VOCAB, "Lacuna com áudio", s.text, s.sec, s.endSec)
-        class Choice(f: Focus, kind: String, s: Line, val prompt: String, val answer: String, val options: List<String>, val note: String) :
-            Item(f, kind, s.text, s.sec, s.endSec)
+            Item(Focus.VOCAB, "Lacuna com áudio", s.text, s.sec, s.endSec, Jlpt.wordLevel(word.base), word.key, s.recording)
+        class Choice(f: Focus, kind: String, s: Line, val prompt: String, val answer: String, val options: List<String>, val note: String, word: Jp.Word) :
+            Item(f, kind, s.text, s.sec, s.endSec, Jlpt.wordLevel(word.base), word.key, s.recording)
         class Kanji(s: Line, val word: Jp.Word, val tiles: List<String>) :
-            Item(Focus.KANJI, "Montar a palavra com kanji", s.text, s.sec, s.endSec)
+            Item(Focus.KANJI, "Montar a palavra com kanji", s.text, s.sec, s.endSec, Jlpt.wordLevel(word.base), word.key, s.recording)
         class Write(s: Line, val word: Jp.Word) :
-            Item(Focus.KANJI, "Escrever a palavra à mão", s.text, s.sec, s.endSec)
+            Item(Focus.KANJI, "Escrever a palavra à mão", s.text, s.sec, s.endSec, Jlpt.wordLevel(word.base), word.key, s.recording)
+
+        /** Identidade para não repetir o mesmo exercício na sessão. */
+        val identity: String get() = kind + "|" + (wordKey ?: sentence)
     }
 
     enum class Difficulty(val label: String) { FACIL("Fácil"), MEDIO("Médio"), DIFICIL("Difícil") }
 
-    data class Kind(val name: String, val focus: Focus, val difficulty: Difficulty, val description: String)
+    data class Kind(val name: String, val focus: Focus, val difficulty: Difficulty, val description: String, val trains: String)
 
-    /** Todos os tipos de exercício, com foco e dificuldade. */
+    const val TRAINS_KANJI = "kanji"
+    const val TRAINS_MEANING = "significado"
+    const val TRAINS_GRAMMAR = "gramática"
+
+    /** Todos os tipos de exercício, com foco, dificuldade e o que treinam. */
     val allKinds: List<Kind> = listOf(
-        Kind("Identificar o padrão", Focus.GRAMATICA, Difficulty.FACIL, "A frase e 4 nomes de padrão gramatical."),
-        Kind("Lacuna gramatical", Focus.GRAMATICA, Difficulty.MEDIO, "O trecho do padrão é apagado; escolha o que completa."),
-        Kind("Ordenar a frase", Focus.GRAMATICA, Difficulty.MEDIO, "Monte a frase com os pedaços embaralhados."),
-        Kind("Lacuna com áudio", Focus.VOCAB, Difficulty.FACIL, "Uma palavra escondida na frase, 4 opções, com áudio."),
-        Kind("Tradução → palavra", Focus.VOCAB, Difficulty.FACIL, "Dada a tradução, escolha a palavra (precisa de tradução em cache)."),
-        Kind("Palavra → tradução", Focus.VOCAB, Difficulty.FACIL, "Dada a palavra, escolha o significado (precisa de tradução em cache)."),
-        Kind("Palavra em kanji → leitura", Focus.KANJI, Difficulty.FACIL, "Escolha a leitura em kana."),
-        Kind("Leitura → palavra em kanji", Focus.KANJI, Difficulty.FACIL, "Dada a leitura, escolha a palavra em kanji."),
-        Kind("Montar a palavra com kanji", Focus.KANJI, Difficulty.MEDIO, "8 peças de kanji; toque na ordem certa."),
-        Kind("Escrever a palavra à mão", Focus.KANJI, Difficulty.DIFICIL, "Desenhe cada kanji da palavra com o dedo; o app reconhece."),
+        Kind("Identificar o padrão", Focus.GRAMATICA, Difficulty.FACIL, "A frase e 4 nomes de padrão gramatical.", TRAINS_GRAMMAR),
+        Kind("Lacuna gramatical", Focus.GRAMATICA, Difficulty.MEDIO, "O trecho do padrão é apagado; escolha o que completa.", TRAINS_GRAMMAR),
+        Kind("Ordenar a frase", Focus.GRAMATICA, Difficulty.MEDIO, "Monte a frase com os pedaços embaralhados.", TRAINS_GRAMMAR),
+        Kind("Lacuna com áudio", Focus.VOCAB, Difficulty.FACIL, "Uma palavra escondida na frase, 4 opções, com áudio.", TRAINS_MEANING),
+        Kind("Tradução → palavra", Focus.VOCAB, Difficulty.FACIL, "Dada a tradução, escolha a palavra (precisa de tradução em cache).", TRAINS_MEANING),
+        Kind("Palavra → tradução", Focus.VOCAB, Difficulty.FACIL, "Dada a palavra, escolha o significado (precisa de tradução em cache).", TRAINS_MEANING),
+        Kind("Palavra em kanji → leitura", Focus.KANJI, Difficulty.FACIL, "Escolha a leitura em kana.", TRAINS_KANJI),
+        Kind("Leitura → palavra em kanji", Focus.KANJI, Difficulty.FACIL, "Dada a leitura, escolha a palavra em kanji.", TRAINS_KANJI),
+        Kind("Montar a palavra com kanji", Focus.KANJI, Difficulty.MEDIO, "Peças de kanji e kana; toque na ordem certa.", TRAINS_KANJI),
+        Kind("Escrever a palavra à mão", Focus.KANJI, Difficulty.DIFICIL, "Desenhe cada kanji da palavra com o dedo; o app reconhece.", TRAINS_KANJI),
     )
 
-    /** Tipos de exercício por foco (para a tela do menu). */
     val kinds: Map<Focus, List<String>> = Focus.values().filter { it != Focus.MISTO }
         .associateWith { f -> allKinds.filter { it.focus == f }.map { it.name } }
 
-    fun isKanji(c: Char) = c in '一'..'鿿'
+    fun trainsOf(kind: String): String? = allKinds.firstOrNull { it.name == kind }?.trains
 
+    fun isKanji(c: Char) = c in '一'..'鿿'
+    private fun isKana(c: Char) = c in '぀'..'ヿ'
     private fun levelNum(level: String) = level.removePrefix("N").toIntOrNull() ?: 5
 
-    /** Quantos exercícios cada foco consegue gerar desta gravação. */
-    fun counts(ctx: Context, lines: List<Line>, level: Int): Map<Focus, Int> {
+    private val kanaDistractors = listOf("の", "は", "を", "に", "が", "と", "い", "る", "た", "し", "く", "な")
+
+    /** Quantos exercícios distintos cada foco consegue gerar. */
+    fun counts(ctx: Context, lines: List<Line>, level: Int, onlyKeys: Set<String>? = null): Map<Focus, Int> {
         val disabled = Prefs(ctx).disabledKinds
-        val all = generateAll(ctx, lines, level, kotlin.random.Random(1)).filter { it.kind !in disabled }
-        return Focus.values().associateWith { f ->
-            if (f == Focus.MISTO) all.size else all.count { it.focus == f }
-        }
+        val all = generateAll(ctx, lines, kotlin.random.Random(1), onlyKeys)
+            .filter { it.kind !in disabled }.distinctBy { it.identity }
+        return Focus.values().associateWith { f -> if (f == Focus.MISTO) all.size else all.count { it.focus == f } }
     }
 
-    fun build(ctx: Context, lines: List<Line>, focus: Focus, level: Int, max: Int): List<Item> {
+    /**
+     * Monta a sessão: sem repetir exercício, intercalando tipos, com prioridade para itens do nível
+     * do usuário ou acima (level menor = mais difícil).
+     */
+    fun build(ctx: Context, lines: List<Line>, focus: Focus, level: Int, max: Int, onlyKeys: Set<String>? = null): List<Item> {
         val rnd = kotlin.random.Random(System.nanoTime())
         val disabled = Prefs(ctx).disabledKinds
-        val all = generateAll(ctx, lines, level, rnd).filter { it.kind !in disabled }
+        val all = generateAll(ctx, lines, rnd, onlyKeys).shuffled(rnd)
+            .filter { it.kind !in disabled }
+            .distinctBy { it.identity }
         val pool = if (focus == Focus.MISTO) all else all.filter { it.focus == focus }
-        // Mistura mantendo variedade de tipos: intercala por tipo
-        val byKind = pool.groupBy { it.kind }.values.map { it.shuffled(rnd).toMutableList() }.shuffled(rnd)
+        val preferred = pool.filter { it.level <= level }
+        val rest = pool.filter { it.level > level }
         val out = mutableListOf<Item>()
-        while (out.size < max && byKind.any { it.isNotEmpty() }) {
-            for (q in byKind) if (q.isNotEmpty() && out.size < max) out.add(q.removeAt(0))
+        for (group in listOf(preferred, rest)) {
+            val byKind = group.groupBy { it.kind }.values.map { it.toMutableList() }.shuffled(rnd)
+            while (out.size < max && byKind.any { it.isNotEmpty() }) {
+                for (q in byKind) if (q.isNotEmpty() && out.size < max) out.add(q.removeAt(0))
+            }
+            if (out.size >= max) break
         }
         return out
     }
 
-    private fun generateAll(ctx: Context, lines: List<Line>, level: Int, rnd: kotlin.random.Random): List<Item> {
+    private fun generateAll(ctx: Context, lines: List<Line>, rnd: kotlin.random.Random, onlyKeys: Set<String>?): List<Item> {
         val sentences = lines.filter { it.text.length >= 4 }
         if (sentences.isEmpty()) return emptyList()
         val analyzed = sentences.map { it to (try { Jp.words(it.text) } catch (_: Exception) { emptyList() }) }
@@ -86,83 +109,77 @@ object StudyGen {
         val kanjiPool = allWords.flatMap { w -> w.base.filter(::isKanji).toList() }.distinct()
         val saved = VocabDb.savedKeys
         val hitsBySentence = sentences.map { it to (try { Grammar.find(it.text) } catch (_: Exception) { emptyList() }) }
-        val allHits = hitsBySentence.flatMap { it.second }
+        val allHits = hitsBySentence.flatMap { (l, hs) -> hs.map { l to it } }
         val out = mutableListOf<Item>()
+        fun eligible(w: Jp.Word) = onlyKeys == null || w.key in onlyKeys
 
         for ((line, ws) in analyzed) {
             val s = line.text
-
-            // ----- Gramática -----
-            val chunks = try { Jp.chunks(s) } catch (_: Exception) { emptyList() }
-            if (chunks.size in 4..9) out.add(Item.Order(line, chunks))
-
             val hits = hitsBySentence.first { it.first === line }.second
-            if (hits.isNotEmpty()) {
-                // Preferência pelo nível do usuário: pontos do nível (ou acima) primeiro
-                val preferred = hits.filter { levelNum(it.point.level) <= level }
-                val chosen = (preferred.ifEmpty { hits }).random(rnd)
+            val sentenceLevel = hits.minOfOrNull { levelNum(it.point.level) } ?: 5
+
+            // ----- Gramática (só quando não é estudo de vocabulário salvo) -----
+            if (onlyKeys == null) {
+                val chunks = try { Jp.chunks(s) } catch (_: Exception) { emptyList() }
+                if (chunks.size in 4..9) out.add(Item.Order(line, chunks, sentenceLevel))
                 val present = hits.map { it.point.id }.toSet()
-                val wrong = Grammar.all.filter { it.id !in present }.shuffled(rnd).take(3)
-                out.add(Item.GrammarQ(line, chosen, (wrong + chosen.point).shuffled(rnd)))
-
-                // Lacuna gramatical: apaga o trecho do padrão; alternativas de outros padrões da gravação
-                val span = s.substring(chosen.start, chosen.end)
-                val others = allHits.filter { it.point.id != chosen.point.id }
-                    .map { h -> h.let { hitsBySentence.first { p -> p.second.contains(it) }.first.text.substring(it.start, it.end) } }
-                    .filter { it != span && it.length in 1..12 }.distinct().shuffled(rnd).take(3)
-                if (others.size == 3 && span.length in 1..12) {
-                    out.add(Item.GrammarCloze(line, chosen, (others + span).shuffled(rnd)))
-                }
-            }
-
-            // ----- Vocabulário -----
-            val candidates = ws.filter { it.posKey in setOf("名詞", "動詞", "形容詞") && it.surface.length >= 2 }
-            val target = candidates.firstOrNull { it.key in saved } ?: candidates.randomOrNull(rnd)
-            if (target != null) {
-                val same = allWords.filter { it.key != target.key && it.posKey == target.posKey }.shuffled(rnd).map { it.surface }
-                val fallback = allWords.filter { it.key != target.key }.shuffled(rnd).map { it.surface }
-                val opts = (same + fallback).filter { it != target.surface }.distinct().take(3)
-                if (opts.size == 3) out.add(Item.Cloze(line, target, (opts + target.surface).shuffled(rnd)))
-            }
-            val translated = ws.filter { it.posKey in setOf("名詞", "動詞", "形容詞") }
-                .mapNotNull { w -> Tr.cached(ctx, w.base)?.let { w to it } }
-            val tw = translated.randomOrNull(rnd)
-            if (tw != null) {
-                val (w, tr) = tw
-                val others = allWords.filter { it.key != w.key }.shuffled(rnd).take(3)
-                if (others.size == 3) {
-                    out.add(Item.Choice(Focus.VOCAB, "Tradução → palavra", line, "Qual palavra significa \"$tr\"?", w.base,
-                        (others.map { it.base } + w.base).shuffled(rnd), "${w.base} (${w.reading}) · ${w.pos}"))
-                    val otherTr = allWords.filter { it.key != w.key }.mapNotNull { Tr.cached(ctx, it.base) }
-                        .filter { it != tr }.distinct().shuffled(rnd).take(3)
-                    if (otherTr.size == 3) {
-                        out.add(Item.Choice(Focus.VOCAB, "Palavra → tradução", line, "O que significa 「${w.base}」?", tr,
-                            (otherTr + tr).shuffled(rnd), "${w.base} (${w.reading}) · ${w.pos}"))
+                for (hit in hits) {
+                    val wrong = Grammar.all.filter { it.id !in present }.shuffled(rnd).take(3)
+                    out.add(Item.GrammarQ(line, hit, (wrong + hit.point).shuffled(rnd)))
+                    val span = s.substring(hit.start, hit.end)
+                    val others = allHits.filter { it.second.point.id != hit.point.id }
+                        .map { (l, h) -> l.text.substring(h.start, h.end) }
+                        .filter { it != span && it.length in 1..12 }.distinct().shuffled(rnd).take(3)
+                    if (others.size == 3 && span.length in 1..12) {
+                        out.add(Item.GrammarCloze(line, hit, (others + span).shuffled(rnd)))
                     }
                 }
             }
 
-            // ----- Kanji -----
-            val kw = ws.filter { w -> w.base.count(::isKanji) >= 2 && w.base.all { isKanji(it) || it in '぀'..'ヿ' } }
-                .randomOrNull(rnd)
-            if (kw != null) {
-                val need = kw.base.filter(::isKanji).toList()
-                val extra = kanjiPool.filter { it !in need }.shuffled(rnd).take(maxOf(0, 8 - need.size))
-                if (need.size + extra.size >= 4) out.add(Item.Kanji(line, kw, (need + extra).map { it.toString() }.shuffled(rnd)))
-            }
-            // Escrever à mão: palavra com 1 a 3 kanji
-            val ww = ws.filter { w -> w.base.count(::isKanji) in 1..3 && w.base.all { isKanji(it) || it in '\u3040'..'\u30FF' } }
-                .randomOrNull(rnd)
-            if (ww != null) out.add(Item.Write(line, ww))
-            val cw = ws.filter { it.posKey in setOf("名詞", "動詞", "形容詞") && it.reading != it.base && it.base.any(::isKanji) }
-                .randomOrNull(rnd)
-            if (cw != null) {
-                val others = allWords.filter { it.key != cw.key && it.reading != it.base && it.base.any(::isKanji) }.shuffled(rnd).take(3)
-                if (others.size == 3) {
-                    out.add(Item.Choice(Focus.KANJI, "Palavra em kanji → leitura", line, "Como se lê 「${cw.base}」?", cw.reading,
-                        (others.map { it.reading } + cw.reading).distinct().shuffled(rnd), "${cw.base}: ${cw.pos}"))
-                    out.add(Item.Choice(Focus.KANJI, "Leitura → palavra em kanji", line, "Qual palavra se lê 「${cw.reading}」?", cw.base,
-                        (others.map { it.base } + cw.base).distinct().shuffled(rnd), "${cw.base}: ${cw.pos}"))
+            // ----- Vocabulário: todas as palavras de conteúdo da frase -----
+            val content = ws.filter { it.posKey in setOf("名詞", "動詞", "形容詞") && eligible(it) }
+            for (w in content) {
+                if (w.surface.length >= 2 || w.key in saved) {
+                    val same = allWords.filter { it.key != w.key && it.posKey == w.posKey }.shuffled(rnd).map { it.surface }
+                    val fallback = allWords.filter { it.key != w.key }.shuffled(rnd).map { it.surface }
+                    val opts = (same + fallback).filter { it != w.surface }.distinct().take(3)
+                    if (opts.size == 3) out.add(Item.Cloze(line, w, (opts + w.surface).shuffled(rnd)))
+                }
+                val tr = Tr.cached(ctx, w.base)
+                if (tr != null) {
+                    val others = allWords.filter { it.key != w.key }.shuffled(rnd).take(3)
+                    if (others.size == 3) {
+                        out.add(Item.Choice(Focus.VOCAB, "Tradução → palavra", line, "Qual palavra significa \"$tr\"?", w.base,
+                            (others.map { it.base } + w.base).distinct().shuffled(rnd), "${w.base} (${w.reading}) · ${w.pos}", w))
+                        val otherTr = allWords.filter { it.key != w.key }.mapNotNull { Tr.cached(ctx, it.base) }
+                            .filter { it != tr }.distinct().shuffled(rnd).take(3)
+                        if (otherTr.size == 3) {
+                            out.add(Item.Choice(Focus.VOCAB, "Palavra → tradução", line, "O que significa 「${w.base}」?", tr,
+                                (otherTr + tr).shuffled(rnd), "${w.base} (${w.reading}) · ${w.pos}", w))
+                        }
+                    }
+                }
+
+                // ----- Kanji -----
+                val hasKanji = w.base.any(::isKanji)
+                val simple = w.base.all { isKanji(it) || isKana(it) }
+                if (hasKanji && simple && w.base.length >= 2) {
+                    // Peças: todos os caracteres da palavra (kanji e kana) + kanji e kana de distração
+                    val need = w.base.toList()
+                    val extraKanji = kanjiPool.filter { it !in need }.shuffled(rnd).take(maxOf(0, 7 - need.size))
+                    val extraKana = if (need.any(::isKana)) kanaDistractors.filter { it[0] !in need }.shuffled(rnd).take(2) else emptyList()
+                    val tiles = (need.map { it.toString() } + extraKanji.map { it.toString() } + extraKana)
+                    if (tiles.size >= 4) out.add(Item.Kanji(line, w, tiles.shuffled(rnd)))
+                }
+                if (hasKanji && simple && w.base.count(::isKanji) in 1..3) out.add(Item.Write(line, w))
+                if (hasKanji && w.reading != w.base) {
+                    val others = allWords.filter { it.key != w.key && it.reading != it.base && it.base.any(::isKanji) }.shuffled(rnd).take(3)
+                    if (others.size == 3) {
+                        out.add(Item.Choice(Focus.KANJI, "Palavra em kanji → leitura", line, "Como se lê 「${w.base}」?", w.reading,
+                            (others.map { it.reading } + w.reading).distinct().shuffled(rnd), "${w.base}: ${w.pos}", w))
+                        out.add(Item.Choice(Focus.KANJI, "Leitura → palavra em kanji", line, "Qual palavra se lê 「${w.reading}」?", w.base,
+                            (others.map { it.base } + w.base).distinct().shuffled(rnd), "${w.base}: ${w.pos}", w))
+                    }
                 }
             }
         }
@@ -176,6 +193,31 @@ object StudyGen {
             val next = parsed.getOrNull(i + 1)?.first ?: -1
             val end = if (next > sec) next else sec + 6
             Line(sec, t, end)
+        }
+    }
+
+    /**
+     * Linhas a partir das frases do vocabulário salvo. Quando a mesma frase está em várias
+     * gravações, escolhe uma ao acaso; o fim do trecho vem do .txt da gravação de origem.
+     */
+    fun linesFromVocab(ctx: Context): List<Line> {
+        val rnd = kotlin.random.Random(System.nanoTime())
+        val bySentence = VocabDb.get(ctx).allOccurrences().groupBy { it.sentence }
+        val txtCache = HashMap<String, List<Pair<Int, String>>?>()
+        fun recordingLines(rec: String): List<Pair<Int, String>>? = txtCache.getOrPut(rec) {
+            val item = Recordings.find(ctx, "$rec.txt") ?: return@getOrPut null
+            try {
+                Recordings.readText(ctx, item.uri).lines().filter { it.isNotBlank() && !it.startsWith("#") }.map { Recordings.parseLine(it) }
+            } catch (_: Exception) { null }
+        }
+        return bySentence.map { (sentence, occs) ->
+            val o = occs.random(rnd)
+            val rl = recordingLines(o.recording)
+            val hasAudio = rl != null && Recordings.find(ctx, "${o.recording}.wav") != null
+            if (!hasAudio) Line(-1, sentence, -1, null) else {
+                val next = rl!!.firstOrNull { it.first > o.sec }?.first ?: -1
+                Line(o.sec, sentence, if (next > o.sec) next else o.sec + 6, o.recording)
+            }
         }
     }
 }

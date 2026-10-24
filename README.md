@@ -31,6 +31,11 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   exercícios disponíveis; sessão de até 12 itens (ordenar a frase, lacuna gramatical, identificar o padrão,
   lacuna com áudio, tradução↔palavra, montar a palavra com kanji, leitura↔palavra em kanji). O áudio toca só o
   trecho da frase. Cada sessão fica no histórico da gravação, item a item, com a resposta dada e a certa.
+- **Estudar no Vocabulário**: sessão só com as palavras salvas e as frases de origem (áudio da gravação de
+  origem, escolhida ao acaso quando a frase aparece em várias). Cada palavra tem duas barrinhas, kanji e
+  significado (0 a 1000: +10 por acerto, −5 por erro).
+- O nível em Configurações vale para gramática, kanji e vocabulário (listas de kanji N5–N2 embutidas):
+  itens do seu nível ou acima entram primeiro.
 - **Escrever a palavra à mão** (exercício de kanji, difícil): uma lacuna por kanji; desenhe com o dedo e o app
   reconhece (ML Kit Digital Ink, modelo de japonês baixado na primeira vez, ~20 MB).
 - **Configurações** (menu ⋮): nível JLPT (os exercícios de gramática preferem padrões do seu nível ou acima),

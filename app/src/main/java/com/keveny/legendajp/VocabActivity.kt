@@ -80,6 +80,9 @@ class VocabActivity : Activity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
+            R.id.action_study -> startActivity(
+                Intent(this, StudyMenuActivity::class.java).putExtra(StudyActivity.EXTRA_SAVED, true)
+            )
             R.id.action_sort -> {
                 byDate = !byDate
                 item.isChecked = !byDate
@@ -131,6 +134,8 @@ class VocabActivity : Activity() {
             v.findViewById<TextView>(R.id.reading).text = if (w.reading != w.base) w.reading else ""
             v.findViewById<TextView>(R.id.meta).text = "${w.pos} · ${dateFmt.format(Date(w.created))}"
             v.findViewById<TextView>(R.id.count).text = if (w.count == 1) "1 frase" else "${w.count} frases"
+            Score.bind(v.findViewById(R.id.barKanji), w.kanjiScore)
+            Score.bind(v.findViewById(R.id.barMeaning), w.meaningScore)
             return v
         }
     }

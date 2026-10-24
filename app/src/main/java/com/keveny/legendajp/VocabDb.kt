@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 /** Vocabulário salvo: palavras (forma de dicionário) e as frases onde apareceram. */
-class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 3) {
+class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 4) {
 
     companion object {
         @Volatile private var instance: VocabDb? = null
@@ -20,7 +20,7 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
 
     data class Word(
         val id: Long, val base: String, val reading: String, val pos: String, val posKey: String,
-        val created: Long, val count: Int
+        val created: Long, val count: Int, val kanjiScore: Int = 0, val meaningScore: Int = 0
     ) {
         val key get() = "$base|$posKey"
     }
@@ -35,7 +35,8 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
             """CREATE TABLE words (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 base TEXT NOT NULL, reading TEXT NOT NULL, pos TEXT NOT NULL, pos_key TEXT NOT NULL,
-                created INTEGER NOT NULL, UNIQUE(base, pos_key))"""
+                created INTEGER NOT NULL, kanji_score INTEGER NOT NULL DEFAULT 0, meaning_score INTEGER NOT NULL DEFAULT 0,
+                UNIQUE(base, pos_key))"""
         )
         db.execSQL(
             """CREATE TABLE occ (
@@ -52,6 +53,36 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         if (oldVersion < 2) createTr(db)
         if (oldVersion < 3) createStudy(db)
+        if (oldVersion < 4) addScores(db)
+    }
+
+    private fun addScores(db: SQLiteDatabase) {
+        db.execSQL("ALTER TABLE words ADD COLUMN kanji_score INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE words ADD COLUMN meaning_score INTEGER NOT NULL DEFAULT 0")
+    }
+
+    /** Atualiza a barrinha de kanji ou de significado da palavra (acerto +10, erro -5, 0..1000). */
+    fun bumpScore(key: String, kanji: Boolean, correct: Boolean) {
+        val (base, posKey) = key.split("|").let { it[0] to it.getOrElse(1) { "" } }
+        val col = if (kanji) "kanji_score" else "meaning_score"
+        val delta = if (correct) Score.GAIN else -Score.LOSS
+        writableDatabase.execSQL(
+            "UPDATE words SET $col = MIN(${Score.MAX}, MAX(0, $col + ?)) WHERE base=? AND pos_key=?",
+            arrayOf(delta, base, posKey)
+        )
+    }
+
+    /** Todas as ocorrências do vocabulário salvo (frase, gravação, segundo). */
+    fun allOccurrences(): List<Occurrence> {
+        val out = mutableListOf<Occurrence>()
+        readableDatabase.rawQuery(
+            "SELECT id, sentence, surface, recording, sec, created FROM occ ORDER BY created DESC", null
+        ).use { c ->
+            while (c.moveToNext()) out.add(
+                Occurrence(c.getLong(0), c.getString(1), c.getString(2), c.getString(3), c.getInt(4), c.getLong(5))
+            )
+        }
+        return out
     }
 
     private fun createStudy(db: SQLiteDatabase) {
@@ -207,11 +238,11 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         val args = if (query.isBlank()) null else arrayOf("%$query%", "%$query%")
         readableDatabase.rawQuery(
             """SELECT w.id, w.base, w.reading, w.pos, w.pos_key, w.created,
-                      (SELECT COUNT(*) FROM occ o WHERE o.word_id = w.id) AS n
+                      (SELECT COUNT(*) FROM occ o WHERE o.word_id = w.id) AS n, w.kanji_score, w.meaning_score
                FROM words w $where ORDER BY $order""", args
         ).use { c ->
             while (c.moveToNext()) out.add(
-                Word(c.getLong(0), c.getString(1), c.getString(2), c.getString(3), c.getString(4), c.getLong(5), c.getInt(6))
+                Word(c.getLong(0), c.getString(1), c.getString(2), c.getString(3), c.getString(4), c.getLong(5), c.getInt(6), c.getInt(7), c.getInt(8))
             )
         }
         return out
@@ -220,10 +251,10 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
     fun word(id: Long): Word? =
         readableDatabase.rawQuery(
             """SELECT w.id, w.base, w.reading, w.pos, w.pos_key, w.created,
-                      (SELECT COUNT(*) FROM occ o WHERE o.word_id = w.id) FROM words w WHERE w.id=?""",
+                      (SELECT COUNT(*) FROM occ o WHERE o.word_id = w.id), w.kanji_score, w.meaning_score FROM words w WHERE w.id=?""",
             arrayOf(id.toString())
         ).use { c ->
-            if (c.moveToFirst()) Word(c.getLong(0), c.getString(1), c.getString(2), c.getString(3), c.getString(4), c.getLong(5), c.getInt(6)) else null
+            if (c.moveToFirst()) Word(c.getLong(0), c.getString(1), c.getString(2), c.getString(3), c.getString(4), c.getLong(5), c.getInt(6), c.getInt(7), c.getInt(8)) else null
         }
 
     fun occurrences(wordId: Long): List<Occurrence> {

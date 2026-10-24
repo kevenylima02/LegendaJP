@@ -24,6 +24,8 @@ class StudyActivity : Activity() {
         const val EXTRA_URI = "uri"
         const val EXTRA_NAME = "name"
         const val EXTRA_FOCUS = "focus"
+        const val EXTRA_SAVED = "saved"
+        const val SAVED_RECORDING = "__vocabulario__"
         private const val MAX_ITEMS = 12
     }
 
@@ -55,6 +57,8 @@ class StudyActivity : Activity() {
     private var prepared = false
     private val ui = Handler(Looper.getMainLooper())
     private var sessionId = -1L
+    private var savedMode = false
+    private var playerRecording: String? = null
     private var recording = ""
     private var focus = StudyGen.Focus.MISTO
 
@@ -80,20 +84,25 @@ class StudyActivity : Activity() {
         btnRecognize.setOnClickListener { recognizeSlot() }
         draw.setStrokeColor(getColor(R.color.text))
 
-        val uri = intent.getParcelableExtra(EXTRA_URI, Uri::class.java) ?: run { finish(); return }
+        val saved = intent.getBooleanExtra(EXTRA_SAVED, false)
+        val uri = intent.getParcelableExtra(EXTRA_URI, Uri::class.java)
+        if (!saved && uri == null) { finish(); return }
         val name = intent.getStringExtra(EXTRA_NAME) ?: ""
         focus = try { StudyGen.Focus.valueOf(intent.getStringExtra(EXTRA_FOCUS) ?: "MISTO") } catch (_: Exception) { StudyGen.Focus.MISTO }
-        recording = Recordings.baseName(name)
+        recording = if (saved) SAVED_RECORDING else Recordings.baseName(name)
         title = "Estudar · ${focus.label}"
         btnUndo.setOnClickListener { undoTile() }
         btnNext.setOnClickListener { onNext() }
         prompt.text = "Preparando os exercícios…"
 
         Thread {
-            val text = try { Recordings.readText(this, uri) } catch (_: Exception) { "" }
-            val lines = StudyGen.lines(text)
-            val wav = Recordings.find(this, recording + ".wav")?.uri
-            val built = StudyGen.build(this, lines, focus, Prefs(this).level, MAX_ITEMS)
+            val lines = if (saved) StudyGen.linesFromVocab(this) else {
+                val text = try { Recordings.readText(this, uri!!) } catch (_: Exception) { "" }
+                StudyGen.lines(text)
+            }
+            val wav = if (saved) null else Recordings.find(this, recording + ".wav")?.uri
+            if (saved) savedMode = true
+            val built = StudyGen.build(this, lines, focus, Prefs(this).level, MAX_ITEMS, if (saved) VocabDb.savedKeys else null)
             runOnUiThread {
                 if (wav != null) setupPlayer(wav)
                 if (built.isEmpty()) {
@@ -126,8 +135,8 @@ class StudyActivity : Activity() {
         btnUndo.visibility = View.GONE
         writeBox.visibility = View.GONE
         sentenceView.visibility = View.GONE
-        btnAudio.visibility = if (prepared) View.VISIBLE else View.GONE
-        btnAudio.setOnClickListener { play(item) }
+        btnAudio.visibility = if ((prepared || savedMode) && item.sec >= 0 && (!savedMode || item.recording != null)) View.VISIBLE else View.GONE
+        btnAudio.setOnClickListener { if (savedMode) playFromRecording(item) else play(item) }
         progress.text = "${index + 1} de ${items.size} · $correct certas · ${item.kind}"
         btnNext.text = "Verificar"
         btnNext.isEnabled = true
@@ -155,7 +164,7 @@ class StudyActivity : Activity() {
             }
             is Item.Kanji -> {
                 val tr = Tr.cached(this, item.word.base)
-                prompt.text = "Monte a palavra 「${item.word.reading}」" + (if (tr != null) " ($tr)" else "") + " com os kanji."
+                prompt.text = "Monte a palavra 「${item.word.reading}」" + (if (tr != null) " ($tr)" else "") + " com as peças (kanji e kana)."
                 built.visibility = View.VISIBLE
                 btnUndo.visibility = View.VISIBLE
                 for (t in item.tiles) addTile(t)
@@ -315,7 +324,7 @@ class StudyActivity : Activity() {
             val given = builtParts.joinToString("")
             val target = when (item) {
                 is Item.Order -> item.chunks.joinToString("")
-                is Item.Kanji -> item.word.base.filter(StudyGen::isKanji)
+                is Item.Kanji -> item.word.base
                 is Item.Write -> item.word.base.filter(StudyGen::isKanji)
                 else -> { Toast.makeText(this, "Escolha uma alternativa", Toast.LENGTH_SHORT).show(); return }
             }
@@ -358,8 +367,15 @@ class StudyActivity : Activity() {
             is Item.Write -> "Escrever 「${item.word.reading}」"
             is Item.Order -> "Ordenar a frase"
         }
-        if (sessionId >= 0) Thread {
-            VocabDb.get(this).addStudyItem(sessionId, VocabDb.StudyItem(item.kind, promptText, answer, given, ok, item.sentence))
+        val key = item.wordKey
+        val trains = StudyGen.trainsOf(item.kind)
+        Thread {
+            val db = VocabDb.get(this)
+            if (sessionId >= 0) db.addStudyItem(sessionId, VocabDb.StudyItem(item.kind, promptText, answer, given, ok, item.sentence))
+            // Barrinhas da palavra salva: kanji ou significado
+            if (key != null && key in VocabDb.savedKeys && trains != null && trains != StudyGen.TRAINS_GRAMMAR) {
+                db.bumpScore(key, kanji = trains == StudyGen.TRAINS_KANJI, correct = ok)
+            }
         }.start()
     }
 
@@ -454,6 +470,41 @@ class StudyActivity : Activity() {
             stopAt = Runnable { try { if (p.isPlaying) p.pause() } catch (_: IllegalStateException) {} }
             ui.postDelayed(stopAt, (endMs - startMs).toLong())
         } catch (_: IllegalStateException) {}
+    }
+
+    /** Modo vocabulário salvo: cada frase pode vir de uma gravação diferente; abre o WAV certo sob demanda. */
+    private fun playFromRecording(item: Item) {
+        val rec = item.recording ?: return
+        if (playerRecording == rec && prepared) { play(item); return }
+        stopAudio()
+        player?.release(); player = null; prepared = false
+        btnAudio.isEnabled = false
+        Thread {
+            val uri = Recordings.find(this, "$rec.wav")?.uri
+            val p = MediaPlayer()
+            var ok = false
+            try {
+                if (uri != null) {
+                    p.setAudioAttributes(
+                        AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build()
+                    )
+                    p.setDataSource(this, uri)
+                    p.prepare()
+                    ok = true
+                }
+            } catch (_: Exception) {}
+            runOnUiThread {
+                btnAudio.isEnabled = true
+                if (ok) {
+                    player = p; prepared = true; playerRecording = rec
+                    play(item)
+                } else {
+                    p.release()
+                    Toast.makeText(this, "Áudio dessa frase não está mais na pasta", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
     }
 
     private fun stopAudio() {

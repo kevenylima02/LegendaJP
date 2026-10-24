@@ -20,8 +20,9 @@ import java.util.Locale
 /** Menu de estudo de uma gravação: foco dos exercícios e histórico das sessões. */
 class StudyMenuActivity : Activity() {
 
-    private lateinit var uri: Uri
+    private var uri: Uri? = null
     private var name = ""
+    private var saved = false
     private var sessions: List<VocabDb.StudySession> = emptyList()
     private val fmt = SimpleDateFormat("dd/MM HH:mm", Locale.US)
     private lateinit var list: ListView
@@ -30,9 +31,11 @@ class StudyMenuActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_study_menu)
         actionBar?.setDisplayHomeAsUpEnabled(true)
-        uri = intent.getParcelableExtra(StudyActivity.EXTRA_URI, Uri::class.java) ?: run { finish(); return }
-        name = intent.getStringExtra(StudyActivity.EXTRA_NAME) ?: ""
-        title = "Estudar · " + Recordings.prettyName(name)
+        saved = intent.getBooleanExtra(StudyActivity.EXTRA_SAVED, false)
+        uri = intent.getParcelableExtra(StudyActivity.EXTRA_URI, Uri::class.java)
+        if (!saved && uri == null) { finish(); return }
+        name = if (saved) StudyActivity.SAVED_RECORDING else (intent.getStringExtra(StudyActivity.EXTRA_NAME) ?: "")
+        title = if (saved) "Estudar · Vocabulário salvo" else "Estudar · " + Recordings.prettyName(name)
         list = findViewById(R.id.history)
         list.adapter = adapter
         list.setOnItemClickListener { _, _, pos, _ ->
@@ -58,6 +61,7 @@ class StudyMenuActivity : Activity() {
                         .putExtra(StudyActivity.EXTRA_URI, uri)
                         .putExtra(StudyActivity.EXTRA_NAME, name)
                         .putExtra(StudyActivity.EXTRA_FOCUS, focus.name)
+                        .putExtra(StudyActivity.EXTRA_SAVED, saved)
                 )
             }
         }
@@ -65,15 +69,18 @@ class StudyMenuActivity : Activity() {
 
         // Contagem de exercícios disponíveis por foco
         Thread {
-            val text = try { Recordings.readText(this, uri) } catch (_: Exception) { "" }
-            val lines = StudyGen.lines(text)
-            val counts = StudyGen.counts(this, lines, Prefs(this).level)
+            val lines = if (saved) StudyGen.linesFromVocab(this) else {
+                val text = try { Recordings.readText(this, uri!!) } catch (_: Exception) { "" }
+                StudyGen.lines(text)
+            }
+            val counts = StudyGen.counts(this, lines, Prefs(this).level, if (saved) VocabDb.savedKeys else null)
             runOnUiThread {
                 for ((focus, id) in focusButtons) {
                     val n = counts[focus] ?: 0
                     val b = findViewById<Button>(id)
                     b.text = "${focus.label}  ·  $n"
                     b.isEnabled = n > 0
+                    if (saved && focus == StudyGen.Focus.GRAMATICA) b.visibility = View.GONE
                 }
                 val kinds = StudyGen.kinds.entries.joinToString("\n") { (f, ks) -> "${f.label}: " + ks.joinToString(", ") }
                 findViewById<TextView>(R.id.kinds).text = "Tipos de exercício\n$kinds"
@@ -88,7 +95,7 @@ class StudyMenuActivity : Activity() {
 
     private fun loadHistory() {
         Thread {
-            val s = VocabDb.get(this).sessions(Recordings.baseName(name))
+            val s = VocabDb.get(this).sessions(if (saved) StudyActivity.SAVED_RECORDING else Recordings.baseName(name))
             runOnUiThread {
                 sessions = s
                 adapter.notifyDataSetChanged()

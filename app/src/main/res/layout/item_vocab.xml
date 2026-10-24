@@ -46,6 +46,20 @@
             android:layout_marginTop="2dp"
             android:textColor="@color/text_secondary"
             android:textSize="13sp" />
+
+        <LinearLayout
+            android:id="@+id/bars"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="kanji" android:textColor="@color/text_secondary" android:textSize="10sp" />
+            <ProgressBar android:id="@+id/barKanji" style="?android:attr/progressBarStyleHorizontal" android:layout_width="0dp" android:layout_height="6dp" android:layout_weight="1" android:layout_marginStart="6dp" android:layout_marginEnd="12dp" android:max="100" android:progressDrawable="@drawable/level_progress" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="significado" android:textColor="@color/text_secondary" android:textSize="10sp" />
+            <ProgressBar android:id="@+id/barMeaning" style="?android:attr/progressBarStyleHorizontal" android:layout_width="0dp" android:layout_height="6dp" android:layout_weight="1" android:layout_marginStart="6dp" android:max="100" android:progressDrawable="@drawable/level_progress" />
+        </LinearLayout>
     </LinearLayout>
 
     <TextView
