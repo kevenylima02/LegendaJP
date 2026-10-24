@@ -303,6 +303,7 @@ class CaptureService : Service() {
     private fun prepareSession(saveWav: Boolean) {
         TranscriptStore.reset(mode)
         baseName = Recordings.newBaseName()
+        TranscriptStore.recording = baseName
         onDevice = SpeechRecognizer.isOnDeviceRecognitionAvailable(this)
         Log.i(TAG, "modo=${modeName(mode)} onDevice=$onDevice servico=${Diag.onDeviceService()}")
         if (saveWav) {
@@ -504,6 +505,8 @@ class CaptureService : Service() {
         TranscriptStore.partial = ""
         writeLine(line)
         TranscriptStore.notifyChanged()
+        val rec = baseName
+        Thread { try { VocabDb.get(this).recordOccurrences(text, rec, start) } catch (_: Exception) {} }.start()
     }
 
     /** Cria o .txt na primeira frase; assim nenhuma gravação vazia vai para a pasta. */

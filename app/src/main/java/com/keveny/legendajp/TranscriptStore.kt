@@ -11,6 +11,8 @@ object TranscriptStore {
     @Volatile var partial: String = ""
     @Volatile var level: Int = 0
     @Volatile var startedAt: Long = 0L
+    /** Nome base da gravação em andamento (legenda_...). */
+    @Volatile var recording: String = ""
     /** Linhas já formatadas ("[mm:ss] texto"); só alteradas na main thread. */
     val lines: MutableList<String> = mutableListOf()
 

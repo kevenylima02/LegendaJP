@@ -5,7 +5,10 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.text.SpannableStringBuilder
+import android.text.method.LinkMovementMethod
 import android.media.projection.MediaProjectionConfig
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
@@ -48,6 +51,7 @@ class MainActivity : Activity() {
     private lateinit var scroll: ScrollView
     private lateinit var btnMain: Button
 
+    private var renderedKey = ""
     private val ui = Handler(Looper.getMainLooper())
     private val tick = object : Runnable {
         override fun run() {
@@ -94,7 +98,11 @@ class MainActivity : Activity() {
         findViewById<Button>(R.id.btnRecordings).setOnClickListener {
             startActivity(Intent(this, RecordingsActivity::class.java))
         }
-        findViewById<Button>(R.id.btnShare).setOnClickListener { share() }
+        findViewById<Button>(R.id.btnVocab).setOnClickListener {
+            startActivity(Intent(this, VocabActivity::class.java))
+        }
+        transcript.movementMethod = LinkMovementMethod.getInstance()
+        transcript.highlightColor = Color.TRANSPARENT
         findViewById<Button>(R.id.btnSpotify).setOnClickListener {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://open.spotify.com/")))
         }
@@ -128,6 +136,7 @@ class MainActivity : Activity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            R.id.action_share -> share()
             R.id.action_check -> checkJapanese()
             R.id.action_overlay -> {
                 if (item.isChecked) {
@@ -182,12 +191,23 @@ class MainActivity : Activity() {
         )
 
         val lines = TranscriptStore.lines
-        val text = lines.joinToString("\n")
+        val key = lines.joinToString("\n") + "\u0000" + VocabDb.savedKeys.size
         if (lines.isEmpty()) {
             transcript.text = getString(R.string.empty_transcript)
             transcript.setTextColor(getColor(R.color.text_secondary))
-        } else if (transcript.text.toString() != text) {
-            transcript.text = text
+            renderedKey = ""
+        } else if (renderedKey != key) {
+            renderedKey = key
+            val sb = SpannableStringBuilder()
+            for ((i, line) in lines.withIndex()) {
+                val (sec, sentence) = Recordings.parseLine(line)
+                if (i > 0) sb.append("\n")
+                sb.append(Jp.decorate(sentence, VocabDb.savedKeys, getColor(R.color.saved_word)) { w ->
+                    WordCard.show(this, w, sentence, TranscriptStore.recording, maxOf(0, sec),
+                        onChanged = { renderedKey = ""; render() })
+                })
+            }
+            transcript.text = sb
             transcript.setTextColor(getColor(R.color.text))
             scroll.post { scroll.fullScroll(ScrollView.FOCUS_DOWN) }
         }

@@ -15,6 +15,10 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
 - **Legenda sobre os apps** (menu ⋮): legenda flutuante por cima de qualquer app durante a captura,
   como a legenda instantânea do Galaxy. Arraste para mover, toque para mostrar mais linhas.
   Precisa da permissão "Exibir sobre outros apps".
+- **Vocabulário**: toque numa palavra (legenda flutuante, tela principal ou visualizador) para ver forma de
+  dicionário, leitura, classe e conjugação (análise morfológica com Kuromoji, offline) e salvar. Palavras salvas
+  ficam em lavanda em todas as legendas, em qualquer conjugação. A tela Vocabulário lista as palavras com as
+  frases onde apareceram (com Ouvir) e exporta CSV para o Anki.
 
 ## Compilar localmente (Windows)
 

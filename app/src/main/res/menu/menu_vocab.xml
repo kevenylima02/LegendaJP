@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_sort"
+        android:title="Ordenar por leitura"
+        android:checkable="true"
+        android:showAsAction="never" />
+    <item
+        android:id="@+id/action_export"
+        android:title="Exportar CSV (Anki)"
+        android:showAsAction="never" />
+</menu>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp">
+
+    <EditText
+        android:id="@+id/search"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/bg_button_outline"
+        android:hint="Buscar palavra ou leitura"
+        android:inputType="text"
+        android:imeOptions="actionSearch"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:textSize="15sp"
+        android:textColor="@color/text"
+        android:textColorHint="@color/text_secondary" />
+
+    <TextView
+        android:id="@+id/summary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <ListView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_card"
+            android:divider="@color/outline"
+            android:dividerHeight="1dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:clipToPadding="false" />
+
+        <TextView
+            android:id="@+id/empty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:padding="32dp"
+            android:text="Nenhuma palavra salva.\nToque numa palavra da legenda e escolha Salvar."
+            android:textColor="@color/text_secondary"
+            android:textSize="16sp"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <View android:layout_width="match_parent" android:layout_height="16dp" />
+</LinearLayout>

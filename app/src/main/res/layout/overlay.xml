@@ -7,16 +7,21 @@
     android:background="@drawable/bg_overlay"
     android:paddingStart="18dp"
     android:paddingEnd="18dp"
-    android:paddingTop="12dp"
     android:paddingBottom="12dp">
 
-    <View
-        android:id="@+id/handle"
-        android:layout_width="36dp"
-        android:layout_height="4dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="8dp"
-        android:background="#66FFFFFF" />
+    <!-- Área de arraste (barrinha) -->
+    <FrameLayout
+        android:id="@+id/handleArea"
+        android:layout_width="match_parent"
+        android:layout_height="28dp">
+
+        <View
+            android:id="@+id/handle"
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center"
+            android:background="#66FFFFFF" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/overlayText"

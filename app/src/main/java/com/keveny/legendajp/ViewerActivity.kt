@@ -5,6 +5,8 @@ import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
+import android.graphics.Color
+import android.text.method.LinkMovementMethod
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.net.Uri
@@ -29,6 +31,7 @@ class ViewerActivity : Activity() {
     companion object {
         const val EXTRA_URI = "uri"
         const val EXTRA_NAME = "name"
+        const val EXTRA_SEEK = "seek"
     }
 
     private data class Line(val sec: Int, val text: String)
@@ -47,6 +50,7 @@ class ViewerActivity : Activity() {
 
     private var player: MediaPlayer? = null
     private var prepared = false
+    private var pendingSeek = -1
     private var currentIndex = -1
     private val ui = Handler(Looper.getMainLooper())
     private val tick = object : Runnable {
@@ -73,6 +77,7 @@ class ViewerActivity : Activity() {
         actionBar?.setDisplayHomeAsUpEnabled(true)
         txtUri = intent.getParcelableExtra(EXTRA_URI, Uri::class.java) ?: run { finish(); return }
         name = intent.getStringExtra(EXTRA_NAME) ?: ""
+        pendingSeek = intent.getIntExtra(EXTRA_SEEK, -1)
         title = Recordings.prettyName(name)
 
         listView = findViewById(R.id.lines)
@@ -132,6 +137,7 @@ class ViewerActivity : Activity() {
             seek.max = p.duration
             playerBar.visibility = View.VISIBLE
             ui.post(tick)
+            if (pendingSeek >= 0) { playFrom(pendingSeek); pendingSeek = -1 }
         }
         p.setOnCompletionListener { btnPlay.text = "▶" }
         p.setOnErrorListener { _, what, extra ->
@@ -233,7 +239,20 @@ class ViewerActivity : Activity() {
             val v = convertView ?: LayoutInflater.from(parent.context).inflate(R.layout.item_line, parent, false)
             val l = lines[position]
             v.findViewById<TextView>(R.id.stamp).text = if (l.sec >= 0) CaptureService.formatTime(l.sec) else ""
-            v.findViewById<TextView>(R.id.text).text = l.text
+            val tv = v.findViewById<TextView>(R.id.text)
+            tv.movementMethod = LinkMovementMethod.getInstance()
+            tv.highlightColor = Color.TRANSPARENT
+            tv.text = Jp.decorate(l.text, VocabDb.savedKeys, getColor(R.color.saved_word)) { w ->
+                WordCard.show(
+                    this@ViewerActivity, w, l.text, Recordings.baseName(name), maxOf(0, l.sec),
+                    onPlay = if (wavUri != null) ({ playFrom(l.sec) }) else null,
+                    onChanged = { notifyDataSetChanged() }
+                )
+            }
+            // Toque fora de uma palavra toca o trecho
+            tv.setOnClickListener {
+                if (android.os.SystemClock.uptimeMillis() - Jp.lastWordTap > 400) playFrom(l.sec)
+            }
             v.setBackgroundColor(if (position == currentIndex) getColor(R.color.accent_soft) else 0)
             return v
         }

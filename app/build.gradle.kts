@@ -11,8 +11,8 @@ android {
         applicationId = "com.keveny.legendajp"
         minSdk = 33          // EXTRA_AUDIO_SOURCE e sessões segmentadas exigem Android 13+
         targetSdk = 34
-        versionCode = 4
-        versionName = "0.4"
+        versionCode = 5
+        versionName = "0.5"
     }
 
     signingConfigs {
@@ -38,4 +38,12 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+    packaging {
+        resources.excludes += setOf("META-INF/LICENSE*", "META-INF/NOTICE*", "META-INF/DEPENDENCIES", "META-INF/*.md", "META-INF/*.txt")
+    }
+}
+
+dependencies {
+    // Analisador morfológico de japonês (forma de dicionário, classe, conjugação, leitura). Puro Java.
+    implementation("com.atilika.kuromoji:kuromoji-ipadic:0.9.0")
 }

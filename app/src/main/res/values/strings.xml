@@ -24,4 +24,5 @@
     <string name="overlay_dialog_text">O Michi pode mostrar a legenda flutuante por cima do Spotify e de qualquer app, como a legenda instantânea do Galaxy. Para isso o Android pede a permissão \"Exibir sobre outros apps\".</string>
     <string name="overlay_allow">Permitir</string>
     <string name="overlay_later">Sem legenda flutuante</string>
+    <string name="vocab">Vocabulário</string>
 </resources>

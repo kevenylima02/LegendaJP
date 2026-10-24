@@ -167,14 +167,14 @@
             android:text="@string/recordings" />
 
         <Button
-            android:id="@+id/btnShare"
+            android:id="@+id/btnVocab"
             style="@style/Button.Outline"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
-            android:text="@string/share" />
+            android:text="@string/vocab" />
 
         <Button
             android:id="@+id/btnSpotify"

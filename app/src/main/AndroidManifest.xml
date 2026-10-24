@@ -19,6 +19,7 @@
     </queries>
 
     <application
+        android:name=".MichiApp"
         android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/Theme.LegendaJP"
@@ -43,6 +44,16 @@
             android:name=".ViewerActivity"
             android:exported="false"
             android:parentActivityName=".RecordingsActivity" />
+
+        <activity
+            android:name=".VocabActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".VocabDetailActivity"
+            android:exported="false"
+            android:parentActivityName=".VocabActivity" />
 
         <service
             android:name=".CaptureService"
