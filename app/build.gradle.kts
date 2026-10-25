@@ -11,8 +11,8 @@ android {
         applicationId = "com.keveny.legendajp"
         minSdk = 33          // EXTRA_AUDIO_SOURCE e sessões segmentadas exigem Android 13+
         targetSdk = 34
-        versionCode = 17
-        versionName = "0.17"
+        versionCode = 18
+        versionName = "0.18"
     }
 
     signingConfigs {

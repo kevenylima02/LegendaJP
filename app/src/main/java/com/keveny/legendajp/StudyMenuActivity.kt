@@ -56,8 +56,10 @@ class StudyMenuActivity : Activity() {
         )
         for ((focus, id) in focusButtons) {
             findViewById<Button>(id).setOnClickListener {
+                // Gramática vai direto; os outros focos passam pela escolha das palavras
+                val target = if (focus == StudyGen.Focus.GRAMATICA) StudyActivity::class.java else WordPickActivity::class.java
                 startActivity(
-                    Intent(this, StudyActivity::class.java)
+                    Intent(this, target)
                         .putExtra(StudyActivity.EXTRA_URI, uri)
                         .putExtra(StudyActivity.EXTRA_NAME, name)
                         .putExtra(StudyActivity.EXTRA_FOCUS, focus.name)

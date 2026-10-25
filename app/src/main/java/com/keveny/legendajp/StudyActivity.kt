@@ -37,6 +37,8 @@ class StudyActivity : Activity() {
         const val EXTRA_MISTAKES = "mistakes"
         const val EXTRA_WORD_KEY = "wordKey"
         const val EXTRA_WORD_LABEL = "wordLabel"
+        /** Palavras escolhidas antes do estudo (WordPickActivity). */
+        const val EXTRA_KEYS = "keys"
         const val SAVED_RECORDING = "__vocabulario__"
         const val MISTAKES_RECORDING = "__erros__"
         private const val MAX_ITEMS = 12
@@ -67,6 +69,8 @@ class StudyActivity : Activity() {
     private lateinit var btnRemember: Button
     private lateinit var strokeBox: View
     private lateinit var strokeRow: android.widget.LinearLayout
+    private lateinit var partsBox: android.widget.FrameLayout
+    private lateinit var buildView: KanjiBuildView
     private val slotViews = mutableListOf<TextView>()
     private val slotValues = mutableListOf<String>()
     private var activeSlot = 0
@@ -83,7 +87,8 @@ class StudyActivity : Activity() {
     private var reviewEntry: ReviewEntry? = null
     private var reviewedCount = 0
     private val builtParts = mutableListOf<String>()
-    private val usedTiles = mutableListOf<Button>()
+    private val usedTiles = mutableListOf<View>()
+    private val builtPartList = mutableListOf<KanjiParts.Part>()
 
     // ---------- sessão / dados ----------
     private val dbExec = Executors.newSingleThreadExecutor()
@@ -121,6 +126,11 @@ class StudyActivity : Activity() {
         btnRemember = findViewById(R.id.btnRemember)
         strokeBox = findViewById(R.id.strokeBox)
         strokeRow = findViewById(R.id.strokeRow)
+        partsBox = findViewById(R.id.partsBox)
+        buildView = KanjiBuildView(this)
+        partsBox.addView(buildView, android.widget.FrameLayout.LayoutParams(
+            android.widget.FrameLayout.LayoutParams.WRAP_CONTENT, android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+            android.view.Gravity.CENTER_HORIZONTAL))
         btnClear.setOnClickListener { draw.clear() }
         btnRecognize.setOnClickListener { recognizeSlot() }
         btnRemember.setOnClickListener { draw.flash(700) }
@@ -137,6 +147,7 @@ class StudyActivity : Activity() {
         val focus = try { StudyGen.Focus.valueOf(intent.getStringExtra(EXTRA_FOCUS) ?: "MISTO") } catch (_: Exception) { StudyGen.Focus.MISTO }
         val wordKey = intent.getStringExtra(EXTRA_WORD_KEY)
         val wordLabel = intent.getStringExtra(EXTRA_WORD_LABEL) ?: ""
+        val keys = intent.getStringArrayListExtra(EXTRA_KEYS)
         multiRecording = mistakes || saved
         recording = when {
             mistakes -> MISTAKES_RECORDING
@@ -146,6 +157,7 @@ class StudyActivity : Activity() {
         focusLabel = when {
             mistakes -> "Erros"
             wordKey != null -> "Palavra: $wordLabel"
+            keys != null -> "${focus.label} · ${keys.size} palavras"
             else -> focus.label
         }
         title = when {
@@ -172,11 +184,16 @@ class StudyActivity : Activity() {
                 if (!saved) wav = Recordings.find(this, "$recording.wav")?.uri
                 val only = when {
                     wordKey != null -> setOf(wordKey)
+                    keys != null -> keys.toSet()
                     saved -> VocabDb.savedKeys
                     else -> null
                 }
-                built = StudyGen.build(this, lines, focus, Prefs(this).level, MAX_ITEMS, only)
+                val max = if (keys != null) maxOf(MAX_ITEMS, keys.size * 2) else MAX_ITEMS
+                built = StudyGen.build(this, lines, focus, Prefs(this).level, max, only,
+                    grammar = !saved && wordKey == null, cover = keys != null)
             }
+            // Traços das peças de "Montar o kanji" (uma passada pelo arquivo)
+            Strokes.load(this, built.filterIsInstance<Item.Parts>().flatMap { it.tiles.map { p -> p.src } }.toSet())
             runOnUiThread {
                 if (isFinishing) return@runOnUiThread
                 if (wav != null) setupPlayer(wav)
@@ -250,7 +267,7 @@ class StudyActivity : Activity() {
         }
     }
 
-    private fun Item?.needsVerify() = this is Item.Order || this is Item.Kanji || this is Item.Write
+    private fun Item?.needsVerify() = this is Item.Order || this is Item.Kanji || this is Item.Write || this is Item.Parts
 
     private fun onNextClicked() {
         when (phase) {
@@ -339,6 +356,8 @@ class StudyActivity : Activity() {
     private fun clearExerciseViews() {
         builtParts.clear()
         usedTiles.clear()
+        builtPartList.clear()
+        partsBox.visibility = View.GONE
         choices.removeAllViews()
         feedback.visibility = View.GONE
         built.visibility = View.GONE
@@ -397,6 +416,20 @@ class StudyActivity : Activity() {
                 prompt.text = pre + item.prompt
                 for (o in item.options) addChoice(o)
             }
+            is Item.Parts -> {
+                val tr = Tr.cached(this, item.word.base)
+                val masked = item.word.base.replace(item.kanji, '□')
+                val k = Kanjidic.get(this, item.kanji)
+                val info = if (k == null) "" else
+                    listOf(k.on.joinToString("、"), k.kunPretty.joinToString("、")).filter { it.isNotEmpty() }.joinToString(" · ") +
+                        if (k.meanings.isNotEmpty()) " — ${k.shortMeaning}" else ""
+                prompt.text = pre + "Monte o kanji que falta em 「$masked」 (${item.word.reading}" + (if (tr != null) " · $tr" else "") + ")." +
+                    (if (info.isNotBlank()) "\nKanji: $info" else "") + "\nToque nas partes na ordem das lacunas."
+                partsBox.visibility = View.VISIBLE
+                btnUndo.visibility = View.VISIBLE
+                buildView.setSlots(item.parts.map { KanjiParts.paths(this, it) })
+                for (p in item.tiles) addPartTile(item, p)
+            }
             is Item.GrammarQ -> {
                 prompt.text = pre + "Qual padrão gramatical aparece nesta frase?"
                 sentenceView.visibility = View.VISIBLE
@@ -428,6 +461,7 @@ class StudyActivity : Activity() {
         is Item.Order -> item.chunks.joinToString("")
         is Item.Kanji -> item.word.base
         is Item.Write -> item.word.base.filter(StudyGen::isKanji)
+        is Item.Parts -> item.parts.joinToString(" + ") { it.element }
         is Item.Cloze -> item.word.surface
         is Item.GrammarCloze -> item.sentence.substring(item.hit.start, item.hit.end)
         is Item.Choice -> item.answer
@@ -438,10 +472,17 @@ class StudyActivity : Activity() {
     private fun verifyBuilt() {
         val item = current ?: return
         if (!item.needsVerify()) { Toast.makeText(this, "Escolha uma alternativa", Toast.LENGTH_SHORT).show(); return }
-        val given = if (item is Item.Write) {
-            if (slotValues.any { it.isEmpty() }) { Toast.makeText(this, "Preencha todas as lacunas", Toast.LENGTH_SHORT).show(); return }
-            slotValues.joinToString("")
-        } else builtParts.joinToString("")
+        val given = when (item) {
+            is Item.Write -> {
+                if (slotValues.any { it.isEmpty() }) { Toast.makeText(this, "Preencha todas as lacunas", Toast.LENGTH_SHORT).show(); return }
+                slotValues.joinToString("")
+            }
+            is Item.Parts -> {
+                if (builtPartList.size < item.parts.size) { Toast.makeText(this, "Coloque uma parte em cada lacuna", Toast.LENGTH_SHORT).show(); return }
+                builtPartList.joinToString(" + ") { it.element }
+            }
+            else -> builtParts.joinToString("")
+        }
         onAnswered(item, given)
     }
 
@@ -480,6 +521,14 @@ class StudyActivity : Activity() {
                 sb.setSpan(ForegroundColorSpan(getColor(if (ok) R.color.ok else R.color.stop)), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                 built.text = sb
             }
+            is Item.Parts -> {
+                val els = given.split(" + ")
+                val ps = els.map { e -> item.tiles.firstOrNull { it.element == e } }
+                buildView.setFilled(
+                    ps.map { if (it == null) emptyList() else KanjiParts.paths(this, it) },
+                    els.mapIndexed { i, e -> e == item.parts.getOrNull(i)?.element }
+                )
+            }
             is Item.Write -> {
                 for ((i, v) in slotViews.withIndex()) {
                     val g = given.getOrNull(i)?.toString() ?: ""
@@ -510,6 +559,7 @@ class StudyActivity : Activity() {
             is Item.Cloze -> "Palavra que completa a frase"
             is Item.Kanji -> "Montar 「${item.word.reading}」"
             is Item.Write -> "Escrever 「${item.word.reading}」"
+            is Item.Parts -> "Partes do kanji ${item.kanji} (${item.word.base})"
             is Item.Order -> "Ordenar a frase"
         }
         val key = item.wordKey
@@ -534,6 +584,7 @@ class StudyActivity : Activity() {
         is Item.Choice -> item.word
         is Item.Kanji -> item.word
         is Item.Write -> item.word
+        is Item.Parts -> item.word
         else -> null
     }
 
@@ -590,6 +641,18 @@ class StudyActivity : Activity() {
                     sb.append("  ").append(text)
                 }
             }
+        }
+
+        // Partes do kanji
+        if (item is Item.Parts) {
+            sb.append("\n\n")
+            colored("Partes", sec)
+            sb.append("\n")
+            bold(item.kanji.toString())
+            sb.append(" = ").append(item.parts.joinToString(" + ") { p ->
+                val m = p.element.firstOrNull()?.let { Kanjidic.get(this, it) }?.shortMeaning
+                p.element + if (!m.isNullOrBlank()) " ($m)" else ""
+            })
         }
 
         // Gramática
@@ -670,8 +733,29 @@ class StudyActivity : Activity() {
         choices.addView(b)
     }
 
+    private fun addPartTile(item: Item.Parts, p: KanjiParts.Part) {
+        val t = PartTileView(this)
+        t.set(KanjiParts.paths(this, p), p.element)
+        t.setOnClickListener {
+            if (answered || current !== item || builtPartList.size >= item.parts.size) return@setOnClickListener
+            builtPartList.add(p)
+            usedTiles.add(t)
+            t.visibility = View.INVISIBLE
+            buildView.setFilled(builtPartList.map { KanjiParts.paths(this, it) })
+        }
+        choices.addView(t)
+    }
+
     private fun undoTile() {
-        if (answered || builtParts.isEmpty()) return
+        if (answered) return
+        if (current is Item.Parts) {
+            if (builtPartList.isEmpty()) return
+            builtPartList.removeAt(builtPartList.size - 1)
+            usedTiles.removeAt(usedTiles.size - 1).visibility = View.VISIBLE
+            buildView.setFilled(builtPartList.map { KanjiParts.paths(this, it) })
+            return
+        }
+        if (builtParts.isEmpty()) return
         builtParts.removeAt(builtParts.size - 1)
         usedTiles.removeAt(usedTiles.size - 1).visibility = View.VISIBLE
         built.text = builtParts.joinToString("")

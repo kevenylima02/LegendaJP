@@ -29,6 +29,8 @@ object StudyGen {
             Item(Focus.KANJI, "Montar a palavra com kanji", s.text, s.sec, s.endSec, Jlpt.wordLevel(word.base), word.key, s.recording)
         class Write(s: Line, val word: Jp.Word) :
             Item(Focus.KANJI, "Escrever a palavra à mão", s.text, s.sec, s.endSec, Jlpt.wordLevel(word.base), word.key, s.recording)
+        class Parts(s: Line, val word: Jp.Word, val kanji: Char, val parts: List<KanjiParts.Part>, val tiles: List<KanjiParts.Part>) :
+            Item(Focus.KANJI, "Montar o kanji com as partes", s.text, s.sec, s.endSec, Jlpt.kanjiLevel(kanji), word.key, s.recording)
 
         /** Identidade para não repetir o mesmo exercício na sessão. */
         val identity: String get() = kind + "|" + (wordKey ?: sentence)
@@ -54,6 +56,7 @@ object StudyGen {
         Kind("Leitura → palavra em kanji", Focus.KANJI, Difficulty.FACIL, "Dada a leitura, escolha a palavra em kanji.", TRAINS_KANJI),
         Kind("Significado do kanji", Focus.KANJI, Difficulty.FACIL, "Dado um kanji da palavra, escolha o significado.", TRAINS_KANJI),
         Kind("Montar a palavra com kanji", Focus.KANJI, Difficulty.MEDIO, "Peças de kanji e kana; toque na ordem certa.", TRAINS_KANJI),
+        Kind("Montar o kanji com as partes", Focus.KANJI, Difficulty.MEDIO, "O kanji em pedaços (KanjiVG); toque nas partes na ordem das lacunas.", TRAINS_KANJI),
         Kind("Escrever a palavra à mão", Focus.KANJI, Difficulty.DIFICIL, "Desenhe cada kanji da palavra com o dedo; o app reconhece.", TRAINS_KANJI),
     )
 
@@ -71,7 +74,7 @@ object StudyGen {
     /** Quantos exercícios distintos cada foco consegue gerar. */
     fun counts(ctx: Context, lines: List<Line>, level: Int, onlyKeys: Set<String>? = null): Map<Focus, Int> {
         val disabled = Prefs(ctx).disabledKinds
-        val all = generateAll(ctx, lines, kotlin.random.Random(1), onlyKeys)
+        val all = generateAll(ctx, lines, kotlin.random.Random(1), onlyKeys, onlyKeys == null)
             .filter { it.kind !in disabled }.distinctBy { it.identity }
         return Focus.values().associateWith { f -> if (f == Focus.MISTO) all.size else all.count { it.focus == f } }
     }
@@ -79,17 +82,30 @@ object StudyGen {
     /**
      * Monta a sessão: sem repetir exercício, intercalando tipos, com prioridade para itens do nível
      * do usuário ou acima (level menor = mais difícil).
+     * @param grammar inclui gramática e ordenar frase; com onlyKeys, só das frases que têm essas palavras.
+     * @param cover garante pelo menos um exercício de cada palavra de onlyKeys (palavras escolhidas).
      */
-    fun build(ctx: Context, lines: List<Line>, focus: Focus, level: Int, max: Int, onlyKeys: Set<String>? = null): List<Item> {
+    fun build(
+        ctx: Context, lines: List<Line>, focus: Focus, level: Int, max: Int, onlyKeys: Set<String>? = null,
+        grammar: Boolean = onlyKeys == null, cover: Boolean = false
+    ): List<Item> {
         val rnd = kotlin.random.Random(System.nanoTime())
         val disabled = Prefs(ctx).disabledKinds
-        val all = generateAll(ctx, lines, rnd, onlyKeys).shuffled(rnd)
+        val all = generateAll(ctx, lines, rnd, onlyKeys, grammar).shuffled(rnd)
             .filter { it.kind !in disabled }
             .distinctBy { it.identity }
         val pool = if (focus == Focus.MISTO) all else all.filter { it.focus == focus }
-        val preferred = pool.filter { it.level <= level }
-        val rest = pool.filter { it.level > level }
         val out = mutableListOf<Item>()
+        if (cover && onlyKeys != null) {
+            for (k in onlyKeys.shuffled(rnd)) {
+                if (out.size >= max) break
+                val mine = pool.filter { it.wordKey == k }
+                (mine.firstOrNull { it.level <= level } ?: mine.firstOrNull())?.let { out.add(it) }
+            }
+        }
+        val picked = out.map { it.identity }.toHashSet()
+        val preferred = pool.filter { it.level <= level && it.identity !in picked }
+        val rest = pool.filter { it.level > level && it.identity !in picked }
         for (group in listOf(preferred, rest)) {
             val byKind = group.groupBy { it.kind }.values.map { it.toMutableList() }.shuffled(rnd)
             while (out.size < max && byKind.any { it.isNotEmpty() }) {
@@ -97,10 +113,38 @@ object StudyGen {
             }
             if (out.size >= max) break
         }
-        return out
+        return if (cover) out.shuffled(rnd) else out
     }
 
-    private fun generateAll(ctx: Context, lines: List<Line>, rnd: kotlin.random.Random, onlyKeys: Set<String>?): List<Item> {
+    /** Palavra a que o exercício se refere (exercícios de vocabulário e kanji). */
+    fun wordOf(item: Item): Jp.Word? = when (item) {
+        is Item.Cloze -> item.word
+        is Item.Choice -> item.word
+        is Item.Kanji -> item.word
+        is Item.Write -> item.word
+        is Item.Parts -> item.word
+        else -> null
+    }
+
+    /** Palavra para a escolha antes do estudo: uma frase onde aparece, em quantas frases aparece e o nível. */
+    data class Candidate(val word: Jp.Word, val line: Line, val sentences: Int, val level: Int)
+
+    /**
+     * Palavras que geram exercícios neste foco (as que você já conhece ficam de fora), na ordem da
+     * escolha: primeiro as do seu nível ou acima, depois as que aparecem em mais frases.
+     */
+    fun candidates(ctx: Context, lines: List<Line>, focus: Focus, level: Int, restrict: Set<String>? = null): List<Candidate> {
+        val disabled = Prefs(ctx).disabledKinds
+        val items = generateAll(ctx, lines, kotlin.random.Random(1), restrict, grammar = false)
+            .filter { it.kind !in disabled && it.wordKey != null && (focus == Focus.MISTO || it.focus == focus) }
+        return items.groupBy { it.wordKey!! }.mapNotNull { (_, its) ->
+            val first = its.first()
+            val w = wordOf(first) ?: return@mapNotNull null
+            Candidate(w, Line(first.sec, first.sentence, first.endSec, first.recording), its.map { it.sentence }.distinct().size, Jlpt.wordLevel(w.base))
+        }.sortedWith(compareBy<Candidate>({ if (it.level <= level) 0 else 1 }, { -it.sentences }, { it.level }))
+    }
+
+    private fun generateAll(ctx: Context, lines: List<Line>, rnd: kotlin.random.Random, onlyKeys: Set<String>?, grammar: Boolean): List<Item> {
         val sentences = lines.filter { it.text.length >= 4 }
         if (sentences.isEmpty()) return emptyList()
         val analyzed = sentences.map { it to (try { Jp.words(it.text) } catch (_: Exception) { emptyList() }) }
@@ -121,8 +165,8 @@ object StudyGen {
             val hits = hitsBySentence.first { it.first === line }.second
             val sentenceLevel = hits.minOfOrNull { levelNum(it.point.level) } ?: 5
 
-            // ----- Gramática (só quando não é estudo de vocabulário salvo) -----
-            if (onlyKeys == null) {
+            // ----- Gramática (com palavras escolhidas: só nas frases que têm alguma delas) -----
+            if (grammar && (onlyKeys == null || ws.any { it.key in onlyKeys })) {
                 val chunks = try { Jp.chunks(s) } catch (_: Exception) { emptyList() }
                 if (chunks.size in 4..9) out.add(Item.Order(line, chunks, sentenceLevel))
                 val present = hits.map { it.point.id }.toSet()
@@ -175,6 +219,14 @@ object StudyGen {
                     if (tiles.size >= 4) out.add(Item.Kanji(line, w, tiles.shuffled(rnd)))
                 }
                 if (hasKanji && simple && w.base.count(::isKanji) in 1..3) out.add(Item.Write(line, w))
+                // Partes de um kanji da palavra (KanjiVG)
+                if (hasKanji) {
+                    val entry = w.base.filter(::isKanji).toList().shuffled(rnd).firstNotNullOfOrNull { KanjiParts.get(ctx, it) }
+                    if (entry != null) {
+                        val extra = KanjiParts.distractors(ctx, entry, maxOf(2, 6 - entry.parts.size), kanjiPool, rnd)
+                        if (extra.size >= 2) out.add(Item.Parts(line, w, entry.char, entry.parts, (entry.parts + extra).shuffled(rnd)))
+                    }
+                }
                 // Significado de um kanji da palavra (KANJIDIC2)
                 if (hasKanji) {
                     val k = w.base.filter(::isKanji).toList().shuffled(rnd)

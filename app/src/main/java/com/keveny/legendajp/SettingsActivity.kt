@@ -30,6 +30,11 @@ class SettingsActivity : Activity() {
         levels.setOnCheckedChangeListener { _, id ->
             prefs.level = when (id) { R.id.n1 -> 1; R.id.n2 -> 2; R.id.n3 -> 3; R.id.n4 -> 4; else -> 5 }
         }
+        val words = findViewById<RadioGroup>(R.id.studyWords)
+        words.check(when (prefs.studyWords) { 5 -> R.id.w5; 15 -> R.id.w15; 20 -> R.id.w20; else -> R.id.w10 })
+        words.setOnCheckedChangeListener { _, id ->
+            prefs.studyWords = when (id) { R.id.w5 -> 5; R.id.w15 -> 15; R.id.w20 -> 20; else -> 10 }
+        }
         findViewById<Button>(R.id.btnLevelInfo).setOnClickListener {
             startActivity(Intent(this, LevelActivity::class.java))
         }

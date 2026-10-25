@@ -37,6 +37,8 @@ object StudyCodec {
                 .put("note", item.note).put("word", wordJson(item.word))
             is Item.Kanji -> o.put("t", "kanji").put("word", wordJson(item.word)).put("tiles", JSONArray(item.tiles))
             is Item.Write -> o.put("t", "write").put("word", wordJson(item.word))
+            is Item.Parts -> o.put("t", "parts").put("word", wordJson(item.word)).put("kanji", item.kanji.toString())
+                .put("parts", JSONArray(item.parts.map { it.encode() })).put("tiles", JSONArray(item.tiles.map { it.encode() }))
         }
         return o.toString()
     }
@@ -65,6 +67,11 @@ object StudyCodec {
                 )
                 "kanji" -> Item.Kanji(line, word(o.getJSONObject("word")), strings(o.getJSONArray("tiles")))
                 "write" -> Item.Write(line, word(o.getJSONObject("word")))
+                "parts" -> Item.Parts(
+                    line, word(o.getJSONObject("word")), o.getString("kanji")[0],
+                    strings(o.getJSONArray("parts")).mapNotNull { KanjiParts.decode(it) },
+                    strings(o.getJSONArray("tiles")).mapNotNull { KanjiParts.decode(it) }
+                )
                 else -> null
             }
         } catch (_: Exception) {

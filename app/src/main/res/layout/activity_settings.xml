@@ -51,6 +51,36 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
+            android:text="Palavras por sessão"
+            android:textColor="@color/text"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Antes de estudar você escolhe as palavras (Pular, Já conheço, Estudar). Ao chegar neste número, começa."
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
+
+        <RadioGroup
+            android:id="@+id/studyWords"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <RadioButton android:id="@+id/w5" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp" android:text="5" />
+            <RadioButton android:id="@+id/w10" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="2dp" android:layout_marginEnd="2dp" android:text="10" />
+            <RadioButton android:id="@+id/w15" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="2dp" android:layout_marginEnd="2dp" android:text="15" />
+            <RadioButton android:id="@+id/w20" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="4dp" android:text="20" />
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
             android:text="Tipos de exercício"
             android:textColor="@color/text"
             android:textSize="16sp"
