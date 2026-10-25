@@ -20,7 +20,10 @@ object TrSwitch {
      * @param prefix o que vem antes da tradução no mesmo TextView (ex.: "Frase" e a frase).
      * Lê o banco; se ainda não houver tradução do ML Kit, pede e redesenha quando chegar.
      */
-    fun bind(ctx: Context, tv: TextView, sentence: String, prefix: CharSequence = "", color: Int = ctx.getColor(R.color.text_secondary)) {
+    fun bind(
+        ctx: Context, tv: TextView, sentence: String, prefix: CharSequence = "",
+        color: Int = ctx.getColor(R.color.text_secondary), scale: Float = 1f
+    ) {
         tv.setTag(R.id.trText, sentence)
         if (sentence.isBlank()) { tv.text = prefix; return }
         val ml = Tr.cached(ctx, sentence)
@@ -38,22 +41,23 @@ object TrSwitch {
         val a = sb.length
         sb.append(text ?: "traduzindo…")
         sb.setSpan(ForegroundColorSpan(color), a, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        if (scale != 1f) sb.setSpan(RelativeSizeSpan(scale), a, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         if (text != null) {
             val b = sb.length
             sb.append("  · ").append(src).append(if (ml != null && ai != null) " ⇄" else "")
             sb.setSpan(ForegroundColorSpan(ctx.getColor(R.color.accent)), b, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            sb.setSpan(RelativeSizeSpan(0.8f), b, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            sb.setSpan(RelativeSizeSpan(0.8f * scale), b, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         tv.text = sb
         if (ml != null && ai != null) {
             tv.setOnClickListener {
                 tv.setTag(R.id.trSource, sentence to (if (src == AI) ML else AI))
-                bind(ctx, tv, sentence, prefix, color)
+                bind(ctx, tv, sentence, prefix, color, scale)
             }
         } else tv.setOnClickListener(null)
         if (ml == null) {
             Tr.translate(ctx, sentence) { t ->
-                if (t != null && tv.getTag(R.id.trText) == sentence) bind(ctx, tv, sentence, prefix, color)
+                if (t != null && tv.getTag(R.id.trText) == sentence) bind(ctx, tv, sentence, prefix, color, scale)
             }
         }
     }

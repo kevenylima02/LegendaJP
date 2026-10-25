@@ -19,13 +19,13 @@ class LevelActivity : Activity() {
         super.onCreate(savedInstanceState)
         actionBar?.setDisplayHomeAsUpEnabled(true)
         title = "Gramática por nível"
-        val mine = Prefs(this).level
+        val mine = Prefs(this).levels
         val sb = SpannableStringBuilder()
         val byLevel = Grammar.all.groupBy { it.level }
         for (lvl in listOf("N5", "N4", "N3", "N2", "N1")) {
             val points = byLevel[lvl] ?: continue
             val a = sb.length
-            sb.append(lvl).append(if (lvl == "N$mine") "  (seu nível)" else "").append("  ·  ${points.size} padrões\n")
+            sb.append(lvl).append(if (lvl.removePrefix("N").toInt() in mine) "  (marcado)" else "").append("  ·  ${points.size} padrões\n")
             sb.setSpan(StyleSpan(Typeface.BOLD), a, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             sb.setSpan(RelativeSizeSpan(1.25f), a, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             sb.setSpan(ForegroundColorSpan(getColor(R.color.accent)), a, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)

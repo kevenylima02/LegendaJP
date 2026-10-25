@@ -45,6 +45,8 @@ class WordPickActivity : Activity() {
     private val decisions = ArrayList<Decision>()
     private val chosen get() = decisions.filter { it.choice == Choice.STUDY }.map { cands[it.index] }
     private var loaded = false
+    private var excludedSkip: Set<String> = emptySet()
+    private var excludedStudied: Set<String> = emptySet()
 
     private lateinit var progress: TextView
     private lateinit var scroll: ScrollView
@@ -90,6 +92,7 @@ class WordPickActivity : Activity() {
         strokeRow = findViewById(R.id.strokeRow)
 
         findViewById<Button>(R.id.btnSkip).setOnClickListener { decide(Choice.SKIP) }
+        setupOrder()
         findViewById<Button>(R.id.btnKnown).setOnClickListener { decide(Choice.KNOWN) }
         findViewById<Button>(R.id.btnStudy).setOnClickListener { decide(Choice.STUDY) }
         btnBack.setOnClickListener { undo() }
@@ -105,7 +108,19 @@ class WordPickActivity : Activity() {
                 val text = try { Recordings.readText(this, uri!!) } catch (_: Exception) { "" }
                 StudyGen.lines(text, recording)
             }
-            val list = StudyGen.candidates(this, lines, focus, Prefs(this).level, if (saved) VocabDb.savedKeys else null)
+            // Fora: já estudadas (voltam pela Revisão) e puladas há menos de 24 h
+            val db = VocabDb.get(this)
+            excludedSkip = db.skippedKeys()
+            excludedStudied = Srs.studiedKeys(this)
+            val prefs = Prefs(this)
+            var all = StudyGen.candidates(this, lines, focus, prefs.levels, if (saved) VocabDb.savedKeys else null,
+                excludedSkip + excludedStudied)
+            if (saved) {
+                // No vocabulário salvo, "ordem" = mais recentes primeiro
+                val order = db.words().map { it.key }.withIndex().associate { it.value to it.index }
+                all = all.map { it.copy(position = order[it.word.key] ?: Int.MAX_VALUE) }
+            }
+            val list = StudyGen.sortCandidates(all, prefs.levels, prefs.pickOrder)
             runOnUiThread {
                 if (isFinishing) return@runOnUiThread
                 cands = list
@@ -113,6 +128,20 @@ class WordPickActivity : Activity() {
                 if (list.isEmpty()) showSummary() else showCard()
             }
         }.start()
+    }
+
+    /** Ordem da escolha (aleatória, mais frequentes, ordem do áudio / mais recentes); reordena o que falta. */
+    private fun setupOrder() {
+        val group = findViewById<android.widget.RadioGroup>(R.id.order)
+        if (saved) findViewById<android.widget.RadioButton>(R.id.orderAudio).text = "Recentes"
+        val prefs = Prefs(this)
+        group.check(when (prefs.pickOrder) { "frequentes" -> R.id.orderFreq; "audio" -> R.id.orderAudio; else -> R.id.orderRandom })
+        group.setOnCheckedChangeListener { _, id ->
+            prefs.pickOrder = when (id) { R.id.orderFreq -> "frequentes"; R.id.orderAudio -> "audio"; else -> "aleatoria" }
+            if (!loaded || index >= cands.size) return@setOnCheckedChangeListener
+            cands = cands.take(index) + StudyGen.sortCandidates(cands.drop(index), prefs.levels, prefs.pickOrder)
+            showCard()
+        }
     }
 
     // =====================================================================
@@ -124,6 +153,11 @@ class WordPickActivity : Activity() {
         val w = cands[index].word
         val wasSaved = VocabDb.get(this).isSaved(w)
         decisions.add(Decision(index, choice, wasSaved))
+        if (choice == Choice.SKIP) {
+            // Some da escolha por 24 h (em qualquer gravação)
+            val key = w.key
+            Thread { VocabDb.get(this).skipWord(key, System.currentTimeMillis() + 24 * 3_600_000L) }.start()
+        }
         if (choice == Choice.STUDY && !wasSaved) {
             val line = cands[index].line
             Thread { VocabDb.get(this).let { db -> if (!db.isSaved(w)) db.save(w, line.text, line.recording ?: recording, maxOf(0, line.sec)) } }.start()
@@ -143,6 +177,10 @@ class WordPickActivity : Activity() {
     /** Desfaz a última escolha (Já conheço volta a valer para exercícios). */
     private fun undo() {
         val d = decisions.removeLastOrNull() ?: return
+        if (d.choice == Choice.SKIP) {
+            val key = cands[d.index].word.key
+            Thread { VocabDb.get(this).unskipWord(key) }.start()
+        }
         if (d.choice == Choice.STUDY && !d.wasSaved) {
             val w = cands[d.index].word
             Thread { VocabDb.get(this).remove(w) }.start()
@@ -296,7 +334,7 @@ class WordPickActivity : Activity() {
         updateBottom()
         val sb = SpannableStringBuilder()
         if (cands.isEmpty()) {
-            sb.append("Não há palavras novas para este foco nesta gravação (as que você marcou como \"Já conheço\" ficam de fora).")
+            sb.append("Não há palavras novas para este foco nesta gravação.")
         } else if (list.isEmpty()) {
             sb.append("Nenhuma palavra escolhida. Toque em Voltar para rever as últimas.")
         } else {
@@ -309,6 +347,11 @@ class WordPickActivity : Activity() {
                 if (w.reading != w.base) sb.append(" (").append(w.reading).append(")")
                 Tr.cached(this, w.base)?.let { sb.append(" — ").append(it) }
             }
+        }
+        if (excludedStudied.isNotEmpty() || excludedSkip.isNotEmpty()) {
+            val b0 = sb.length
+            sb.append("\n\nFora da escolha: ${excludedStudied.size} já estudadas (voltam pela Revisão) e ${excludedSkip.size} puladas nas últimas 24 h. \"Já conheço\" também fica de fora.")
+            sb.setSpan(ForegroundColorSpan(getColor(R.color.text_secondary)), b0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         val skipped = decisions.count { it.choice == Choice.SKIP }
         val known = decisions.count { it.choice == Choice.KNOWN }

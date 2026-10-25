@@ -60,6 +60,11 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
 - **Escolher palavras** antes de estudar (Misto, Vocabulário e Kanji): um cartão por palavra com leitura,
   significado, kanji (leituras, partes e ordem dos traços) e a frase com áudio; Pular, Já conheço ou Estudar,
   até o número de Configurações (10 por padrão). Os exercícios saem só dessas palavras.
+- Na escolha de palavras ficam de fora as já estudadas (com cartão já respondido; voltam pela Revisão), as
+  puladas nas últimas 24 h e as "Já conheço". Ordem: Aleatória, Mais frequentes ou Ordem do áudio (no
+  vocabulário salvo, Recentes), sempre com os **níveis marcados** primeiro.
+- **Níveis JLPT** (Configurações): marque um ou mais; é prioridade, não filtro. Palavras e exercícios dos níveis
+  marcados vêm primeiro, o resto depois.
 - **Montar o kanji com as partes**: o quadrado do kanji com uma lacuna por parte (雪 = 雨 + ⺕) e peças
   desenhadas a partir do KanjiVG (assets/parts.txt).
 - **Já conheço** (no cartão da palavra e na tela da palavra): a palavra sai dos exercícios, da fila de erros e do

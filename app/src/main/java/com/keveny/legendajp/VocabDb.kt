@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 /** Vocabulário salvo: palavras (forma de dicionário) e as frases onde apareceram. */
-class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 9) {
+class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 10) {
 
     companion object {
         @Volatile private var instance: VocabDb? = null
@@ -66,6 +66,7 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         createTimingAndAi(db)
         Srs.createTables(db)
         createTrAi(db)
+        createSkip(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -77,6 +78,7 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         if (oldVersion < 7) createTimingAndAi(db)
         if (oldVersion < 8) Srs.createTables(db)
         if (oldVersion < 9) createTrAi(db)
+        if (oldVersion < 10) createSkip(db)
     }
 
     /** Marca/desmarca "já conheço". Ao marcar, tira a palavra da fila de erros. */
@@ -246,6 +248,26 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
     private fun createTrAi(db: SQLiteDatabase) {
         db.execSQL("CREATE TABLE IF NOT EXISTS tr_ai (text TEXT PRIMARY KEY, translation TEXT NOT NULL, created INTEGER NOT NULL)")
     }
+
+    /** "Pular" na escolha de palavras: a palavra some da escolha até "until". */
+    private fun createSkip(db: SQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS pick_skip (key TEXT PRIMARY KEY, until INTEGER NOT NULL)")
+    }
+
+    fun skipWord(key: String, until: Long) {
+        writableDatabase.insertWithOnConflict("pick_skip", null, ContentValues().apply {
+            put("key", key); put("until", until)
+        }, SQLiteDatabase.CONFLICT_REPLACE)
+    }
+
+    fun unskipWord(key: String) {
+        writableDatabase.delete("pick_skip", "key=?", arrayOf(key))
+    }
+
+    fun skippedKeys(now: Long = System.currentTimeMillis()): Set<String> =
+        readableDatabase.rawQuery("SELECT key FROM pick_skip WHERE until > ?", arrayOf(now.toString())).use { c ->
+            buildSet { while (c.moveToNext()) add(c.getString(0)) }
+        }
 
     fun aiTranslation(text: String): String? =
         readableDatabase.rawQuery("SELECT translation FROM tr_ai WHERE text=?", arrayOf(text)).use { c ->

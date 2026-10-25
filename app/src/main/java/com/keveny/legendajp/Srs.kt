@@ -213,6 +213,12 @@ object Srs {
         }
     }
 
+    /** Palavras com cartão já respondido pelo menos uma vez: saem da escolha (voltam pela Revisão). */
+    fun studiedKeys(ctx: Context): Set<String> =
+        db(ctx).rawQuery("SELECT DISTINCT key FROM srs WHERE kind != ? AND reps > 0", arrayOf(GRAMMAR)).use { c ->
+            buildSet { while (c.moveToNext()) add(c.getString(0)) }
+        }
+
     /** O cartão ainda vale? (palavra salva e não marcada como conhecida) */
     fun active(c: Card): Boolean = c.kind == GRAMMAR || c.key in VocabDb.studyKeys
 

@@ -42,10 +42,22 @@ class Prefs(ctx: Context) {
         get() = sp.getBoolean("overlayExpanded", false)
         set(v) = sp.edit().putBoolean("overlayExpanded", v).apply()
 
-    /** Nível JLPT que o usuário está estudando: 5 (N5) … 1 (N1). */
-    var level: Int
-        get() = sp.getInt("level", 5)
-        set(v) = sp.edit().putInt("level", v).apply()
+    /**
+     * Níveis JLPT marcados (5 = N5 … 1 = N1). É prioridade, não filtro: palavras e exercícios desses
+     * níveis vêm primeiro. Sem marcação salva, vale "de N5 até o nível antigo" (configuração anterior).
+     */
+    var levels: Set<Int>
+        get() = sp.getStringSet("levels", null)?.mapNotNull { it.toIntOrNull() }?.toSet()?.takeIf { it.isNotEmpty() }
+            ?: (sp.getInt("level", 5)..5).toSet()
+        set(v) = sp.edit().putStringSet("levels", v.map { it.toString() }.toSet()).apply()
+
+    /** O nível mais difícil marcado (para a IA e a tela de níveis). */
+    val level: Int get() = levels.minOrNull() ?: 5
+
+    /** Ordem da escolha de palavras: "aleatoria", "frequentes" ou "audio" (no vocabulário salvo: mais recentes). */
+    var pickOrder: String
+        get() = sp.getString("pickOrder", "aleatoria") ?: "aleatoria"
+        set(v) = sp.edit().putString("pickOrder", v).apply()
 
     /** Quantas palavras escolher antes de estudar (tela Escolher palavras). */
     var studyWords: Int

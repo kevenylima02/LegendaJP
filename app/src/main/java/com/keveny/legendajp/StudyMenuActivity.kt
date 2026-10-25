@@ -67,7 +67,7 @@ class StudyMenuActivity : Activity() {
                 )
             }
         }
-        findViewById<TextView>(R.id.level).text = "Nível atual: N${Prefs(this).level} (mude em Configurações)"
+        findViewById<TextView>(R.id.level).text = "Níveis em primeiro: " + Prefs(this).levels.sortedDescending().joinToString(", ") { "N$it" } + " (Configurações)"
         findViewById<Button>(R.id.btnMistakes).setOnClickListener {
             startActivity(Intent(this, MistakesActivity::class.java))
         }

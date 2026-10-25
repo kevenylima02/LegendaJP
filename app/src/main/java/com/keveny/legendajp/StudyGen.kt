@@ -93,7 +93,7 @@ object StudyGen {
      * @param cover garante pelo menos um exercício de cada palavra de onlyKeys (palavras escolhidas).
      */
     fun build(
-        ctx: Context, lines: List<Line>, focus: Focus, level: Int, max: Int, onlyKeys: Set<String>? = null,
+        ctx: Context, lines: List<Line>, focus: Focus, levels: Set<Int>, max: Int, onlyKeys: Set<String>? = null,
         grammar: Boolean = onlyKeys == null, cover: Boolean = false
     ): List<Item> {
         val rnd = kotlin.random.Random(System.nanoTime())
@@ -107,12 +107,12 @@ object StudyGen {
             for (k in onlyKeys.shuffled(rnd)) {
                 if (out.size >= max) break
                 val mine = pool.filter { it.wordKey == k }
-                (mine.firstOrNull { it.level <= level } ?: mine.firstOrNull())?.let { out.add(it) }
+                (mine.firstOrNull { it.level in levels } ?: mine.firstOrNull())?.let { out.add(it) }
             }
         }
         val picked = out.map { it.identity }.toHashSet()
-        val preferred = pool.filter { it.level <= level && it.identity !in picked }
-        val rest = pool.filter { it.level > level && it.identity !in picked }
+        val preferred = pool.filter { it.level in levels && it.identity !in picked }
+        val rest = pool.filter { it.level !in levels && it.identity !in picked }
         for (group in listOf(preferred, rest)) {
             val byKind = group.groupBy { it.kind }.values.map { it.toMutableList() }.shuffled(rnd)
             while (out.size < max && byKind.any { it.isNotEmpty() }) {
@@ -206,22 +206,45 @@ object StudyGen {
         return ls.firstOrNull { it.text == sentence } ?: Line(sec, sentence, sec + 6, recording)
     }
 
-    /** Palavra para a escolha antes do estudo: uma frase onde aparece, em quantas frases aparece e o nível. */
-    data class Candidate(val word: Jp.Word, val line: Line, val sentences: Int, val level: Int)
+    /**
+     * Palavra para a escolha antes do estudo: uma frase onde aparece, em quantas frases aparece, o nível
+     * e a posição (ordem em que aparece no áudio).
+     */
+    data class Candidate(val word: Jp.Word, val line: Line, val sentences: Int, val level: Int, val position: Int)
 
     /**
-     * Palavras que geram exercícios neste foco (as que você já conhece ficam de fora), na ordem da
-     * escolha: primeiro as do seu nível ou acima, depois as que aparecem em mais frases.
+     * Palavras que geram exercícios neste foco. Ficam de fora as de exclude (já conhecidas, já estudadas,
+     * puladas há menos de 24 h). Primeiro as dos níveis marcados, depois as outras; dentro de cada grupo,
+     * na ordem pedida (sortInGroup).
      */
-    fun candidates(ctx: Context, lines: List<Line>, focus: Focus, level: Int, restrict: Set<String>? = null): List<Candidate> {
+    fun candidates(
+        ctx: Context, lines: List<Line>, focus: Focus, levels: Set<Int>, restrict: Set<String>? = null,
+        exclude: Set<String> = emptySet()
+    ): List<Candidate> {
         val disabled = Prefs(ctx).disabledKinds
         val items = generateAll(ctx, lines, kotlin.random.Random(1), restrict, grammar = false)
-            .filter { it.kind !in disabled && it.wordKey != null && (focus == Focus.MISTO || it.focus == focus) }
-        return items.groupBy { it.wordKey!! }.mapNotNull { (_, its) ->
+            .filter { it.kind !in disabled && it.wordKey != null && it.wordKey !in exclude && (focus == Focus.MISTO || it.focus == focus) }
+        return items.groupBy { it.wordKey!! }.entries.mapIndexedNotNull { i, (_, its) ->
             val first = its.first()
-            val w = wordOf(first) ?: return@mapNotNull null
-            Candidate(w, Line(first.sec, first.sentence, first.endSec, first.recording), its.map { it.sentence }.distinct().size, Jlpt.wordLevel(w.base))
-        }.sortedWith(compareBy<Candidate>({ if (it.level <= level) 0 else 1 }, { -it.sentences }, { it.level }))
+            val w = wordOf(first) ?: return@mapIndexedNotNull null
+            Candidate(w, Line(first.sec, first.sentence, first.endSec, first.recording), its.map { it.sentence }.distinct().size, Jlpt.wordLevel(w.base), i)
+        }
+    }
+
+    /**
+     * Ordena para a escolha: níveis marcados primeiro; dentro de cada grupo "aleatoria", "frequentes"
+     * (mais frases primeiro, empate aleatório) ou "audio" (ordem em que aparecem; no vocabulário salvo,
+     * a lista já vem das mais recentes).
+     */
+    fun sortCandidates(list: List<Candidate>, levels: Set<Int>, order: String): List<Candidate> {
+        val rnd = kotlin.random.Random(System.nanoTime())
+        fun sortGroup(g: List<Candidate>): List<Candidate> = when (order) {
+            "frequentes" -> g.shuffled(rnd).sortedByDescending { it.sentences }
+            "audio" -> g.sortedBy { it.position }
+            else -> g.shuffled(rnd)
+        }
+        val (mine, rest) = list.partition { it.level in levels }
+        return sortGroup(mine) + sortGroup(rest)
     }
 
     private fun generateAll(ctx: Context, lines: List<Line>, rnd: kotlin.random.Random, onlyKeys: Set<String>?, grammar: Boolean): List<Item> {

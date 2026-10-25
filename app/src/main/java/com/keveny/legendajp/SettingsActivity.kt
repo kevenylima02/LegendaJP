@@ -23,12 +23,18 @@ class SettingsActivity : Activity() {
         title = "Configurações"
         prefs = Prefs(this)
 
-        val levels = findViewById<RadioGroup>(R.id.levels)
-        levels.check(
-            when (prefs.level) { 1 -> R.id.n1; 2 -> R.id.n2; 3 -> R.id.n3; 4 -> R.id.n4; else -> R.id.n5 }
-        )
-        levels.setOnCheckedChangeListener { _, id ->
-            prefs.level = when (id) { R.id.n1 -> 1; R.id.n2 -> 2; R.id.n3 -> 3; R.id.n4 -> 4; else -> 5 }
+        // Níveis: vários marcados (prioridade); pelo menos um fica marcado
+        val levelBoxes = mapOf(5 to R.id.n5, 4 to R.id.n4, 3 to R.id.n3, 2 to R.id.n2, 1 to R.id.n1)
+            .mapValues { findViewById<android.widget.CheckBox>(it.value) }
+        val current = prefs.levels
+        for ((lvl, cb) in levelBoxes) {
+            cb.isChecked = lvl in current
+            cb.setOnCheckedChangeListener { box, on ->
+                val set = prefs.levels.toMutableSet()
+                if (on) set.add(lvl) else set.remove(lvl)
+                if (set.isEmpty()) { box.isChecked = true; return@setOnCheckedChangeListener }
+                prefs.levels = set
+            }
         }
         val words = findViewById<RadioGroup>(R.id.studyWords)
         words.check(when (prefs.studyWords) { 5 -> R.id.w5; 15 -> R.id.w15; 20 -> R.id.w20; else -> R.id.w10 })

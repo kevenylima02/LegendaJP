@@ -245,7 +245,7 @@ class StudyActivity : Activity() {
                     else -> null
                 }
                 val max = if (keys != null) maxOf(MAX_ITEMS, keys.size * 2) else MAX_ITEMS
-                built = StudyGen.build(this, lines, focus, Prefs(this).level, max, only,
+                built = StudyGen.build(this, lines, focus, Prefs(this).levels, max, only,
                     grammar = !saved && wordKey == null, cover = keys != null)
             }
             // Traços das peças de "Montar o kanji" (uma passada pelo arquivo)
@@ -479,9 +479,10 @@ class StudyActivity : Activity() {
                 for (o in item.options) addChoice(o)
             }
             is Item.GrammarCloze -> {
-                prompt.text = pre + "O que completa a frase? (padrão gramatical)"
+                prompt.text = pre + "O que completa a frase? (padrão gramatical; use a tradução e, se precisar, o áudio)"
                 sentenceView.visibility = View.VISIBLE
-                sentenceView.text = item.sentence.replaceRange(item.hit.start, item.hit.end, "＿＿＿")
+                TrSwitch.bind(this, sentenceView, item.sentence,
+                    item.sentence.replaceRange(item.hit.start, item.hit.end, "＿＿＿") + "\n", scale = 0.65f)
                 for (o in item.options) addChoice(o)
             }
             is Item.Kanji -> {

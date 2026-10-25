@@ -12,7 +12,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Nível que estou estudando"
+            android:text="Níveis que estou estudando"
             android:textColor="@color/text"
             android:textSize="16sp"
             android:textStyle="bold" />
@@ -21,23 +21,23 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Os exercícios de gramática dão preferência aos padrões deste nível e dos níveis acima."
+            android:text="Marque um ou mais. Palavras e exercícios desses níveis vêm primeiro, em ordem aleatória entre eles; os outros níveis vêm depois. Nada é removido."
             android:textColor="@color/text_secondary"
             android:textSize="13sp" />
 
-        <RadioGroup
+        <LinearLayout
             android:id="@+id/levels"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:orientation="horizontal">
 
-            <RadioButton android:id="@+id/n5" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp" android:text="N5" />
-            <RadioButton android:id="@+id/n4" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="2dp" android:layout_marginEnd="2dp" android:text="N4" />
-            <RadioButton android:id="@+id/n3" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="2dp" android:layout_marginEnd="2dp" android:text="N3" />
-            <RadioButton android:id="@+id/n2" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="2dp" android:layout_marginEnd="2dp" android:text="N2" />
-            <RadioButton android:id="@+id/n1" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="4dp" android:text="N1" />
-        </RadioGroup>
+            <CheckBox android:id="@+id/n5" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp" android:text="N5" />
+            <CheckBox android:id="@+id/n4" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="2dp" android:layout_marginEnd="2dp" android:text="N4" />
+            <CheckBox android:id="@+id/n3" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="2dp" android:layout_marginEnd="2dp" android:text="N3" />
+            <CheckBox android:id="@+id/n2" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="2dp" android:layout_marginEnd="2dp" android:text="N2" />
+            <CheckBox android:id="@+id/n1" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="4dp" android:text="N1" />
+        </LinearLayout>
 
         <Button
             android:id="@+id/btnLevelInfo"
