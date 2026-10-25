@@ -15,7 +15,7 @@ import android.widget.TextView
 /** Lista as transcrições salvas em Download/LegendaJP. */
 class RecordingsActivity : Activity() {
 
-    private data class Row(val item: Recordings.Item, val lines: Int, val preview: String, val hasWav: Boolean)
+    private data class Row(val item: Recordings.Item, val lines: Int, val preview: String, val hasWav: Boolean, val title: String?)
 
     private lateinit var list: ListView
     private lateinit var empty: TextView
@@ -38,7 +38,12 @@ class RecordingsActivity : Activity() {
             )
         }
         list.setOnItemLongClickListener { _, _, pos, _ ->
-            confirmDelete(rows[pos])
+            val row = rows[pos]
+            AlertDialog.Builder(this).setTitle(row.title ?: Recordings.prettyName(row.item.name))
+                .setItems(arrayOf("Renomear", "Apagar")) { _, which ->
+                    if (which == 0) Recordings.renameDialog(this, row.item.name) { load() } else confirmDelete(row)
+                }
+                .show()
             true
         }
     }
@@ -60,7 +65,7 @@ class RecordingsActivity : Activity() {
                 val text = try { Recordings.readText(this, item.uri) } catch (_: Exception) { "" }
                 val lines = text.lines().filter { it.isNotBlank() && !it.startsWith("#") }
                 val preview = lines.take(2).joinToString(" ") { Recordings.parseLine(it).second }
-                Row(item, lines.size, preview, Recordings.baseName(item.name) in wavs)
+                Row(item, lines.size, preview, Recordings.baseName(item.name) in wavs, Recordings.title(this, item.name))
             }
             runOnUiThread {
                 rows = result
@@ -72,7 +77,7 @@ class RecordingsActivity : Activity() {
 
     private fun confirmDelete(row: Row) {
         AlertDialog.Builder(this)
-            .setMessage(getString(R.string.delete_confirm) + "\n" + Recordings.prettyName(row.item.name))
+            .setMessage(getString(R.string.delete_confirm) + "\n" + (row.title?.let { "$it · " } ?: "") + Recordings.prettyName(row.item.name))
             .setPositiveButton(R.string.menu_delete) { _, _ ->
                 Recordings.delete(this, row.item.uri)
                 Recordings.find(this, Recordings.baseName(row.item.name) + ".wav")?.let { Recordings.delete(this, it.uri) }
@@ -90,8 +95,9 @@ class RecordingsActivity : Activity() {
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             val v = convertView ?: LayoutInflater.from(parent.context).inflate(R.layout.item_recording, parent, false)
             val r = rows[position]
-            v.findViewById<TextView>(R.id.title).text = Recordings.prettyName(r.item.name)
+            v.findViewById<TextView>(R.id.title).text = r.title ?: Recordings.prettyName(r.item.name)
             val parts = mutableListOf("${r.lines} frases", Recordings.prettySize(r.item.size))
+            if (r.title != null) parts.add(0, Recordings.prettyName(r.item.name))
             if (r.hasWav) parts.add("com áudio")
             v.findViewById<TextView>(R.id.subtitle).text = parts.joinToString(" · ")
             v.findViewById<TextView>(R.id.preview).text = r.preview

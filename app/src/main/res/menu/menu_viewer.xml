@@ -10,6 +10,10 @@
         android:icon="@android:drawable/ic_menu_share"
         android:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_rename"
+        android:title="Renomear"
+        android:showAsAction="never" />
+    <item
         android:id="@+id/action_translate_ai"
         android:title="✦ Traduzir gravação com IA"
         android:showAsAction="never" />

@@ -69,6 +69,70 @@ object Recordings {
 
     fun baseName(name: String) = name.substringBeforeLast('.')
 
+    /** Título dado pelo usuário, se houver. Lê o banco. */
+    fun title(ctx: Context, name: String): String? = VocabDb.get(ctx).recordingTitle(baseName(name))
+
+    /** Título (se houver) ou a data da gravação. */
+    fun display(ctx: Context, name: String): String = title(ctx, name) ?: prettyName(name)
+
+    /**
+     * Renomear a gravação: só o título (o arquivo continua com a data). "✦ Sugerir com IA" lê a
+     * transcrição e propõe um título. Vazio volta a mostrar só a data. onDone roda na thread principal.
+     */
+    fun renameDialog(act: android.app.Activity, name: String, onDone: () -> Unit) {
+        val base = baseName(name)
+        val d = act.resources.displayMetrics.density
+        fun dp(v: Int) = (v * d).toInt()
+        val input = android.widget.EditText(act).apply {
+            setText(title(act, name) ?: "")
+            hint = "Título (vazio = só a data)"
+            textSize = 17f
+            setSingleLine()
+        }
+        val box = android.widget.LinearLayout(act).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(dp(20), dp(8), dp(20), 0)
+            addView(android.widget.TextView(act).apply {
+                text = "Gravada em ${prettyName(name)}"
+                textSize = 13f
+                setTextColor(act.getColor(R.color.text_secondary))
+            })
+            addView(input)
+        }
+        if (Ai.enabled(act)) {
+            val btn = android.widget.Button(act).apply {
+                text = "✦ Sugerir título com IA"
+                isAllCaps = false
+                setBackgroundResource(R.drawable.bg_button_outline)
+                setTextColor(act.getColor(R.color.text))
+                stateListAnimator = null
+            }
+            btn.setOnClickListener {
+                btn.isEnabled = false
+                btn.text = "✦ Lendo a transcrição…"
+                Ai.suggestTitle(act, base) { t, err ->
+                    btn.isEnabled = true
+                    btn.text = "✦ Sugerir outro título"
+                    if (t != null) { input.setText(t); input.setSelection(t.length) }
+                    else android.widget.Toast.makeText(act, "Não consegui: $err", android.widget.Toast.LENGTH_LONG).show()
+                }
+            }
+            box.addView(btn, android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = dp(8) })
+        }
+        android.app.AlertDialog.Builder(act).setTitle("Renomear").setView(box)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton("Salvar") { _, _ ->
+                val t = input.text.toString().trim()
+                Thread {
+                    VocabDb.get(act).setRecordingTitle(base, t)
+                    act.runOnUiThread(onDone)
+                }.start()
+            }
+            .show()
+    }
+
     fun prettySize(bytes: Long): String = when {
         bytes >= 1_000_000 -> String.format(Locale.US, "%.1f MB", bytes / 1_000_000.0)
         bytes >= 1_000 -> String.format(Locale.US, "%.0f KB", bytes / 1_000.0)

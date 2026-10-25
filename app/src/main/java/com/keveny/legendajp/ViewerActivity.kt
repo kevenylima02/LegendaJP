@@ -78,7 +78,7 @@ class ViewerActivity : Activity() {
         txtUri = intent.getParcelableExtra(EXTRA_URI, Uri::class.java) ?: run { finish(); return }
         name = intent.getStringExtra(EXTRA_NAME) ?: ""
         pendingSeek = intent.getIntExtra(EXTRA_SEEK, -1)
-        title = Recordings.prettyName(name)
+        showTitle()
 
         listView = findViewById(R.id.lines)
         playerBar = findViewById(R.id.player)
@@ -243,6 +243,17 @@ class ViewerActivity : Activity() {
 
     private var levelExpanded = false
 
+    /** Título dado (ou a data) no topo; com título, a data fica embaixo. */
+    private fun showTitle() {
+        Thread {
+            val t = Recordings.title(this, name)
+            runOnUiThread {
+                title = t ?: Recordings.prettyName(name)
+                actionBar?.subtitle = if (t != null) "Gravada em ${Recordings.prettyName(name)}" else null
+            }
+        }.start()
+    }
+
     /** Cartão de dificuldade: resumo numa linha; tocar mostra os detalhes. */
     private fun showLevel(r: TextLevel.Result) {
         val v = findViewById<TextView>(R.id.levelInfo)
@@ -354,6 +365,7 @@ class ViewerActivity : Activity() {
                 startActivity(Intent.createChooser(send, getString(R.string.share)))
             }
             R.id.action_translate_ai -> translateAll()
+            R.id.action_rename -> Recordings.renameDialog(this, name) { showTitle() }
             R.id.action_copy -> {
                 getSystemService(ClipboardManager::class.java)
                     .setPrimaryClip(ClipData.newPlainText("LegendaJP", fullText))

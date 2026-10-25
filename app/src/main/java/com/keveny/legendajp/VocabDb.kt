@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 /** Vocabulário salvo: palavras (forma de dicionário) e as frases onde apareceram. */
-class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 11) {
+class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 12) {
 
     companion object {
         @Volatile private var instance: VocabDb? = null
@@ -68,6 +68,7 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         createTrAi(db)
         createSkip(db)
         Reports.createTable(db)
+        createTitles(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -81,6 +82,7 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         if (oldVersion < 9) createTrAi(db)
         if (oldVersion < 10) createSkip(db)
         if (oldVersion < 11) Reports.createTable(db)
+        if (oldVersion < 12) createTitles(db)
     }
 
     /** Marca/desmarca "já conheço". Ao marcar, tira a palavra da fila de erros. */
@@ -249,6 +251,23 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
     /** Traduções feitas pelo Gemini; ficam ao lado das do ML Kit (tabela tr), sem substituir. */
     private fun createTrAi(db: SQLiteDatabase) {
         db.execSQL("CREATE TABLE IF NOT EXISTS tr_ai (text TEXT PRIMARY KEY, translation TEXT NOT NULL, created INTEGER NOT NULL)")
+    }
+
+    /** Título dado à gravação (o nome do arquivo, com a data, não muda: é a chave em todo o app). */
+    private fun createTitles(db: SQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS rec_title (recording TEXT PRIMARY KEY, title TEXT NOT NULL, updated INTEGER NOT NULL)")
+    }
+
+    fun recordingTitle(recording: String): String? =
+        readableDatabase.rawQuery("SELECT title FROM rec_title WHERE recording=?", arrayOf(recording)).use { c ->
+            if (c.moveToFirst()) c.getString(0) else null
+        }
+
+    fun setRecordingTitle(recording: String, title: String?) {
+        if (title.isNullOrBlank()) writableDatabase.delete("rec_title", "recording=?", arrayOf(recording))
+        else writableDatabase.insertWithOnConflict("rec_title", null, ContentValues().apply {
+            put("recording", recording); put("title", title.trim()); put("updated", System.currentTimeMillis())
+        }, SQLiteDatabase.CONFLICT_REPLACE)
     }
 
     /** "Pular" na escolha de palavras: a palavra some da escolha até "until". */

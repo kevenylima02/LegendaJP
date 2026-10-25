@@ -200,7 +200,7 @@ class VocabDetailActivity : Activity() {
             v.findViewById<TextView>(R.id.sentence).text =
                 Jp.highlight(o.sentence, VocabDb.studyKeys, getColor(R.color.saved_word), VocabDb.knownKeys, getColor(R.color.known_word))
             v.findViewById<TextView>(R.id.meta).text =
-                "${Recordings.prettyName(o.recording)} · ${CaptureService.formatTime(o.sec)}"
+                "${Recordings.display(this@VocabDetailActivity, o.recording)} · ${CaptureService.formatTime(o.sec)}"
             v.findViewById<TextView>(R.id.play).setOnClickListener { play(o) }
             val trView = v.findViewById<TextView>(R.id.translation)
             val trBtn = v.findViewById<TextView>(R.id.translate)

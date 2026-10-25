@@ -35,7 +35,7 @@ class StudyMenuActivity : Activity() {
         uri = intent.getParcelableExtra(StudyActivity.EXTRA_URI, Uri::class.java)
         if (!saved && uri == null) { finish(); return }
         name = if (saved) StudyActivity.SAVED_RECORDING else (intent.getStringExtra(StudyActivity.EXTRA_NAME) ?: "")
-        title = if (saved) "Estudar · Vocabulário salvo" else "Estudar · " + Recordings.prettyName(name)
+        title = if (saved) "Estudar · Vocabulário salvo" else "Estudar · " + Recordings.display(this, name)
         list = findViewById(R.id.history)
         list.adapter = adapter
         list.setOnItemClickListener { _, _, pos, _ ->

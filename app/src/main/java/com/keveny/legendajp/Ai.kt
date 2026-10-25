@@ -166,6 +166,44 @@ object Ai {
         }.start()
     }
 
+    /** Título curto em português para a gravação, a partir da transcrição (e das traduções que houver). */
+    fun suggestTitle(ctx: Context, recording: String, cb: (String?, String?) -> Unit) {
+        val app = ctx.applicationContext
+        Thread {
+            var title: String? = null
+            var err: String? = null
+            try {
+                val item = Recordings.find(app, "$recording.txt") ?: throw IllegalStateException("Transcrição não encontrada")
+                val lines = StudyGen.lines(Recordings.readText(app, item.uri)).map { it.text }
+                val limit = if (mode(app) == NANO) 1200 else 6000
+                val sb = StringBuilder()
+                for (l in lines) {
+                    if (sb.length > limit) break
+                    sb.append(l)
+                    Tr.aiCached(app, l)?.let { sb.append("  (").append(it).append(")") }
+                    sb.append('\n')
+                }
+                val prompt = "Abaixo está a transcrição automática (em japonês, às vezes com tradução) de um áudio. " +
+                    "Crie um título curto em português do Brasil, de 3 a 7 palavras, que diga do que o áudio trata " +
+                    "(ex.: \"Conversa sobre o trabalho em Osaka\"). Sem aspas, sem data.\n\n$sb\n" +
+                    "Responda somente com JSON, sem markdown: {\"titulo\": \"...\"}"
+                val out = when (mode(app)) {
+                    NANO -> runNano(prompt, 128)
+                    CLOUD -> runCloud(app, prompt)
+                    else -> throw IllegalStateException("A IA está desligada em Configurações.")
+                }
+                val a = out.indexOf('{'); val b = out.lastIndexOf('}')
+                title = JSONObject(out.substring(a, b + 1)).optString("titulo").trim().trim('"', '「', '」').ifEmpty { null }
+                if (title == null) err = "resposta vazia"
+            } catch (e: Exception) {
+                Log.e(TAG, "suggestTitle", e)
+                err = e.message ?: e.javaClass.simpleName
+            }
+            val t = title; val e2 = err
+            main.post { cb(t, e2) }
+        }.start()
+    }
+
     /** Correção de uma frase escrita pelo aluno com um padrão. error != null quando falhou. */
     data class Check(val correct: Boolean, val corrected: String, val explanation: String, val translation: String, val error: String?)
 
