@@ -107,6 +107,11 @@ class SettingsActivity : Activity() {
         val tts = findViewById<RadioGroup>(R.id.ttsEngine)
         tts.check(if (prefs.ttsEngine == AudioGen.GEMINI) R.id.ttsGemini else R.id.ttsPhone)
         tts.setOnCheckedChangeListener { _, id -> prefs.ttsEngine = if (id == R.id.ttsGemini) AudioGen.GEMINI else AudioGen.PHONE }
+        val engineBtn = findViewById<Button>(R.id.btnTtsEngine)
+        fun engineLabel() { engineBtn.text = "Motor: " + prefs.ttsPackage.ifBlank { "padrão" }.substringAfterLast('.') }
+        engineLabel()
+        engineBtn.setOnClickListener { PhoneVoices.chooseEngine(this) { engineLabel() } }
+        findViewById<Button>(R.id.btnTtsVoices).setOnClickListener { PhoneVoices.voicesDialog(this) }
         val prefer = findViewById<Switch>(R.id.swPreferGemini)
         prefer.isChecked = prefs.trPreferGemini
         prefer.setOnCheckedChangeListener { _, on -> prefs.trPreferGemini = on }

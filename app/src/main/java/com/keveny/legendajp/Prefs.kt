@@ -99,6 +99,18 @@ class Prefs(ctx: Context) {
         get() = sp.getString("ttsEngine", AudioGen.PHONE) ?: AudioGen.PHONE
         set(v) = sp.edit().putString("ttsEngine", v).apply()
 
+    /** Motor de voz do celular (pacote; vazio = o padrão do Android). */
+    var ttsPackage: String
+        get() = sp.getString("ttsPackage", "") ?: ""
+        set(v) = sp.edit().putString("ttsPackage", v).apply()
+
+    /** Gênero que você marcou para cada voz do celular (nome da voz → feminina). */
+    var voiceGenders: Map<String, Boolean>
+        get() = (sp.getStringSet("voiceGenders", emptySet()) ?: emptySet()).mapNotNull { e ->
+            val i = e.lastIndexOf('='); if (i < 0) null else e.substring(0, i) to (e.substring(i + 1) == "f")
+        }.toMap()
+        set(v) = sp.edit().putStringSet("voiceGenders", v.map { "${it.key}=${if (it.value) "f" else "m"}" }.toSet()).apply()
+
     var geminiModel: String
         get() = sp.getString("geminiModel", Ai.DEFAULT_MODEL) ?: Ai.DEFAULT_MODEL
         set(v) = sp.edit().putString("geminiModel", v.trim()).apply()

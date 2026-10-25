@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.speech.tts.Voice
 import android.util.Base64
 import android.util.Log
 import org.json.JSONArray
@@ -24,42 +25,66 @@ import kotlin.math.sqrt
 
 /**
  * Gera o áudio de uma gravação que só tem texto (importada) e também serve para refazer o áudio.
- * - Celular: TextToSpeech do Android (grátis, offline), uma frase por vez, uma voz por locutor.
- * - Gemini: gemini-3.8-flash-lite-tts, blocos de até 12 frases (até 2 vozes por bloco); o áudio do
- *   bloco é dividido nas pausas. O plano grátis aceita 3 pedidos por minuto: o app espera e tenta de novo.
- * Cada frase começa num segundo exato e o .txt ganha os tempos [mm:ss].
+ * - Celular: TextToSpeech do Android (grátis, offline), uma frase por vez; voz masculina ou feminina
+ *   conforme o locutor (o tom muda quando o celular não tem a voz certa).
+ * - Gemini: um pedido por par de locutores (até 20 frases), o áudio é dividido nas pausas. Plano grátis:
+ *   3 pedidos por minuto e 10 por dia em cada modelo; o app espera entre os pedidos e, se um modelo
+ *   esgota no dia, passa para o outro.
+ * Cada frase gerada fica guardada no celular: se parar no meio, gerar de novo continua de onde parou,
+ * e dá para completar o que faltou com a voz do celular.
  */
 object AudioGen {
     const val PHONE = "celular"
     const val GEMINI = "gemini"
     private const val SR = 16000
     private const val TAG = "MichiAudio"
-    private const val GEMINI_TTS = "gemini-3.8-flash-lite-tts"
+    private val geminiModels = listOf("gemini-3.8-flash-lite-tts", "gemini-3.8-flash-tts")
     private val femaleVoices = listOf("Kore", "Aoede", "Leda", "Zephyr")
     private val maleVoices = listOf("Puck", "Charon", "Orus", "Fenrir")
     private val main = Handler(Looper.getMainLooper())
 
+    /** Modelo → até quando está sem cota (limite diário). */
+    private val exhaustedUntil = ConcurrentHashMap<String, Long>()
+    @Volatile private var lastGeminiCall = 0L
+
     @Volatile var stopRequested = false
 
+    /** Parou com parte das frases geradas (elas ficam guardadas). */
+    class Partial(msg: String, val done: Int, val total: Int) : Exception(msg)
+
     /**
-     * progress(texto, feitas, total) e done(erro ou null) rodam na thread principal.
+     * progress(texto, feitas, total); done(erro ou null, frases prontas, total). Rodam na thread principal.
+     * allowOther: aproveita frases já geradas por outro meio (ex.: completar o Gemini com a voz do celular).
      */
-    fun generate(ctx: Context, txtName: String, engine: String, progress: (String, Int, Int) -> Unit, done: (String?) -> Unit) {
+    fun generate(
+        ctx: Context, txtName: String, engine: String, allowOther: Boolean,
+        progress: (String, Int, Int) -> Unit, done: (String?, Int, Int) -> Unit
+    ) {
         val app = ctx.applicationContext
         stopRequested = false
         Thread {
-            val err = try {
-                run(app, txtName, engine) { msg, a, b -> main.post { progress(msg, a, b) } }
-                null
+            var err: String? = null
+            var ok = 0
+            var total = 0
+            try {
+                total = run(app, txtName, engine, allowOther) { msg, a, b -> main.post { progress(msg, a, b) } }
+                ok = total
+            } catch (e: Partial) {
+                err = e.message; ok = e.done; total = e.total
             } catch (e: Exception) {
                 Log.e(TAG, "generate", e)
-                e.message ?: e.javaClass.simpleName
+                err = e.message ?: e.javaClass.simpleName
             }
-            main.post { done(err) }
+            val (e2, o2, t2) = Triple(err, ok, total)
+            main.post { done(e2, o2, t2) }
         }.start()
     }
 
-    private fun run(ctx: Context, txtName: String, engine: String, progress: (String, Int, Int) -> Unit) {
+    // =====================================================================
+    // Montagem
+    // =====================================================================
+
+    private fun run(ctx: Context, txtName: String, engine: String, allowOther: Boolean, progress: (String, Int, Int) -> Unit): Int {
         val base = Recordings.baseName(txtName)
         val item = Recordings.find(ctx, "$base.txt") ?: throw IllegalStateException("Transcrição não encontrada")
         val texts = Recordings.readText(ctx, item.uri).lines().filter { it.isNotBlank() && !it.startsWith("#") }
@@ -67,11 +92,33 @@ object AudioGen {
         if (texts.isEmpty()) throw IllegalStateException("A transcrição está vazia")
         val bySpeaker = Speakers.lines(ctx, base)
         val infos = Speakers.infos(ctx, base).associateBy { it.id }
-        val ids = (bySpeaker.values.distinct().sorted()).ifEmpty { listOf("A") }
+        val ids = bySpeaker.values.distinct().sorted().ifEmpty { listOf("A") }
+        fun speakerOf(i: Int) = bySpeaker[i] ?: ids.first()
+        fun female(id: String) = infos[id]?.female ?: (ids.indexOf(id) % 2 == 0)
 
-        val segs: List<ShortArray> = if (engine == GEMINI) gemini(ctx, texts, bySpeaker, infos, ids, progress)
-            else phone(ctx, texts, bySpeaker, ids, progress)
-        if (stopRequested) throw IllegalStateException("Parado")
+        // Frases já geradas (guardadas) entram direto
+        val dir = File(ctx.filesDir, "audiogen/$base").apply { mkdirs() }
+        val segs = arrayOfNulls<ShortArray>(texts.size)
+        val voiceKey: (Int) -> String = if (engine == GEMINI) { i -> geminiVoice(speakerOf(i), ids, ::female) } else { i -> speakerOf(i) + female(speakerOf(i)) + Prefs(ctx).ttsPackage + Prefs(ctx).voiceGenders.size }
+        fun file(i: Int, eng: String) = File(dir, "$i-$eng-${texts[i].hashCode().toUInt()}-${voiceKey(i).hashCode().toUInt()}.pcm")
+        for (i in texts.indices) {
+            val f = file(i, engine).takeIf { it.exists() }
+                ?: if (allowOther) dir.listFiles()?.firstOrNull { it.name.startsWith("$i-") && it.name.contains("-${texts[i].hashCode().toUInt()}-") } else null
+            if (f != null) segs[i] = readPcm(f)
+        }
+        val store: (Int, ShortArray) -> Unit = { i, s -> segs[i] = s; writePcm(file(i, engine), s) }
+
+        val before = segs.count { it != null }
+        if (before < texts.size) {
+            try {
+                if (engine == GEMINI) gemini(ctx, texts, segs, ::speakerOf, ids, ::female, store, progress)
+                else phone(ctx, texts, segs, ::speakerOf, ids, ::female, store, progress)
+            } catch (e: Exception) {
+                val got = segs.count { it != null }
+                throw Partial((e.message ?: "erro") + " · $got de ${texts.size} frases prontas (guardadas)", got, texts.size)
+            }
+        }
+        if (stopRequested) { val got = segs.count { it != null }; throw Partial("Parado · $got de ${texts.size} frases prontas (guardadas)", got, texts.size) }
 
         // Monta o WAV: cada frase começa num segundo exato (com pelo menos 0,35 s de pausa antes)
         progress("Montando o áudio…", texts.size, texts.size)
@@ -82,7 +129,7 @@ object AudioGen {
             val start = ceil((pos + SR * 0.35) / SR).toLong() * SR
             writeSilence(out, (start - pos).toInt()); pos = start
             secs[i] = (start / SR).toInt()
-            writeSamples(out, seg); pos += seg.size
+            writeSamples(out, seg!!); pos += seg.size
         }
         writeSilence(out, SR * 6 / 10)
         val pcm = out.toByteArray()
@@ -93,24 +140,72 @@ object AudioGen {
         val body = texts.indices.joinToString("\n") { "[${CaptureService.formatTime(secs[it])}] ${texts[it]}" } + "\n"
         ctx.contentResolver.openOutputStream(item.uri, "wt")!!.use { it.write(body.toByteArray(Charsets.UTF_8)) }
         VocabDb.get(ctx).deleteTiming(base)
+        return texts.size
     }
 
     // =====================================================================
     // Celular (TextToSpeech)
     // =====================================================================
 
-    private fun phone(ctx: Context, texts: List<String>, bySpeaker: Map<Int, String>, ids: List<String>, progress: (String, Int, Int) -> Unit): List<ShortArray> {
+    /** Abre o TTS (motor escolhido em Configurações ou o padrão). Chame fora da UI; feche com shutdown(). */
+    fun openTts(ctx: Context): TextToSpeech {
         val ready = CountDownLatch(1)
         var status = TextToSpeech.ERROR
-        val tts = TextToSpeech(ctx) { st -> status = st; ready.countDown() }
+        val pkg = Prefs(ctx).ttsPackage.ifBlank { null }
+        val tts = TextToSpeech(ctx, { st -> status = st; ready.countDown() }, pkg)
+        ready.await(15, TimeUnit.SECONDS)
+        if (status != TextToSpeech.SUCCESS) { tts.shutdown(); throw IllegalStateException("O leitor de texto do celular não abriu") }
+        val lang = tts.setLanguage(Locale.JAPAN)
+        if (lang == TextToSpeech.LANG_MISSING_DATA || lang == TextToSpeech.LANG_NOT_SUPPORTED) {
+            tts.shutdown()
+            throw IllegalStateException("Falta a voz japonesa: Configurações do Android → Saída de texto para voz → instale japonês")
+        }
+        return tts
+    }
+
+    /** Vozes japonesas offline do motor. */
+    fun japaneseVoices(tts: TextToSpeech): List<Voice> =
+        tts.voices?.filter { it.locale.language == "ja" && !it.isNetworkConnectionRequired }?.sortedBy { it.name } ?: emptyList()
+
+    /**
+     * A voz é feminina? Primeiro o que você marcou em Configurações → Vozes do celular; senão pelo nome
+     * (Samsung: SMTf/SMTm; Google: htm/jab femininas, jac/jad masculinas). null = não sei.
+     */
+    fun isFemale(ctx: Context, v: Voice): Boolean? {
+        Prefs(ctx).voiceGenders[v.name]?.let { return it }
+        val n = v.name.lowercase()
+        return when {
+            "smtf" in n || "-x-htm" in n || "-x-jab" in n || "female" in n -> true
+            "smtm" in n || "-x-jac" in n || "-x-jad" in n || "male" in n -> false
+            else -> null
+        }
+    }
+
+    private fun phone(
+        ctx: Context, texts: List<String>, segs: Array<ShortArray?>, speakerOf: (Int) -> String, ids: List<String>,
+        female: (String) -> Boolean, store: (Int, ShortArray) -> Unit, progress: (String, Int, Int) -> Unit
+    ) {
+        val tts = openTts(ctx)
         try {
-            ready.await(15, TimeUnit.SECONDS)
-            if (status != TextToSpeech.SUCCESS) throw IllegalStateException("O leitor de texto do celular não abriu")
-            val lang = tts.setLanguage(Locale.JAPAN)
-            if (lang == TextToSpeech.LANG_MISSING_DATA || lang == TextToSpeech.LANG_NOT_SUPPORTED) {
-                throw IllegalStateException("Falta a voz japonesa: Configurações do Android → Saída de texto para voz → instale japonês")
+            val voices = japaneseVoices(tts)
+            // Cada locutor: uma voz do gênero certo (sem repetir enquanto der); sem voz certa, muda o tom
+            val used = HashMap<Voice, Int>()
+            val choice = ids.associateWith { id ->
+                val want = female(id)
+                val sameGender = voices.filter { isFemale(ctx, it) == want }
+                val unknown = voices.filter { isFemale(ctx, it) == null }
+                val v = (sameGender.firstOrNull { it !in used } ?: unknown.firstOrNull { it !in used }
+                    ?: sameGender.minByOrNull { used[it] ?: 0 } ?: voices.minByOrNull { used[it] ?: 0 })
+                val n = if (v != null) used.getOrDefault(v, 0) else 0
+                if (v != null) used[v] = n + 1
+                val g = v?.let { isFemale(ctx, it) }
+                val pitch = when {
+                    g == want -> if (n == 0) 1.0f else if (n % 2 == 1) 0.92f else 1.08f
+                    want -> 1.15f   // queria feminina, só tem masculina/desconhecida
+                    else -> 0.78f   // queria masculina
+                }
+                v to pitch
             }
-            val voices = tts.voices?.filter { it.locale.language == "ja" && !it.isNetworkConnectionRequired }?.sortedBy { it.name } ?: emptyList()
             val latches = ConcurrentHashMap<String, CountDownLatch>()
             val failed = ConcurrentHashMap.newKeySet<String>()
             tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
@@ -119,14 +214,13 @@ object AudioGen {
                 @Deprecated("API antiga") override fun onError(utteranceId: String) { failed.add(utteranceId); latches[utteranceId]?.countDown() }
                 override fun onError(utteranceId: String, errorCode: Int) { failed.add(utteranceId); latches[utteranceId]?.countDown() }
             })
-            val out = mutableListOf<ShortArray>()
             for ((i, text) in texts.withIndex()) {
                 if (stopRequested) break
-                progress("Gerando a voz (celular)…", i, texts.size)
-                val sp = ids.indexOf(bySpeaker[i] ?: ids.first()).coerceAtLeast(0)
-                // Uma voz por locutor; se o celular tiver menos vozes, muda o tom
-                if (voices.isNotEmpty()) tts.voice = voices[sp % voices.size]
-                tts.setPitch(if (voices.size > sp) 1.0f else if (sp % 2 == 0) 0.9f else 1.15f)
+                if (segs[i] != null) continue
+                progress("Gerando a voz (celular)…", segs.count { it != null }, texts.size)
+                val (voice, pitch) = choice.getValue(speakerOf(i))
+                if (voice != null) tts.voice = voice
+                tts.setPitch(pitch)
                 val f = File(ctx.cacheDir, "tts_$i.wav")
                 val id = "michi_$i"
                 val latch = CountDownLatch(1)
@@ -134,10 +228,9 @@ object AudioGen {
                 tts.synthesizeToFile(text, Bundle(), f, id)
                 latch.await(60, TimeUnit.SECONDS)
                 if (id in failed || !f.exists()) throw IllegalStateException("O celular não conseguiu gerar a frase ${i + 1}")
-                out.add(readWav(f.readBytes()))
+                store(i, readWav(f.readBytes()))
                 f.delete()
             }
-            return out
         } finally {
             tts.shutdown()
         }
@@ -147,64 +240,74 @@ object AudioGen {
     // Gemini TTS
     // =====================================================================
 
-    private fun voiceFor(id: String, ids: List<String>, infos: Map<String, Speakers.Info>): String {
-        val i = ids.indexOf(id).coerceAtLeast(0)
-        val female = infos[id]?.female ?: (i % 2 == 0)
-        val sameGender = ids.take(i).count { (infos[it]?.female ?: (ids.indexOf(it) % 2 == 0)) == female }
-        return (if (female) femaleVoices else maleVoices)[sameGender % 4]
+    private fun geminiVoice(id: String, ids: List<String>, female: (String) -> Boolean): String {
+        val f = female(id)
+        val sameBefore = ids.take(ids.indexOf(id).coerceAtLeast(0)).count { female(it) == f }
+        return (if (f) femaleVoices else maleVoices)[sameBefore % 4]
     }
 
     private fun gemini(
-        ctx: Context, texts: List<String>, bySpeaker: Map<Int, String>, infos: Map<String, Speakers.Info>, ids: List<String>,
-        progress: (String, Int, Int) -> Unit
-    ): List<ShortArray> {
-        // Blocos de frases seguidas com no máximo 2 locutores
-        val groups = mutableListOf<MutableList<Int>>()
-        for (i in texts.indices) {
-            val g = groups.lastOrNull()
-            val sp = bySpeaker[i] ?: ids.first()
-            val inG = g?.map { bySpeaker[it] ?: ids.first() }?.toSet()
-            if (g == null || g.size >= 12 || (inG != null && sp !in inG && inG.size >= 2)) groups.add(mutableListOf(i)) else g.add(i)
-        }
-        val out = arrayOfNulls<ShortArray>(texts.size)
-        var done = 0
-        for (g in groups) {
-            if (stopRequested) break
-            progress("Gerando a voz (Gemini)…", done, texts.size)
-            val sps = g.map { bySpeaker[it] ?: ids.first() }
-            val distinct = sps.distinct()
-            val genCfg = JSONObject().put("responseModalities", JSONArray().put("AUDIO"))
-            val parts = JSONArray()
-            if (distinct.size >= 2) {
-                for ((k, i) in g.withIndex()) parts.put(JSONObject().put("text", texts[i]).put("speechMetadata", JSONObject().put("speaker", sps[k])))
-                val cfgs = JSONArray()
-                for (s in distinct) cfgs.put(JSONObject().put("speaker", s).put("voiceConfig",
-                    JSONObject().put("prebuiltVoiceConfig", JSONObject().put("voiceName", voiceFor(s, ids, infos)))))
-                genCfg.put("speechConfig", JSONObject().put("multiSpeakerVoiceConfig", JSONObject().put("speakerVoiceConfigs", cfgs)))
-            } else {
-                parts.put(JSONObject().put("text", g.joinToString("\n") { texts[it] }))
-                genCfg.put("speechConfig", JSONObject().put("voiceConfig",
-                    JSONObject().put("prebuiltVoiceConfig", JSONObject().put("voiceName", voiceFor(distinct.first(), ids, infos)))))
+        ctx: Context, texts: List<String>, segs: Array<ShortArray?>, speakerOf: (Int) -> String, ids: List<String>,
+        female: (String) -> Boolean, store: (Int, ShortArray) -> Unit, progress: (String, Int, Int) -> Unit
+    ) {
+        // Poucos pedidos: um por par de locutores (até 20 frases cada), só com as frases que faltam
+        val pairs = ids.chunked(2)
+        for (pair in pairs) {
+            val lines = texts.indices.filter { segs[it] == null && speakerOf(it) in pair }
+            for (chunk in lines.chunked(20)) {
+                if (stopRequested) return
+                val sps = chunk.map(speakerOf)
+                val distinct = sps.distinct()
+                val genCfg = JSONObject().put("responseModalities", JSONArray().put("AUDIO"))
+                val parts = JSONArray()
+                if (distinct.size >= 2) {
+                    for ((k, i) in chunk.withIndex()) parts.put(JSONObject().put("text", texts[i]).put("speechMetadata", JSONObject().put("speaker", sps[k])))
+                    val cfgs = JSONArray()
+                    for (s in distinct) cfgs.put(JSONObject().put("speaker", s).put("voiceConfig",
+                        JSONObject().put("prebuiltVoiceConfig", JSONObject().put("voiceName", geminiVoice(s, ids, female)))))
+                    genCfg.put("speechConfig", JSONObject().put("multiSpeakerVoiceConfig", JSONObject().put("speakerVoiceConfigs", cfgs)))
+                } else {
+                    parts.put(JSONObject().put("text", chunk.joinToString("\n") { texts[it] }))
+                    genCfg.put("speechConfig", JSONObject().put("voiceConfig",
+                        JSONObject().put("prebuiltVoiceConfig", JSONObject().put("voiceName", geminiVoice(distinct.first(), ids, female)))))
+                }
+                val body = JSONObject().put("contents", JSONArray().put(JSONObject().put("parts", parts))).put("generationConfig", genCfg)
+                val done = segs.count { it != null }
+                val wav = geminiCall(ctx, body) { msg -> progress(msg, done, texts.size) }
+                val pieces = splitByPauses(readWav(wav), chunk.map { weight(texts[it]) })
+                for ((k, i) in chunk.withIndex()) store(i, pieces[k])
+                progress("Gerando a voz (Gemini)…", segs.count { it != null }, texts.size)
             }
-            val body = JSONObject().put("contents", JSONArray().put(JSONObject().put("parts", parts))).put("generationConfig", genCfg)
-            val wav = geminiCall(ctx, body) { wait -> progress("Limite do plano grátis: aguardando ${wait}s…", done, texts.size) }
-            val pcm = readWav(wav)
-            val pieces = splitByPauses(pcm, g.map { weight(texts[it]) })
-            for ((k, i) in g.withIndex()) out[i] = pieces[k]
-            done += g.size
         }
-        return out.map { it ?: ShortArray(0) }
     }
 
-    /** POST com espera e nova tentativa quando o plano grátis estoura (429). Devolve os bytes do áudio. */
-    private fun geminiCall(ctx: Context, body: JSONObject, waiting: (Int) -> Unit): ByteArray {
-        val p = Prefs(ctx)
-        val key = p.geminiKey.ifBlank { Ai.TEST_KEY }
+    /** Segundos do "retry in 20h56m4.3s" / "retry in 29.9s" da resposta 429. */
+    private fun retrySeconds(text: String): Int? {
+        val m = Regex("retry in (?:(\\d+)h)?(?:(\\d+)m)?([0-9.]+)s").find(text) ?: return null
+        val h = m.groupValues[1].toIntOrNull() ?: 0
+        val mi = m.groupValues[2].toIntOrNull() ?: 0
+        return h * 3600 + mi * 60 + (m.groupValues[3].toDoubleOrNull()?.toInt() ?: 0) + 1
+    }
+
+    /**
+     * POST ao TTS: espera 21 s entre pedidos (3 por minuto no plano grátis); limite por minuto → espera
+     * e tenta de novo; limite do dia → passa para o outro modelo; sem modelo com cota → erro claro.
+     */
+    private fun geminiCall(ctx: Context, body: JSONObject, status: (String) -> Unit): ByteArray {
+        val key = Prefs(ctx).geminiKey.ifBlank { Ai.TEST_KEY }
         if (key.isBlank()) throw IllegalStateException("Sem chave do Gemini (Configurações → IA)")
-        repeat(8) {
+        var attempts = 0
+        while (true) {
             if (stopRequested) throw IllegalStateException("Parado")
-            val conn = URL("https://generativelanguage.googleapis.com/v1beta/models/$GEMINI_TTS:generateContent").openConnection() as HttpURLConnection
+            val now = System.currentTimeMillis()
+            val model = geminiModels.firstOrNull { (exhaustedUntil[it] ?: 0L) < now }
+                ?: throw IllegalStateException("A cota grátis do Gemini TTS acabou por hoje (10 pedidos por dia em cada modelo). Volta em algumas horas; dá para completar com a voz do celular")
+            val wait = 21_000L - (now - lastGeminiCall)
+            if (wait > 0) countdown((wait / 1000).toInt() + 1, status, "Aguardando o limite do plano grátis (3 por minuto)")
+            lastGeminiCall = System.currentTimeMillis()
+            val conn = URL("https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent").openConnection() as HttpURLConnection
             try {
+                status("Gerando a voz (Gemini · $model)…")
                 conn.requestMethod = "POST"; conn.connectTimeout = 15000; conn.readTimeout = 180000; conn.doOutput = true
                 conn.setRequestProperty("Content-Type", "application/json")
                 conn.setRequestProperty("x-goog-api-key", key)
@@ -212,10 +315,15 @@ object AudioGen {
                 val code = conn.responseCode
                 val text = (if (code in 200..299) conn.inputStream else conn.errorStream)?.bufferedReader()?.use { it.readText() } ?: ""
                 if (code == 429) {
-                    val secs = Regex("retry in ([0-9.]+)s").find(text)?.groupValues?.get(1)?.toDoubleOrNull()?.toInt()?.plus(2) ?: 25
-                    waiting(secs)
-                    Thread.sleep(secs * 1000L)
-                    return@repeat
+                    val secs = retrySeconds(text) ?: 30
+                    if ("PerDay" in text || secs > 300) {
+                        exhaustedUntil[model] = System.currentTimeMillis() + secs * 1000L
+                        Log.i(TAG, "$model sem cota diária por ${secs / 3600} h")
+                        continue // tenta o outro modelo
+                    }
+                    if (++attempts > 4) throw IllegalStateException("O Gemini TTS continuou no limite por minuto")
+                    countdown(secs, status, "Limite por minuto do plano grátis")
+                    continue
                 }
                 if (code !in 200..299) {
                     val msg = try { JSONObject(text).getJSONObject("error").optString("message") } catch (_: Exception) { text.take(200) }
@@ -228,7 +336,14 @@ object AudioGen {
                 conn.disconnect()
             }
         }
-        throw IllegalStateException("O plano grátis do Gemini TTS continuou no limite; tente mais tarde")
+    }
+
+    private fun countdown(secs: Int, status: (String) -> Unit, what: String) {
+        for (s in secs downTo 1) {
+            if (stopRequested) throw IllegalStateException("Parado")
+            status("$what: ${s}s…")
+            Thread.sleep(1000)
+        }
     }
 
     /** Peso da frase (≈ duração): caracteres sem pontuação. */
@@ -263,7 +378,6 @@ object AudioGen {
         val cuts: List<Int> = if (gaps.size < n - 1) {
             expected.map { it.toInt() }
         } else {
-            // Programação dinâmica: corte j usa a pausa g, em ordem crescente
             val k = n - 1
             val maxLen = gaps.maxOf { it.len }.toDouble()
             fun cost(j: Int, g: Int) = abs(gaps[g].center - expected[j]) / span - 0.15 * gaps[g].len / maxLen
@@ -286,8 +400,19 @@ object AudioGen {
     }
 
     // =====================================================================
-    // WAV
+    // WAV e PCM guardado
     // =====================================================================
+
+    private fun writePcm(f: File, s: ShortArray) {
+        val buf = ByteArray(s.size * 2)
+        for (i in s.indices) { buf[i * 2] = (s[i].toInt() and 0xff).toByte(); buf[i * 2 + 1] = (s[i].toInt() shr 8).toByte() }
+        f.writeBytes(buf)
+    }
+
+    private fun readPcm(f: File): ShortArray {
+        val b = f.readBytes()
+        return ShortArray(b.size / 2) { i -> ((b[i * 2 + 1].toInt() shl 8) or (b[i * 2].toInt() and 0xff)).toShort() }
+    }
 
     /** Lê WAV (PCM 16 bits, qualquer taxa, mono ou estéreo) e devolve mono 16 kHz. */
     fun readWav(b: ByteArray): ShortArray {

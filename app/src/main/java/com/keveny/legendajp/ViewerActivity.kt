@@ -262,7 +262,7 @@ class ViewerActivity : Activity() {
 
     private fun confirmGenerate() {
         val engine = Prefs(this).ttsEngine
-        val label = if (engine == AudioGen.GEMINI) "Gemini (nuvem; no plano grátis, 3 pedidos por minuto)" else "voz do celular (grátis, offline)"
+        val label = if (engine == AudioGen.GEMINI) "Gemini (nuvem; plano grátis: 3 pedidos por minuto e 10 por dia em cada modelo; cada pedido faz até 20 frases)" else "voz do celular (grátis, offline)"
         val msg = "Gerar o áudio com $label? Cada locutor ganha uma voz. Troque o tipo em Configurações." +
             if (wavUri != null) "\n\nIsto substitui o áudio atual desta gravação." else ""
         AlertDialog.Builder(this).setTitle("Gerar áudio").setMessage(msg)
@@ -270,7 +270,7 @@ class ViewerActivity : Activity() {
             .setPositiveButton("Gerar") { _, _ -> generateAudio() }.show()
     }
 
-    private fun generateAudio() {
+    private fun generateAudio(engine: String = Prefs(this).ttsEngine, allowOther: Boolean = false) {
         val bar = android.widget.ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply { isIndeterminate = true }
         val label = TextView(this).apply { text = "Preparando…"; setTextColor(getColor(R.color.text)); textSize = 14f }
         val box = android.widget.LinearLayout(this).apply {
@@ -281,15 +281,20 @@ class ViewerActivity : Activity() {
         player?.let { try { if (it.isPlaying) it.pause() } catch (_: IllegalStateException) {} }
         val dlg = AlertDialog.Builder(this).setTitle("Gerando o áudio").setView(box).setCancelable(false)
             .setNegativeButton("Parar") { _, _ -> AudioGen.stopRequested = true }.show()
-        AudioGen.generate(this, name, Prefs(this).ttsEngine,
+        AudioGen.generate(this, name, engine, allowOther,
             progress = { msg, done, total ->
                 bar.isIndeterminate = false; bar.max = maxOf(1, total); bar.progress = done
                 label.text = "$msg\n$done de $total frases"
             },
-            done = { err ->
+            done = { err, ok, total ->
                 if (dlg.isShowing) dlg.dismiss()
-                Toast.makeText(this, err?.let { "Não terminou: $it" } ?: "Áudio gerado", Toast.LENGTH_LONG).show()
-                if (err == null) load()
+                if (err == null) { Toast.makeText(this, "Áudio gerado", Toast.LENGTH_LONG).show(); load(); return@generate }
+                // Parou no meio: o que foi gerado fica guardado
+                val b = AlertDialog.Builder(this).setTitle("O áudio não terminou").setMessage(
+                    err + if (ok in 1 until total) "\n\nGerar de novo continua de onde parou." else ""
+                ).setNegativeButton("Fechar", null)
+                if (total > 0 && ok < total) b.setPositiveButton("Completar com a voz do celular") { _, _ -> generateAudio(AudioGen.PHONE, allowOther = true) }
+                b.show()
             })
     }
 
