@@ -41,6 +41,11 @@ class StudyActivity : Activity() {
         const val EXTRA_WORD_LABEL = "wordLabel"
         /** Palavras escolhidas antes do estudo (WordPickActivity). */
         const val EXTRA_KEYS = "keys"
+        /** Revisão espaçada de hoje (ReviewActivity); EXTRA_SRS_MODE: misto, exercicios ou flash. */
+        const val EXTRA_SRS = "srs"
+        const val EXTRA_SRS_MODE = "srsMode"
+        const val SRS_RECORDING = "__revisao__"
+        private const val MAX_REVIEW = 60
         const val SAVED_RECORDING = "__vocabulario__"
         const val MISTAKES_RECORDING = "__erros__"
         private const val MAX_ITEMS = 12
@@ -78,6 +83,14 @@ class StudyActivity : Activity() {
     private lateinit var btnSubs: Button
     private lateinit var aiBox: android.widget.LinearLayout
     private var aiPanel: AiPanel? = null
+    private lateinit var btnEasy: Button
+
+    // ---------- revisão espaçada ----------
+    private var flashRevealed = false
+    private var flashGrade = 0
+    /** Cartão como estava antes da última nota (para o botão "Foi fácil" refazer como Fácil). */
+    private var lastSrs: Srs.Card? = null
+    private var lastSrsItem: Item? = null
 
     // ---------- legenda com a palavra falada ----------
     private var subsOn = false                       // começa escondida; vale para a sessão toda
@@ -155,6 +168,13 @@ class StudyActivity : Activity() {
         timingInfo = findViewById(R.id.timingInfo)
         btnSubs = findViewById(R.id.btnSubs)
         aiBox = findViewById(R.id.aiBox)
+        btnEasy = findViewById(R.id.btnEasy)
+        btnEasy.setOnClickListener {
+            val before = lastSrs ?: return@setOnClickListener
+            btnEasy.isEnabled = false
+            btnEasy.text = "Fácil ✓"
+            dbExec.execute { Srs.regrade(this, before, Srs.EASY) }
+        }
         btnSubs.setOnClickListener { subsOn = !subsOn; updateSubs() }
         timingInfo.setOnClickListener {
             val msg = if (timing?.exact == true)
@@ -165,27 +185,32 @@ class StudyActivity : Activity() {
         }
 
         val mistakes = intent.getBooleanExtra(EXTRA_MISTAKES, false)
+        val srs = intent.getBooleanExtra(EXTRA_SRS, false)
+        val srsMode = intent.getStringExtra(EXTRA_SRS_MODE) ?: "misto"
         val saved = intent.getBooleanExtra(EXTRA_SAVED, false)
         val uri = intent.getParcelableExtra(EXTRA_URI, Uri::class.java)
-        if (!mistakes && !saved && uri == null) { finish(); return }
+        if (!mistakes && !saved && !srs && uri == null) { finish(); return }
         val name = intent.getStringExtra(EXTRA_NAME) ?: ""
         val focus = try { StudyGen.Focus.valueOf(intent.getStringExtra(EXTRA_FOCUS) ?: "MISTO") } catch (_: Exception) { StudyGen.Focus.MISTO }
         val wordKey = intent.getStringExtra(EXTRA_WORD_KEY)
         val wordLabel = intent.getStringExtra(EXTRA_WORD_LABEL) ?: ""
         val keys = intent.getStringArrayListExtra(EXTRA_KEYS)
-        multiRecording = mistakes || saved
+        multiRecording = mistakes || saved || srs
         recording = when {
+            srs -> SRS_RECORDING
             mistakes -> MISTAKES_RECORDING
             saved -> SAVED_RECORDING
             else -> Recordings.baseName(name)
         }
         focusLabel = when {
+            srs -> "Revisão"
             mistakes -> "Erros"
             wordKey != null -> "Palavra: $wordLabel"
             keys != null -> "${focus.label} · ${keys.size} palavras"
             else -> focus.label
         }
         title = when {
+            srs -> "Revisão de hoje"
             mistakes -> "Revisão de erros"
             wordKey != null -> "Estudar · $wordLabel"
             else -> "Estudar · ${focus.label}"
@@ -196,7 +221,11 @@ class StudyActivity : Activity() {
         Thread {
             val built: List<Item>
             var wav: Uri? = null
-            if (mistakes) {
+            if (srs) {
+                Srs.sync(this)
+                val t = Srs.today(this)
+                built = StudyGen.review(this, (t.due + t.fresh).take(MAX_REVIEW), srsMode)
+            } else if (mistakes) {
                 built = VocabDb.get(this).mistakes().shuffled()
                     .mapNotNull { StudyCodec.decode(it.json) }
                     .filter { it.wordKey == null || it.wordKey !in VocabDb.knownKeys }
@@ -223,7 +252,11 @@ class StudyActivity : Activity() {
                 if (isFinishing) return@runOnUiThread
                 if (wav != null) setupPlayer(wav)
                 if (built.isEmpty()) {
-                    prompt.text = if (mistakes) "Nenhum erro acumulado." else "Esta gravação não tem material suficiente para este foco."
+                    prompt.text = when {
+                        srs -> "Nada para revisar agora. Volte amanhã ou estude uma gravação: as palavras salvas e os padrões que aparecem nos exercícios entram na revisão."
+                        mistakes -> "Nenhum erro acumulado."
+                        else -> "Esta gravação não tem material suficiente para este foco."
+                    }
                     btnNext.text = "Fechar"
                     btnNext.isEnabled = true
                     btnNext.setOnClickListener { finish() }
@@ -276,23 +309,27 @@ class StudyActivity : Activity() {
                 btnNext.isEnabled = true
                 btnNext.text = when {
                     viewIndex < frontier -> "Avançar"
+                    !answered && current is Item.Flash -> if (flashRevealed) "Escolha a nota" else "Mostrar resposta"
                     !answered && current.needsVerify() -> "Verificar"
                     !answered -> "Escolha uma opção"
                     frontier == items.size - 1 -> "Concluir"
                     else -> "Próxima"
                 }
                 if (!answered && viewIndex == frontier && !current.needsVerify()) btnNext.isEnabled = false
+                if (!answered && current is Item.Flash && flashRevealed) btnNext.isEnabled = false
             }
             Phase.REVIEW -> {
                 btnPrev.visibility = View.GONE
                 btnNext.isEnabled = answered || current.needsVerify()
-                btnNext.text = if (answered) "Continuar" else if (current.needsVerify()) "Verificar" else "Escolha uma opção"
+                btnNext.text = if (answered) "Continuar" else if (current is Item.Flash) (if (flashRevealed) "Escolha a nota" else "Mostrar resposta")
+                    else if (current.needsVerify()) "Verificar" else "Escolha uma opção"
+                if (!answered && current is Item.Flash && flashRevealed) btnNext.isEnabled = false
             }
             else -> {}
         }
     }
 
-    private fun Item?.needsVerify() = this is Item.Order || this is Item.Kanji || this is Item.Write || this is Item.Parts
+    private fun Item?.needsVerify() = this is Item.Order || this is Item.Kanji || this is Item.Write || this is Item.Parts || this is Item.Flash
 
     private fun onNextClicked() {
         when (phase) {
@@ -302,6 +339,7 @@ class StudyActivity : Activity() {
                     showMainItem()
                     return
                 }
+                if (!answered && current is Item.Flash) { revealFlash(); return }
                 if (!answered) { verifyBuilt(); return }
                 // respondido: segue
                 frontier++
@@ -309,6 +347,7 @@ class StudyActivity : Activity() {
                 if (frontier >= items.size) startReview() else showMainItem()
             }
             Phase.REVIEW -> {
+                if (!answered && current is Item.Flash) { revealFlash(); return }
                 if (!answered) { verifyBuilt(); return }
                 nextReview()
             }
@@ -403,6 +442,9 @@ class StudyActivity : Activity() {
         btnSubs.visibility = View.GONE
         aiPanel?.hide()
         aiPanel = null
+        btnEasy.visibility = View.GONE
+        flashRevealed = false
+        flashGrade = 0
     }
 
     private var reviewPass = 0
@@ -450,6 +492,7 @@ class StudyActivity : Activity() {
                 prompt.text = pre + item.prompt
                 for (o in item.options) addChoice(o)
             }
+            is Item.Flash -> renderFlashFront(item, pre)
             is Item.Parts -> {
                 val tr = Tr.cached(this, item.word.base)
                 val masked = item.word.base.replace(item.kanji, '□')
@@ -496,6 +539,7 @@ class StudyActivity : Activity() {
         is Item.Kanji -> item.word.base
         is Item.Write -> item.word.base.filter(StudyGen::isKanji)
         is Item.Parts -> item.parts.joinToString(" + ") { it.element }
+        is Item.Flash -> Srs.gradeLabel(Srs.GOOD)
         is Item.Cloze -> item.word.surface
         is Item.GrammarCloze -> item.sentence.substring(item.hit.start, item.hit.end)
         is Item.Choice -> item.answer
@@ -522,7 +566,7 @@ class StudyActivity : Activity() {
 
     private fun onAnswered(item: Item, given: String) {
         val answer = answerOf(item)
-        val ok = given == answer
+        val ok = if (item is Item.Flash) Srs.gradeOf(given) >= Srs.HARD else given == answer
         answered = true
         stopAudio()
         applyResult(item, given, ok)
@@ -555,6 +599,16 @@ class StudyActivity : Activity() {
                 val sb = SpannableStringBuilder(given.ifEmpty { "(vazio)" })
                 sb.setSpan(ForegroundColorSpan(getColor(if (ok) R.color.ok else R.color.stop)), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                 built.text = sb
+            }
+            is Item.Flash -> {
+                if (!flashRevealed) revealFlash()
+                for (i in 0 until choices.childCount) {
+                    val c = choices.getChildAt(i) as? Button ?: continue
+                    if (c.tag == given) { c.setBackgroundResource(if (ok) R.drawable.bg_choice_right else R.drawable.bg_button_stop); c.setTextColor(0xFFFFFFFF.toInt()) }
+                }
+                showFlashBack(item)
+                setupAi(item)
+                return
             }
             is Item.Parts -> {
                 val els = given.split(" + ")
@@ -596,20 +650,40 @@ class StudyActivity : Activity() {
             is Item.Kanji -> "Montar 「${item.word.reading}」"
             is Item.Write -> "Escrever 「${item.word.reading}」"
             is Item.Parts -> "Partes do kanji ${item.kanji} (${item.word.base})"
+            is Item.Flash -> "Flashcard (${Srs.kindLabel(item.card.kind)}): ${item.card.label}"
             is Item.Order -> "Ordenar a frase"
         }
         val key = item.wordKey
         val trains = StudyGen.trainsOf(item.kind)
         val identity = item.identity
         val json = StudyCodec.encode(item)
+        val target = srsTarget(item)
+        val grade = if (item is Item.Flash) Srs.gradeOf(given) else if (ok) Srs.GOOD else Srs.AGAIN
         dbExec.execute {
+            // Revisão espaçada: toda primeira resposta conta
+            if (target != null) {
+                try {
+                    val card = Srs.ensure(this, target.kind, target.key, target.label, target.sentence, target.recording, target.sec)
+                    val before = Srs.grade(this, card, grade, if (item is Item.Flash) "flash" else "exercicio")
+                    runOnUiThread {
+                        lastSrs = before
+                        lastSrsItem = item
+                        if (ok && item !is Item.Flash && current === item && phase == Phase.MAIN) {
+                            btnEasy.visibility = View.VISIBLE
+                            btnEasy.isEnabled = true
+                            btnEasy.text = "Foi fácil"
+                        }
+                    }
+                } catch (e: Exception) { android.util.Log.e("Michi", "srs", e) }
+            }
             val db = VocabDb.get(this)
             if (sessionId < 0) sessionId = db.startSession(recording, focusLabel, 0)
             db.addStudyItem(sessionId, VocabDb.StudyItem(item.kind, promptText, answer, given, ok, item.sentence))
             if (key != null && key in VocabDb.savedKeys && trains != null && trains != StudyGen.TRAINS_GRAMMAR) {
                 db.bumpScore(key, kanji = trains == StudyGen.TRAINS_KANJI, correct = ok)
             }
-            // Fila de erros: errou entra; acertou de primeira sai
+            // Fila de erros: errou entra; acertou de primeira sai (flashcards ficam de fora)
+            if (item is Item.Flash) return@execute
             if (ok) db.removeMistake(identity)
             else db.addMistake(VocabDb.Mistake(identity, json, item.kind, promptText, answer, item.sentence, System.currentTimeMillis()))
         }
@@ -630,6 +704,7 @@ class StudyActivity : Activity() {
      * estão no cache são pedidas e o feedback é redesenhado quando chegam.
      */
     private fun showFeedback(item: Item, ok: Boolean, given: String, answer: String) {
+        if (item is Item.Flash) { showFlashBack(item); return }
         val okColor = getColor(R.color.ok)
         val badColor = getColor(R.color.stop)
         val sec = getColor(R.color.text_secondary)
@@ -886,6 +961,167 @@ class StudyActivity : Activity() {
     }
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
+
+    // =====================================================================
+    // Revisão espaçada: alvo da nota e flashcards
+    // =====================================================================
+
+    private class SrsTarget(val kind: String, val key: String, val label: String, val sentence: String? = null, val recording: String? = null, val sec: Int = -1)
+
+    /** Que cartão esta resposta avalia: palavra salva (significado ou kanji) ou padrão de gramática. */
+    private fun srsTarget(item: Item): SrsTarget? = when (item) {
+        is Item.Flash -> SrsTarget(item.card.kind, item.card.key, item.card.label)
+        is Item.GrammarQ -> SrsTarget(Srs.GRAMMAR, item.hit.point.id, item.hit.point.name, item.sentence, item.recording, item.sec)
+        is Item.GrammarCloze -> SrsTarget(Srs.GRAMMAR, item.hit.point.id, item.hit.point.name, item.sentence, item.recording, item.sec)
+        else -> {
+            val w = StudyGen.wordOf(item)
+            val key = item.wordKey
+            when {
+                w == null || key == null || key !in VocabDb.studyKeys -> null
+                StudyGen.trainsOf(item.kind) == StudyGen.TRAINS_KANJI ->
+                    if (w.base.any(StudyGen::isKanji)) SrsTarget(Srs.KANJI, key, w.base) else null
+                StudyGen.trainsOf(item.kind) == StudyGen.TRAINS_MEANING -> SrsTarget(Srs.MEANING, key, w.base)
+                else -> null
+            }
+        }
+    }
+
+    private fun bigSpan(sb: SpannableStringBuilder, text: String, size: Float) {
+        val a = sb.length
+        sb.append(text)
+        sb.setSpan(RelativeSizeSpan(size), a, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        sb.setSpan(StyleSpan(android.graphics.Typeface.BOLD), a, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+    }
+
+    /** Frente do flashcard: significado mostra a palavra; kanji mostra a leitura; gramática mostra a frase. */
+    private fun renderFlashFront(item: Item.Flash, pre: String) {
+        flashRevealed = false
+        sentenceView.visibility = View.VISIBLE
+        val sb = SpannableStringBuilder()
+        val accent = getColor(R.color.accent)
+        val w = item.word
+        val s = item.sentence
+        fun sentenceWith(mask: Boolean) {
+            if (s.isEmpty()) return
+            sb.append("\n\n")
+            val a = sb.length
+            if (w != null && w.start >= 0 && w.end <= s.length && w.start < w.end) {
+                sb.append(s.substring(0, w.start))
+                val b = sb.length
+                sb.append(if (mask) "＿".repeat(w.end - w.start) else s.substring(w.start, w.end))
+                sb.setSpan(ForegroundColorSpan(accent), b, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                sb.append(s.substring(w.end))
+            } else sb.append(s)
+            sb.setSpan(RelativeSizeSpan(0.8f), a, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        when (item.card.kind) {
+            Srs.MEANING -> {
+                prompt.text = pre + "Flashcard · o que significa? Pense na resposta e toque em Mostrar resposta."
+                bigSpan(sb, item.card.label, 1.8f)
+                sentenceWith(mask = false)
+            }
+            Srs.KANJI -> {
+                prompt.text = pre + "Flashcard · como se escreve em kanji? Imagine (ou escreva no ar) e toque em Mostrar resposta."
+                bigSpan(sb, w?.reading ?: item.card.label, 1.5f)
+                Tr.cached(this, item.card.label)?.let { sb.append("\n").append(it) }
+                sentenceWith(mask = true)
+            }
+            else -> {
+                prompt.text = pre + "Flashcard · que padrão gramatical está em destaque e o que ele significa?"
+                val hit = try { Grammar.find(s).firstOrNull { it.point.id == item.card.key } } catch (_: Exception) { null }
+                if (hit != null) {
+                    sb.append(s.substring(0, hit.start))
+                    val b = sb.length
+                    sb.append(s.substring(hit.start, hit.end))
+                    sb.setSpan(ForegroundColorSpan(accent), b, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(StyleSpan(android.graphics.Typeface.BOLD), b, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.append(s.substring(hit.end))
+                } else sb.append(s)
+            }
+        }
+        sentenceView.text = sb
+        updateButtons()
+    }
+
+    /** Vira o cartão: mostra o verso e os 4 botões de nota com o próximo intervalo de cada um. */
+    private fun revealFlash() {
+        val item = current as? Item.Flash ?: return
+        flashRevealed = true
+        if (item.card.kind == Srs.KANJI) {
+            // No verso a palavra aparece inteira
+            sentenceView.text = SpannableStringBuilder().also { bigSpan(it, item.card.label, 1.8f) }
+        }
+        showFlashBack(item)
+        choices.removeAllViews()
+        val card = Srs.get(this, item.card.kind, item.card.key) ?: item.card
+        val pv = Srs.preview(card)
+        for (g in Srs.AGAIN..Srs.EASY) {
+            val label = Srs.gradeLabel(g)
+            val b = Button(this).apply {
+                text = "$label\n${pv[g]}"
+                tag = label
+                isAllCaps = false
+                textSize = 15f
+                setBackgroundResource(R.drawable.bg_button_outline)
+                setTextColor(getColor(if (g == Srs.AGAIN) R.color.stop else R.color.text))
+                minHeight = 0; minimumHeight = 0
+                setPadding(dp(14), dp(8), dp(14), dp(8))
+                stateListAnimator = null
+                setOnClickListener {
+                    if (answered || current !== item) return@setOnClickListener
+                    flashGrade = g
+                    onAnswered(item, label)
+                }
+            }
+            choices.addView(b)
+        }
+        updateButtons()
+    }
+
+    /** Verso do flashcard (o mesmo template para os três tipos de cartão). */
+    private fun showFlashBack(item: Item.Flash) {
+        val sec = getColor(R.color.text_secondary)
+        val sb = SpannableStringBuilder()
+        fun grey(t: String) { val a = sb.length; sb.append(t); sb.setSpan(ForegroundColorSpan(sec), a, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE) }
+        fun bold(t: String) { val a = sb.length; sb.append(t); sb.setSpan(StyleSpan(android.graphics.Typeface.BOLD), a, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE) }
+        val pending = mutableListOf<String>()
+        val p = item.point
+        if (p != null) {
+            bold("${p.name} · ${p.level}")
+            sb.append("\n").append(p.explanation).append("\nEx.: ").append(p.example)
+        } else {
+            val w = item.word
+            bold(item.card.label)
+            if (w != null && w.reading != w.base) sb.append("  ").append(w.reading)
+            if (w != null) { sb.append("\n"); grey(w.pos) }
+            val meaning = Tr.cached(this, item.card.label)
+            sb.append("\nSignificado: ")
+            if (meaning != null) sb.append(meaning) else { grey("traduzindo…"); pending.add(item.card.label) }
+            val kanji = Kanjidic.describe(this, item.card.label)
+            if (kanji.isNotEmpty()) {
+                sb.append("\n\n"); grey("Kanji")
+                for ((c, text) in kanji) {
+                    sb.append("\n"); bold(c.toString()); sb.append("  ").append(text)
+                    KanjiParts.get(this, c)?.let { e -> sb.append("\n   "); grey("partes: " + e.parts.joinToString(" + ") { it.element }) }
+                }
+            }
+        }
+        if (item.sentence.isNotEmpty()) {
+            sb.append("\n\n"); grey("Frase"); sb.append("\n").append(item.sentence).append("\n")
+            val tr = Tr.cached(this, item.sentence)
+            if (tr != null) grey(tr) else { grey("traduzindo…"); pending.add(item.sentence) }
+        }
+        val card = Srs.get(this, item.card.kind, item.card.key)
+        if (card != null && card.reps > 0) {
+            sb.append("\n\n")
+            val r = Srs.retrievability(card)
+            grey("Revisões: ${card.reps} · erros: ${card.lapses}" + (if (r != null) " · lembrava ${(r * 100).toInt()}%" else ""))
+        }
+        feedback.text = sb
+        feedback.visibility = View.VISIBLE
+        for (t in pending) Tr.translate(this, t) { _ -> if (current === item) showFlashBack(item) }
+        if (item.card.kind != Srs.GRAMMAR && item.card.label.any(StudyGen::isKanji)) showStrokes(item.card.label)
+    }
 
     // =====================================================================
     // Legenda com a palavra falada

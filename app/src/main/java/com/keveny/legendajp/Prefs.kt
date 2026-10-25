@@ -52,6 +52,16 @@ class Prefs(ctx: Context) {
         get() = sp.getInt("studyWords", 10)
         set(v) = sp.edit().putInt("studyWords", v).apply()
 
+    /** Revisão espaçada: cartões novos por dia. */
+    var newPerDay: Int
+        get() = sp.getInt("newPerDay", 10)
+        set(v) = sp.edit().putInt("newPerDay", v).apply()
+
+    /** Revisão: "misto", "exercicios" ou "flash". */
+    var reviewMode: String
+        get() = sp.getString("reviewMode", "misto") ?: "misto"
+        set(v) = sp.edit().putString("reviewMode", v).apply()
+
     /** Tipos de exercício desligados (nomes dos tipos). */
     var disabledKinds: Set<String>
         get() = sp.getStringSet("disabledKinds", emptySet()) ?: emptySet()

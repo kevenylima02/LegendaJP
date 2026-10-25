@@ -29,6 +29,13 @@ object StudyGen {
             Item(Focus.KANJI, "Montar a palavra com kanji", s.text, s.sec, s.endSec, Jlpt.wordLevel(word.base), word.key, s.recording)
         class Write(s: Line, val word: Jp.Word) :
             Item(Focus.KANJI, "Escrever a palavra à mão", s.text, s.sec, s.endSec, Jlpt.wordLevel(word.base), word.key, s.recording)
+        /** Flashcard da revisão espaçada: frente e verso; a nota (De novo…Fácil) é escolhida. */
+        class Flash(val card: Srs.Card, val word: Jp.Word?, val point: Grammar.Point?, s: Line) :
+            Item(
+                when (card.kind) { Srs.MEANING -> Focus.VOCAB; Srs.KANJI -> Focus.KANJI; else -> Focus.GRAMATICA },
+                "Flashcard (${Srs.kindLabel(card.kind)})", s.text, s.sec, s.endSec, 5,
+                if (card.kind == Srs.GRAMMAR) null else card.key, s.recording
+            )
         class Parts(s: Line, val word: Jp.Word, val kanji: Char, val parts: List<KanjiParts.Part>, val tiles: List<KanjiParts.Part>) :
             Item(Focus.KANJI, "Montar o kanji com as partes", s.text, s.sec, s.endSec, Jlpt.kanjiLevel(kanji), word.key, s.recording)
 
@@ -123,7 +130,80 @@ object StudyGen {
         is Item.Kanji -> item.word
         is Item.Write -> item.word
         is Item.Parts -> item.word
+        is Item.Flash -> item.word
         else -> null
+    }
+
+    // =====================================================================
+    // Revisão espaçada: um exercício (ou flashcard) por cartão vencido
+    // =====================================================================
+
+    /**
+     * Monta a revisão: para cada cartão, um exercício que treina aquilo (significado, kanji ou o padrão
+     * de gramática) com uma frase das suas gravações, ou um flashcard.
+     * @param mode "misto" (metade de cada, quando houver exercício), "exercicios" ou "flash".
+     */
+    fun review(ctx: Context, cards: List<Srs.Card>, mode: String): List<Item> {
+        val rnd = kotlin.random.Random(System.nanoTime())
+        val disabled = Prefs(ctx).disabledKinds
+        val wordCards = cards.filter { it.kind != Srs.GRAMMAR }
+        val keys = wordCards.map { it.key }.toSet()
+        val lines = if (keys.isEmpty()) emptyList() else linesFromVocab(ctx).sortedBy { if (it.sec >= 0) 0 else 1 }
+        val wordItems = if (keys.isEmpty()) emptyList() else
+            generateAll(ctx, lines, rnd, keys, grammar = false).filter { it.kind !in disabled }
+        // Frase (com áudio, de preferência) e a palavra como aparece nela, para os flashcards
+        val lineOf = HashMap<String, Pair<Line, Jp.Word>>()
+        for (l in lines) {
+            if (lineOf.size == keys.size) break
+            for (w in (try { Jp.words(l.text) } catch (_: Exception) { emptyList() })) {
+                if (w.key in keys && w.key !in lineOf) lineOf[w.key] = l to w
+            }
+        }
+        val saved = if (keys.size > lineOf.size) VocabDb.get(ctx).words().associateBy { it.key } else emptyMap()
+        val out = mutableListOf<Item>()
+        for (c in cards) {
+            val exercise: Item? = when (c.kind) {
+                Srs.GRAMMAR -> grammarExercise(ctx, c, rnd, disabled)
+                else -> {
+                    val trains = if (c.kind == Srs.KANJI) TRAINS_KANJI else TRAINS_MEANING
+                    wordItems.filter { it.wordKey == c.key && trainsOf(it.kind) == trains }.randomOrNull(rnd)
+                }
+            }
+            val flash = when (mode) {
+                "flash" -> true
+                "exercicios" -> exercise == null
+                else -> exercise == null || rnd.nextBoolean()
+            }
+            val item = if (!flash) exercise else when (c.kind) {
+                Srs.GRAMMAR -> Grammar.point(c.key)?.let { p -> Item.Flash(c, null, p, lineFor(ctx, c.recording, c.sentence ?: p.example, c.sec)) }
+                else -> lineOf[c.key]?.let { (l, w) -> Item.Flash(c, w, null, l) }
+                    ?: saved[c.key]?.let { w -> Item.Flash(c, Jp.Word(w.base, w.base, w.base, w.reading, w.pos, w.posKey, "", -1, -1), null, Line(-1, "", -1)) }
+            }
+            if (item != null) out.add(item)
+        }
+        return out.shuffled(rnd)
+    }
+
+    private fun grammarExercise(ctx: Context, c: Srs.Card, rnd: kotlin.random.Random, disabled: Set<String>): Item? {
+        val s = c.sentence ?: return null
+        val line = lineFor(ctx, c.recording, s, c.sec)
+        return generateAll(ctx, listOf(line), rnd, null, grammar = true).filter {
+            it.kind !in disabled && ((it is Item.GrammarQ && it.hit.point.id == c.key) || (it is Item.GrammarCloze && it.hit.point.id == c.key))
+        }.randomOrNull(rnd)
+    }
+
+    private val txtLines = android.util.LruCache<String, List<Line>>(8)
+
+    /** A linha da frase na gravação (para o fim do trecho de áudio); sem gravação, sem áudio. */
+    private fun lineFor(ctx: Context, recording: String?, sentence: String, sec: Int): Line {
+        if (recording.isNullOrBlank() || sec < 0 || recording.startsWith("__")) return Line(-1, sentence, -1)
+        val ls = txtLines.get(recording) ?: run {
+            val item = Recordings.find(ctx, "$recording.txt")
+            val text = item?.let { try { Recordings.readText(ctx, it.uri) } catch (_: Exception) { null } } ?: return Line(-1, sentence, -1)
+            if (Recordings.find(ctx, "$recording.wav") == null) return Line(-1, sentence, -1)
+            lines(text, recording).also { txtLines.put(recording, it) }
+        }
+        return ls.firstOrNull { it.text == sentence } ?: Line(sec, sentence, sec + 6, recording)
     }
 
     /** Palavra para a escolha antes do estudo: uma frase onde aparece, em quantas frases aparece e o nível. */

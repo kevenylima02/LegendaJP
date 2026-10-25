@@ -124,6 +124,10 @@ class WordPickActivity : Activity() {
         val w = cands[index].word
         val wasSaved = VocabDb.get(this).isSaved(w)
         decisions.add(Decision(index, choice, wasSaved))
+        if (choice == Choice.STUDY && !wasSaved) {
+            val line = cands[index].line
+            Thread { VocabDb.get(this).let { db -> if (!db.isSaved(w)) db.save(w, line.text, line.recording ?: recording, maxOf(0, line.sec)) } }.start()
+        }
         if (choice == Choice.KNOWN) {
             val line = cands[index].line
             Thread {
@@ -139,6 +143,10 @@ class WordPickActivity : Activity() {
     /** Desfaz a última escolha (Já conheço volta a valer para exercícios). */
     private fun undo() {
         val d = decisions.removeLastOrNull() ?: return
+        if (d.choice == Choice.STUDY && !d.wasSaved) {
+            val w = cands[d.index].word
+            Thread { VocabDb.get(this).remove(w) }.start()
+        }
         if (d.choice == Choice.KNOWN) {
             val w = cands[d.index].word
             Thread {

@@ -83,6 +83,12 @@ class SettingsActivity : Activity() {
             })
         }
 
+        val np = findViewById<RadioGroup>(R.id.newPerDay)
+        np.check(when (prefs.newPerDay) { 5 -> R.id.np5; 20 -> R.id.np20; 30 -> R.id.np30; else -> R.id.np10 })
+        np.setOnCheckedChangeListener { _, id ->
+            prefs.newPerDay = when (id) { R.id.np5 -> 5; R.id.np20 -> 20; R.id.np30 -> 30; else -> 10 }
+        }
+
         // IA
         val modes = findViewById<RadioGroup>(R.id.aiModes)
         modes.check(when (prefs.aiMode) { Ai.OFF -> R.id.aiOff; Ai.NANO -> R.id.aiNano; else -> R.id.aiCloud })

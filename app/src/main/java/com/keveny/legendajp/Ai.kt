@@ -110,7 +110,7 @@ object Ai {
         sb.append("Você é professor de japonês de um brasileiro que estuda para o JLPT N${r.level}. ")
         sb.append("A frase veio de uma transcrição automática de áudio e pode ter erros.\n")
         if (context.isNotEmpty()) {
-            sb.append("Contexto (frases vizinhas da mesma gravação, em ordem; a frase em estudo está marcada com >>):\n")
+            sb.append("Transcrição da gravação (em ordem; a frase em estudo está marcada com >>):\n")
             for (l in context) sb.append(l).append('\n')
         }
         sb.append("Frase em estudo: 「").append(r.sentence).append("」\n")
@@ -139,19 +139,37 @@ object Ai {
         return sb.toString()
     }
 
-    private val txtCache = android.util.LruCache<String, List<String>>(6)
+    private val txtCache = android.util.LruCache<String, List<StudyGen.Line>>(6)
 
-    /** Até 2 frases antes e 1 depois, da mesma gravação. Lê o .txt; chame fora da UI. */
+    /** Na nuvem, a transcrição inteira até este tamanho (≈ 10 mil tokens); acima, uma janela de ±5 min. */
+    private const val FULL_MAX_SEC = 60 * 60
+    private const val CLOUD_WINDOW_SEC = 5 * 60
+    /** No Nano (limite de ~4 mil tokens), ±2 min em volta da frase. */
+    private const val NANO_WINDOW_SEC = 2 * 60
+
+    /**
+     * Contexto da gravação, em ordem, com a frase em estudo marcada com >>. Nuvem: a transcrição inteira
+     * (até 60 min); Nano: ±2 min. Lê o .txt; chame fora da UI.
+     */
     fun contextLines(ctx: Context, recording: String?, sentence: String): List<String> {
         if (recording.isNullOrBlank() || recording.startsWith("__")) return emptyList()
         val lines = txtCache.get(recording) ?: run {
             val item = Recordings.find(ctx, "$recording.txt") ?: return emptyList()
             val text = try { Recordings.readText(ctx, item.uri) } catch (_: Exception) { return emptyList() }
-            StudyGen.lines(text).map { it.text }.also { txtCache.put(recording, it) }
+            StudyGen.lines(text).also { txtCache.put(recording, it) }
         }
-        val i = lines.indexOf(sentence)
+        val i = lines.indexOfFirst { it.text == sentence }
         if (i < 0) return emptyList()
-        return (maxOf(0, i - 2)..minOf(lines.size - 1, i + 1)).map { j -> (if (j == i) ">> " else "") + lines[j] }
+        val at = lines[i].sec
+        val total = lines.lastOrNull()?.endSec ?: 0
+        val window = when {
+            mode(ctx) == NANO -> NANO_WINDOW_SEC
+            total <= FULL_MAX_SEC -> Int.MAX_VALUE
+            else -> CLOUD_WINDOW_SEC
+        }
+        return lines.withIndex().filter { (j, l) ->
+            j == i || window == Int.MAX_VALUE || at < 0 || l.sec < 0 || kotlin.math.abs(l.sec - at) <= window
+        }.map { (j, l) -> (if (j == i) ">> " else "") + l.text }
     }
 
     // =====================================================================

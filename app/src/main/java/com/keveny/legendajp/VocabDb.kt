@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 /** Vocabulário salvo: palavras (forma de dicionário) e as frases onde apareceram. */
-class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 7) {
+class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 8) {
 
     companion object {
         @Volatile private var instance: VocabDb? = null
@@ -64,6 +64,7 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         createStudy(db)
         createMistakes(db)
         createTimingAndAi(db)
+        Srs.createTables(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -73,6 +74,7 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         if (oldVersion < 5) createMistakes(db)
         if (oldVersion < 6) db.execSQL("ALTER TABLE words ADD COLUMN known INTEGER NOT NULL DEFAULT 0")
         if (oldVersion < 7) createTimingAndAi(db)
+        if (oldVersion < 8) Srs.createTables(db)
     }
 
     /** Marca/desmarca "já conheço". Ao marcar, tira a palavra da fila de erros. */

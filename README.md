@@ -39,9 +39,15 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   kanji, a frase com tradução e a ordem dos traços animada.
 - **Tela da palavra**: ordem dos traços de cada kanji, leituras e significados, e **Estudar esta palavra**
   (exercícios de kanji e vocabulário só dela; inclui "Significado do kanji").
+- **Revisão espaçada** (botão Revisar na tela principal e menu ⋮): FSRS 4.5 (o algoritmo do Anki), retenção de 90%.
+  Cartões de significado e de kanji para cada palavra salva (o "Estudar" da escolha de palavras salva a palavra)
+  e de gramática para os padrões que aparecem nos exercícios. Toda primeira resposta conta (acertou = Bom,
+  errou = De novo, "Foi fácil" = Fácil). A revisão de hoje usa os nossos exercícios com frases das gravações,
+  flashcards (frente/verso, notas De novo/Difícil/Bom/Fácil com o próximo intervalo) ou os dois (Misto).
+  Novos por dia em Configurações (10 por padrão).
 - **✦ IA** (Configurações → Inteligência artificial: Desligada, Gemini Nano no aparelho ou Gemini na nuvem):
   bloco no fim do retorno dos exercícios e botão ✦ IA na tela da palavra. Traduz a frase com contexto
-  (frases vizinhas da gravação), explica a palavra na frase e a gramática, sempre no mesmo formato.
+  (a transcrição inteira até 60 min na nuvem; ±2 min no Nano), explica a palavra na frase e a gramática, sempre no mesmo formato.
   As respostas ficam salvas. A chave do Gemini nunca vai para o git: em Configurações, ou embutida na
   compilação a partir de `gemini.key` no local.properties ou do segredo `GEMINI_API_KEY` do Actions.
 - **Legenda no exercício**: botão Legenda; durante o áudio a palavra falada acende. Gravações novas pedem o

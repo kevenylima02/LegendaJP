@@ -261,13 +261,13 @@
             android:text="@string/vocab" />
 
         <Button
-            android:id="@+id/btnSpotify"
+            android:id="@+id/btnReview"
             style="@style/Button.Outline"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="4dp"
-            android:text="@string/spotify_web" />
+            android:text="Revisar" />
     </LinearLayout>
 
     <!-- Ação principal -->

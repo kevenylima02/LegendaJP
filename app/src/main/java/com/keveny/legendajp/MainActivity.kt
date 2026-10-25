@@ -105,8 +105,8 @@ class MainActivity : Activity() {
         }
         transcript.movementMethod = LinkMovementMethod.getInstance()
         transcript.highlightColor = Color.TRANSPARENT
-        findViewById<Button>(R.id.btnSpotify).setOnClickListener {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://open.spotify.com/")))
+        findViewById<Button>(R.id.btnReview).setOnClickListener {
+            startActivity(Intent(this, ReviewActivity::class.java))
         }
 
         if (TranscriptStore.status.isEmpty()) TranscriptStore.status = getString(R.string.status_ready)
@@ -119,6 +119,15 @@ class MainActivity : Activity() {
         TranscriptStore.appVisible = true
         TranscriptStore.notifyChanged()
         render()
+        refreshReviewCount()
+    }
+
+    /** "Revisar · N": cartões que vencem hoje + novos que ainda cabem no dia. */
+    private fun refreshReviewCount() {
+        Thread {
+            val n = try { Srs.sync(this); Srs.today(this).let { it.due.size + it.fresh.size } } catch (_: Exception) { 0 }
+            runOnUiThread { findViewById<Button>(R.id.btnReview).text = if (n > 0) "Revisar · $n" else "Revisar" }
+        }.start()
     }
 
     override fun onPause() {
@@ -140,6 +149,7 @@ class MainActivity : Activity() {
             R.id.action_check -> checkJapanese()
             R.id.action_settings -> startActivity(Intent(this, SettingsActivity::class.java))
             R.id.action_mistakes -> startActivity(Intent(this, MistakesActivity::class.java))
+            R.id.action_review -> startActivity(Intent(this, ReviewActivity::class.java))
             else -> return super.onOptionsItemSelected(item)
         }
         return true

@@ -128,6 +128,7 @@ class StudyMenuActivity : Activity() {
             v.findViewById<TextView>(R.id.reading).text = ""
             v.findViewById<TextView>(R.id.meta).text = fmt.format(Date(s.created))
             v.findViewById<TextView>(R.id.count).text = "${s.correct}/${s.total}"
+            v.findViewById<View>(R.id.bars).visibility = View.GONE
             return v
         }
     }

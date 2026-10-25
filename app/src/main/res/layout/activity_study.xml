@@ -171,6 +171,14 @@
                         android:visibility="gone" />
 
                     <Button
+                        android:id="@+id/btnEasy"
+                        style="@style/Button.Outline"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Foi fácil"
+                        android:visibility="gone" />
+
+                    <Button
                         android:id="@+id/btnUndo"
                         style="@style/Button.Outline"
                         android:layout_width="wrap_content"

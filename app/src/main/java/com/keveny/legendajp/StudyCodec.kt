@@ -37,6 +37,7 @@ object StudyCodec {
                 .put("note", item.note).put("word", wordJson(item.word))
             is Item.Kanji -> o.put("t", "kanji").put("word", wordJson(item.word)).put("tiles", JSONArray(item.tiles))
             is Item.Write -> o.put("t", "write").put("word", wordJson(item.word))
+            is Item.Flash -> o.put("t", "flash") // flashcards não vão para a fila de erros
             is Item.Parts -> o.put("t", "parts").put("word", wordJson(item.word)).put("kanji", item.kanji.toString())
                 .put("parts", JSONArray(item.parts.map { it.encode() })).put("tiles", JSONArray(item.tiles.map { it.encode() }))
         }
