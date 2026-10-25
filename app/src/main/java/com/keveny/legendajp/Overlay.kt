@@ -269,7 +269,7 @@ class Overlay(private val ctx: Context, private val prefs: Prefs) {
             for ((i, line) in lines.withIndex()) {
                 val (sec, sentence) = Recordings.parseLine(line)
                 if (i > 0) sb.append("\n")
-                sb.append(Jp.decorate(sentence, VocabDb.studyKeys, Jp.OVERLAY_SAVED_COLOR) { w ->
+                sb.append(Jp.decorate(sentence, VocabDb.studyKeys, Jp.OVERLAY_SAVED_COLOR, VocabDb.knownKeys, Jp.OVERLAY_KNOWN_COLOR) { w ->
                     openCard(w, sentence, sec)
                 })
             }

@@ -7,6 +7,7 @@
     <color name="text_secondary">#9A9EB1</color>
     <color name="level_track">#2A2B35</color>
     <color name="saved_word">#C5CBFF</color>
+    <color name="known_word">#7BD88F</color>
     <color name="accent">#7C8CFF</color>
     <color name="accent_soft">#2A7C8CFF</color>
 </resources>

@@ -150,6 +150,7 @@ class MainActivity : Activity() {
             R.id.action_settings -> startActivity(Intent(this, SettingsActivity::class.java))
             R.id.action_mistakes -> startActivity(Intent(this, MistakesActivity::class.java))
             R.id.action_review -> startActivity(Intent(this, ReviewActivity::class.java))
+            R.id.action_reports -> startActivity(Intent(this, ReportsActivity::class.java))
             else -> return super.onOptionsItemSelected(item)
         }
         return true
@@ -241,7 +242,7 @@ class MainActivity : Activity() {
             for ((i, line) in lines.withIndex()) {
                 val (sec, sentence) = Recordings.parseLine(line)
                 if (i > 0) sb.append("\n")
-                sb.append(Jp.decorate(sentence, VocabDb.studyKeys, getColor(R.color.saved_word)) { w ->
+                sb.append(Jp.decorate(sentence, VocabDb.studyKeys, getColor(R.color.saved_word), VocabDb.knownKeys, getColor(R.color.known_word)) { w ->
                     WordCard.show(this, w, sentence, TranscriptStore.recording, maxOf(0, sec),
                         onChanged = { renderedKey = ""; render() })
                 })

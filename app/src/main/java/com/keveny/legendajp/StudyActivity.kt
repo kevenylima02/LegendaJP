@@ -85,6 +85,9 @@ class StudyActivity : Activity() {
     private var aiPanel: AiPanel? = null
     private lateinit var btnEasy: Button
     private lateinit var trLine: TextView
+    private lateinit var freeInput: android.widget.EditText
+    /** Correções da IA das frases livres (por item). */
+    private val freeChecks = HashMap<Item, Ai.Check>()
 
     // ---------- revisão espaçada ----------
     private var flashRevealed = false
@@ -171,6 +174,7 @@ class StudyActivity : Activity() {
         aiBox = findViewById(R.id.aiBox)
         btnEasy = findViewById(R.id.btnEasy)
         trLine = findViewById(R.id.trLine)
+        freeInput = findViewById(R.id.freeInput)
         btnEasy.setOnClickListener {
             val before = lastSrs ?: return@setOnClickListener
             btnEasy.isEnabled = false
@@ -312,6 +316,7 @@ class StudyActivity : Activity() {
                 btnNext.text = when {
                     viewIndex < frontier -> "Avançar"
                     !answered && current is Item.Flash -> if (flashRevealed) "Escolha a nota" else "Mostrar resposta"
+                    !answered && current is Item.FreeWrite -> "Corrigir com IA"
                     !answered && current.needsVerify() -> "Verificar"
                     !answered -> "Escolha uma opção"
                     frontier == items.size - 1 -> "Concluir"
@@ -323,7 +328,7 @@ class StudyActivity : Activity() {
             Phase.REVIEW -> {
                 btnPrev.visibility = View.GONE
                 btnNext.isEnabled = answered || current.needsVerify()
-                btnNext.text = if (answered) "Continuar" else if (current is Item.Flash) (if (flashRevealed) "Escolha a nota" else "Mostrar resposta")
+                btnNext.text = if (answered) "Continuar" else if (current is Item.FreeWrite) "Corrigir com IA" else if (current is Item.Flash) (if (flashRevealed) "Escolha a nota" else "Mostrar resposta")
                     else if (current.needsVerify()) "Verificar" else "Escolha uma opção"
                 if (!answered && current is Item.Flash && flashRevealed) btnNext.isEnabled = false
             }
@@ -331,7 +336,7 @@ class StudyActivity : Activity() {
         }
     }
 
-    private fun Item?.needsVerify() = this is Item.Order || this is Item.Kanji || this is Item.Write || this is Item.Parts || this is Item.Flash
+    private fun Item?.needsVerify() = this is Item.Order || this is Item.Kanji || this is Item.Write || this is Item.Parts || this is Item.Flash || this is Item.FreeWrite
 
     private fun onNextClicked() {
         when (phase) {
@@ -446,6 +451,8 @@ class StudyActivity : Activity() {
         aiPanel = null
         btnEasy.visibility = View.GONE
         trLine.visibility = View.GONE
+        freeInput.visibility = View.GONE
+        freeInput.isEnabled = true
         flashRevealed = false
         flashGrade = 0
     }
@@ -467,10 +474,28 @@ class StudyActivity : Activity() {
 
         when (item) {
             is Item.Order -> {
-                prompt.text = pre + "Monte a frase na ordem certa (ouça o áudio se precisar)."
+                prompt.text = pre + "Monte a frase na ordem certa, guiando-se pela tradução (ouça o áudio se precisar)."
+                // A tradução guia a ordem (a frase em japonês fica escondida)
+                sentenceView.visibility = View.VISIBLE
+                TrSwitch.bind(this, sentenceView, item.sentence, "", scale = 0.75f)
                 built.visibility = View.VISIBLE
                 btnUndo.visibility = View.VISIBLE
                 for (c in item.chunks.shuffled()) addTile(c)
+            }
+            is Item.Drill -> {
+                prompt.text = pre + item.prompt
+                for (o in item.options) addChoice(o)
+            }
+            is Item.FreeWrite -> {
+                val p = Grammar.point(item.pointId)
+                prompt.text = pre + "Escreva uma frase sua usando 「${p?.name ?: item.pointId}」" +
+                    (if (p != null) " — ${p.explanation}" else "") +
+                    (if (item.word != null) "\nSe quiser, use 「${item.word.base}」." else "") +
+                    (if (p != null) "\nEx.: ${p.example}" else "") +
+                    "\nDepois toque em Corrigir com IA."
+                freeInput.visibility = View.VISIBLE
+                freeInput.isEnabled = true
+                freeInput.setText("")
             }
             is Item.Cloze -> {
                 prompt.text = pre + "Qual palavra completa a frase?"
@@ -544,6 +569,8 @@ class StudyActivity : Activity() {
         is Item.Write -> item.word.base.filter(StudyGen::isKanji)
         is Item.Parts -> item.parts.joinToString(" + ") { it.element }
         is Item.Flash -> Srs.gradeLabel(Srs.GOOD)
+        is Item.Drill -> item.answer
+        is Item.FreeWrite -> freeChecks[item]?.corrected ?: ""
         is Item.Cloze -> item.word.surface
         is Item.GrammarCloze -> item.sentence.substring(item.hit.start, item.hit.end)
         is Item.Choice -> item.answer
@@ -554,6 +581,7 @@ class StudyActivity : Activity() {
     private fun verifyBuilt() {
         val item = current ?: return
         if (!item.needsVerify()) { Toast.makeText(this, "Escolha uma alternativa", Toast.LENGTH_SHORT).show(); return }
+        if (item is Item.FreeWrite) { checkFree(item); return }
         val given = when (item) {
             is Item.Write -> {
                 if (slotValues.any { it.isEmpty() }) { Toast.makeText(this, "Preencha todas as lacunas", Toast.LENGTH_SHORT).show(); return }
@@ -570,7 +598,11 @@ class StudyActivity : Activity() {
 
     private fun onAnswered(item: Item, given: String) {
         val answer = answerOf(item)
-        val ok = if (item is Item.Flash) Srs.gradeOf(given) >= Srs.HARD else given == answer
+        val ok = when (item) {
+            is Item.Flash -> Srs.gradeOf(given) >= Srs.HARD
+            is Item.FreeWrite -> freeChecks[item]?.correct == true
+            else -> given == answer
+        }
         answered = true
         stopAudio()
         applyResult(item, given, ok)
@@ -603,6 +635,11 @@ class StudyActivity : Activity() {
                 val sb = SpannableStringBuilder(given.ifEmpty { "(vazio)" })
                 sb.setSpan(ForegroundColorSpan(getColor(if (ok) R.color.ok else R.color.stop)), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                 built.text = sb
+            }
+            is Item.FreeWrite -> {
+                freeInput.visibility = View.VISIBLE
+                freeInput.setText(given)
+                freeInput.isEnabled = false
             }
             is Item.Flash -> {
                 if (!flashRevealed) revealFlash()
@@ -655,6 +692,8 @@ class StudyActivity : Activity() {
             is Item.Write -> "Escrever 「${item.word.reading}」"
             is Item.Parts -> "Partes do kanji ${item.kanji} (${item.word.base})"
             is Item.Flash -> "Flashcard (${Srs.kindLabel(item.card.kind)}): ${item.card.label}"
+            is Item.Drill -> item.prompt
+            is Item.FreeWrite -> "Escrever com ${Grammar.point(item.pointId)?.name ?: item.pointId}"
             is Item.Order -> "Ordenar a frase"
         }
         val key = item.wordKey
@@ -709,6 +748,7 @@ class StudyActivity : Activity() {
      */
     private fun showFeedback(item: Item, ok: Boolean, given: String, answer: String) {
         if (item is Item.Flash) { showFlashBack(item); return }
+        if (item is Item.FreeWrite) { showFreeFeedback(item, given); return }
         val okColor = getColor(R.color.ok)
         val badColor = getColor(R.color.stop)
         val sec = getColor(R.color.text_secondary)
@@ -775,6 +815,11 @@ class StudyActivity : Activity() {
             is Item.GrammarCloze -> {
                 sb.append("\n\n"); bold("${item.hit.point.name} · ${item.hit.point.level}")
                 sb.append("\n").append(item.hit.point.explanation)
+            }
+            is Item.Drill -> Grammar.point(item.pointId)?.let { p ->
+                sb.append("\n\n"); bold("${p.name} · ${p.level}")
+                sb.append("\n").append(p.explanation)
+                if (item.note.isNotBlank()) { sb.append("\n"); colored(item.note, sec) }
             }
             is Item.GrammarQ -> {
                 sb.append("\n\n"); bold("${item.hit.point.name} · ${item.hit.point.level}")
@@ -959,6 +1004,54 @@ class StudyActivity : Activity() {
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 
+    // =====================================================================
+    // Escrever com o padrão (correção pela IA)
+    // =====================================================================
+
+    private fun checkFree(item: Item.FreeWrite) {
+        val text = freeInput.text.toString().trim()
+        if (text.isEmpty()) { Toast.makeText(this, "Escreva uma frase primeiro", Toast.LENGTH_SHORT).show(); return }
+        if (!Ai.enabled(this)) { Toast.makeText(this, "Ative a IA em Configurações", Toast.LENGTH_LONG).show(); return }
+        btnNext.isEnabled = false
+        btnNext.text = "Corrigindo…"
+        Ai.check(this, item.pointId, text, item.word?.base, Prefs(this).level) { res ->
+            if (current !== item || answered) return@check
+            if (res.error != null) {
+                Toast.makeText(this, "Não consegui corrigir: ${res.error}", Toast.LENGTH_LONG).show()
+                updateButtons()
+                return@check
+            }
+            freeChecks[item] = res
+            onAnswered(item, text)
+        }
+    }
+
+    private fun showFreeFeedback(item: Item.FreeWrite, given: String) {
+        val res = freeChecks[item]
+        val sb = SpannableStringBuilder()
+        fun colored(t: String, c: Int) { val a = sb.length; sb.append(t); sb.setSpan(ForegroundColorSpan(c), a, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE) }
+        fun bold(t: String) { val a = sb.length; sb.append(t); sb.setSpan(StyleSpan(android.graphics.Typeface.BOLD), a, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE) }
+        val sec = getColor(R.color.text_secondary)
+        if (res == null) {
+            colored("Sua frase: $given", sec)
+        } else {
+            if (res.correct) colored("✓ Correta!", getColor(R.color.ok)) else colored("✗ Precisa de ajuste", getColor(R.color.stop))
+            sb.append("\n\n"); bold("Sua frase: "); sb.append(given)
+            if (res.corrected.isNotBlank() && res.corrected != given) { sb.append("\n"); bold("Corrigida: "); colored(res.corrected, getColor(R.color.ok)) }
+            if (res.translation.isNotBlank()) { sb.append("\n"); bold("Tradução: "); sb.append(res.translation) }
+            if (res.explanation.isNotBlank()) { sb.append("\n"); bold("Por quê: "); sb.append(res.explanation) }
+            sb.append("\n"); colored("Correção: ${Ai.modelLabel(this)}", sec)
+        }
+        Grammar.point(item.pointId)?.let { p ->
+            sb.append("\n\n"); bold("${p.name} · ${p.level}")
+            sb.append("\n").append(p.explanation).append("\nEx.: ").append(p.example)
+            GrammarDrill.spec(p.id)?.let { sb.append("\n"); colored(it.rule(), sec) }
+        }
+        feedback.text = sb
+        feedback.visibility = View.VISIBLE
+        trLine.visibility = View.GONE
+    }
+
     /** "Frase" + a frase + a tradução (ML Kit ou Gemini; tocar alterna). */
     private fun showSentenceTr(sentence: String) {
         if (sentence.isBlank()) { trLine.visibility = View.GONE; return }
@@ -982,6 +1075,8 @@ class StudyActivity : Activity() {
         is Item.Flash -> SrsTarget(item.card.kind, item.card.key, item.card.label)
         is Item.GrammarQ -> SrsTarget(Srs.GRAMMAR, item.hit.point.id, item.hit.point.name, item.sentence, item.recording, item.sec)
         is Item.GrammarCloze -> SrsTarget(Srs.GRAMMAR, item.hit.point.id, item.hit.point.name, item.sentence, item.recording, item.sec)
+        is Item.Drill -> Grammar.point(item.pointId)?.let { SrsTarget(Srs.GRAMMAR, it.id, it.name, item.sentence, item.recording, item.sec) }
+        is Item.FreeWrite -> Grammar.point(item.pointId)?.let { SrsTarget(Srs.GRAMMAR, it.id, it.name, item.sentence, item.recording, item.sec) }
         else -> {
             val w = StudyGen.wordOf(item)
             val key = item.wordKey
@@ -1217,6 +1312,8 @@ class StudyActivity : Activity() {
             is Item.GrammarQ -> reqs.add(Ai.Request(Ai.Task.GRAMMAR, item.sentence, rec, item.hit.point.name, item.sentence.substring(item.hit.start, item.hit.end), level))
             is Item.GrammarCloze -> reqs.add(Ai.Request(Ai.Task.GRAMMAR, item.sentence, rec, item.hit.point.name, item.sentence.substring(item.hit.start, item.hit.end), level))
             is Item.Order -> reqs.add(Ai.Request(Ai.Task.GRAMMAR, item.sentence, rec, level = level))
+            is Item.Drill -> Grammar.point(item.pointId)?.let { reqs.add(Ai.Request(Ai.Task.GRAMMAR, item.sentence, rec, it.name, "", level)) }
+            is Item.FreeWrite -> Grammar.point(item.pointId)?.let { reqs.add(Ai.Request(Ai.Task.GRAMMAR, item.sentence, rec, it.name, "", level)) }
             else -> {}
         }
         aiPanel = AiPanel(this, aiBox, reqs).also { it.show() }
@@ -1250,9 +1347,35 @@ class StudyActivity : Activity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: android.view.Menu): Boolean {
+        menu.add(0, 101, 0, "Reportar erro")
+        return true
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) { confirmExit(); return true }
+        if (item.itemId == 101) { reportCurrent(); return true }
         return super.onOptionsItemSelected(item)
+    }
+
+    /** Reporta o item na tela com o que ele mostrava (traduções, resposta certa, alternativas). */
+    private fun reportCurrent() {
+        val it = current ?: run { Toast.makeText(this, "Nada na tela para reportar", Toast.LENGTH_SHORT).show(); return }
+        val w = StudyGen.wordOf(it)
+        val shown = buildList {
+            Tr.cached(this@StudyActivity, it.sentence)?.let { t -> add("frase (ML Kit): $t") }
+            Tr.aiCached(this@StudyActivity, it.sentence)?.let { t -> add("frase (Gemini): $t") }
+            if (w != null) Tr.cached(this@StudyActivity, w.base)?.let { t -> add("palavra: $t") }
+            if (it !is Item.Flash && it !is Item.FreeWrite) add("resposta certa: ${answerOf(it)}")
+            when (it) {
+                is Item.Choice -> add("alternativas: " + it.options.joinToString(" / "))
+                is Item.Drill -> add("alternativas: " + it.options.joinToString(" / "))
+                is Item.Cloze -> add("alternativas: " + it.options.joinToString(" / "))
+                is Item.GrammarCloze -> add("alternativas: " + it.options.joinToString(" / "))
+                else -> {}
+            }
+        }.joinToString(" · ")
+        Reports.dialog(this, it.sentence, w, itemRecording(it), "Exercício · ${it.kind}", shown)
     }
 
     // =====================================================================

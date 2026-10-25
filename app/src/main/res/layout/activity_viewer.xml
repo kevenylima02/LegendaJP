@@ -59,6 +59,21 @@
         android:textSize="12sp"
         android:text="Toque no tempo para ouvir; nas palavras para salvar; toque longo na frase para a gramática." />
 
+    <!-- Dificuldade do áudio para você (toque para ver detalhes) -->
+    <TextView
+        android:id="@+id/levelInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="6dp"
+        android:background="@drawable/bg_card"
+        android:padding="12dp"
+        android:textColor="@color/text"
+        android:textSize="13sp"
+        android:lineSpacingExtra="2dp"
+        android:visibility="gone" />
+
     <ListView
         android:id="@+id/lines"
         android:layout_width="match_parent"

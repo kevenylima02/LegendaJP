@@ -198,7 +198,7 @@ class VocabDetailActivity : Activity() {
             val v = convertView ?: LayoutInflater.from(parent.context).inflate(R.layout.item_occurrence, parent, false)
             val o = occ[position]
             v.findViewById<TextView>(R.id.sentence).text =
-                Jp.highlight(o.sentence, VocabDb.studyKeys, getColor(R.color.saved_word))
+                Jp.highlight(o.sentence, VocabDb.studyKeys, getColor(R.color.saved_word), VocabDb.knownKeys, getColor(R.color.known_word))
             v.findViewById<TextView>(R.id.meta).text =
                 "${Recordings.prettyName(o.recording)} · ${CaptureService.formatTime(o.sec)}"
             v.findViewById<TextView>(R.id.play).setOnClickListener { play(o) }

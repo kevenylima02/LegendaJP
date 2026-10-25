@@ -288,12 +288,16 @@ object Jp {
         sentence: String,
         saved: Set<String>,
         savedColor: Int,
+        known: Set<String> = emptySet(),
+        knownColor: Int = 0,
         onTap: (Word) -> Unit
     ): CharSequence {
         val sb = SpannableStringBuilder(sentence)
         val list = try { words(sentence) } catch (_: Exception) { return sentence }
         for (w in list) {
-            val isSaved = w.key in saved
+            val isKnown = w.key in known
+            val isSaved = w.key in saved || isKnown
+            val color = if (isKnown) knownColor else savedColor
             sb.setSpan(object : ClickableSpan() {
                 override fun onClick(widget: View) {
                     val now = android.os.SystemClock.uptimeMillis()
@@ -303,24 +307,26 @@ object Jp {
                 }
                 override fun updateDrawState(ds: TextPaint) {
                     ds.isUnderlineText = false
-                    if (isSaved) ds.color = savedColor
+                    if (isSaved) ds.color = color
                 }
             }, w.start, w.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            if (isSaved) sb.setSpan(ForegroundColorSpan(savedColor), w.start, w.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            if (isSaved) sb.setSpan(ForegroundColorSpan(color), w.start, w.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         return sb
     }
 
     /** Só o destaque das salvas, sem toque (lista de vocabulário etc.). */
-    fun highlight(sentence: String, saved: Set<String>, savedColor: Int): CharSequence {
+    fun highlight(sentence: String, saved: Set<String>, savedColor: Int, known: Set<String> = emptySet(), knownColor: Int = 0): CharSequence {
         val sb = SpannableStringBuilder(sentence)
         val list = try { words(sentence) } catch (_: Exception) { return sentence }
-        for (w in list) if (w.key in saved) {
-            sb.setSpan(ForegroundColorSpan(savedColor), w.start, w.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        for (w in list) {
+            val c = when (w.key) { in known -> knownColor; in saved -> savedColor; else -> continue }
+            sb.setSpan(ForegroundColorSpan(c), w.start, w.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         return sb
     }
 
     const val OVERLAY_SAVED_COLOR = 0xFFC5CBFF.toInt()
+    const val OVERLAY_KNOWN_COLOR = 0xFF8EE6A0.toInt()
     val TRANSPARENT = Color.TRANSPARENT
 }

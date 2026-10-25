@@ -39,6 +39,15 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   kanji, a frase com tradução e a ordem dos traços animada.
 - **Tela da palavra**: ordem dos traços de cada kanji, leituras e significados, e **Estudar esta palavra**
   (exercícios de kanji e vocabulário só dela; inclui "Significado do kanji").
+- **Gramática para usar** (Conj + GrammarDrill): conjugador de verbos (godan, ichidan, する, 来る) e adjetivos-い
+  a partir do Kuromoji, e a regra de ligação de ~50 padrões do catálogo. Exercícios: Qual forma combina,
+  Transforme com o padrão (erros comuns como alternativas), Português → padrão e Escrever com o padrão
+  (frase livre corrigida pela IA). O Ordenar a frase mostra a tradução como guia.
+- **Reportar erro** (⋮ no exercício e na escolha de palavras) e tela **Reportes** (⋮ na tela principal):
+  tradução da palavra ou da frase pode ser corrigida com "✦ Corrigir com IA" e aceita (vale no app inteiro);
+  "Copiar todos" leva os outros para ajuste no código. Tudo fica no celular.
+- **Dificuldade do áudio** no visualizador: % de palavras que você conhece (verde), está estudando (lavanda)
+  e novas, nível JLPT estimado do texto e padrões de gramática por nível.
 - **Revisão espaçada** (botão Revisar na tela principal e menu ⋮): FSRS 4.5 (o algoritmo do Anki), retenção de 90%.
   Cartões de significado e de kanji para cada palavra salva (o "Estudar" da escolha de palavras salva a palavra)
   e de gramática para os padrões que aparecem nos exercícios. Toda primeira resposta conta (acertou = Bom,

@@ -121,6 +121,89 @@ object Ai {
     @Volatile var stopRequested = false
 
     /**
+     * Proposta de correção para um reporte de tradução (palavra ou frase): (tradução, observação) ou erro.
+     * O callback roda na thread principal.
+     */
+    fun fixTranslation(ctx: Context, r: Reports.Report, cb: (Pair<String, String>?, String?) -> Unit) {
+        val app = ctx.applicationContext
+        Thread {
+            var res: Pair<String, String>? = null
+            var err: String? = null
+            try {
+                val sb = StringBuilder("Você corrige traduções japonês → português do Brasil de um app de estudo. ")
+                if (r.kind == Reports.WORD) {
+                    sb.append("Dê o significado da palavra 「${r.word}」 (leitura ${r.reading}, ${r.pos})")
+                    if (r.sentence.isNotBlank()) sb.append(" como usada na frase 「${r.sentence}」")
+                    sb.append(". Tradução atual (reportada como errada): ${Tr.cached(app, r.word) ?: "(nenhuma)"}.\n")
+                } else {
+                    val context = contextLines(app, r.recording, r.sentence)
+                    if (context.isNotEmpty()) {
+                        sb.append("Transcrição da gravação (a frase marcada com >>):\n")
+                        for (l in context) sb.append(l).append('\n')
+                    }
+                    sb.append("Traduza a frase 「${r.sentence}」. Tradução atual (reportada como errada): ")
+                    sb.append(Tr.aiCached(app, r.sentence) ?: Tr.cached(app, r.sentence) ?: "(nenhuma)").append(".\n")
+                }
+                if (r.comment.isNotBlank()) sb.append("Comentário de quem reportou: ${r.comment}\n")
+                sb.append("Nada de inglês na resposta. Responda somente com JSON, sem markdown: {\"traducao\": \"")
+                sb.append(if (r.kind == Reports.WORD) "1 a 4 palavras, estilo dicionário, sem artigo" else "tradução natural")
+                sb.append("\", \"observacao\": \"uma linha: outros sentidos ou o que estava errado\"}")
+                val out = when (mode(app)) {
+                    NANO -> runNano(sb.toString())
+                    CLOUD -> runCloud(app, sb.toString())
+                    else -> throw IllegalStateException("A IA está desligada em Configurações.")
+                }
+                val a = out.indexOf('{'); val b = out.lastIndexOf('}')
+                val o = JSONObject(out.substring(a, b + 1))
+                val t = o.optString("traducao").trim()
+                if (t.isNotEmpty()) res = t to o.optString("observacao").trim() else err = "resposta vazia"
+            } catch (e: Exception) {
+                Log.e(TAG, "fixTranslation", e)
+                err = e.message ?: e.javaClass.simpleName
+            }
+            val r2 = res; val e2 = err
+            main.post { cb(r2, e2) }
+        }.start()
+    }
+
+    /** Correção de uma frase escrita pelo aluno com um padrão. error != null quando falhou. */
+    data class Check(val correct: Boolean, val corrected: String, val explanation: String, val translation: String, val error: String?)
+
+    /** Corrige a frase livre do exercício "Escrever com o padrão". O callback roda na thread principal. */
+    fun check(ctx: Context, pointId: String, text: String, hintWord: String?, level: Int, cb: (Check) -> Unit) {
+        val app = ctx.applicationContext
+        Thread {
+            val res = try {
+                val p = Grammar.point(pointId) ?: throw IllegalStateException("Padrão desconhecido")
+                val prompt = "Você é professor de japonês de um brasileiro que estuda para o JLPT N$level. " +
+                    "Ele precisava escrever uma frase usando o padrão 「${p.name}」 (${p.explanation})" +
+                    (if (!hintWord.isNullOrBlank()) ", podendo usar a palavra 「$hintWord」" else "") + ".\n" +
+                    "Frase do aluno: 「$text」\n" +
+                    "Avalie se está gramaticalmente correta, natural e se usa o padrão corretamente. " +
+                    "Seja tolerante com kana no lugar de kanji e com pontuação, mas a frase precisa estar em japonês: " +
+                    "se vier em romaji, marque correta como false e mostre em \"corrigida\" a versão em japonês. " +
+                    "Responda somente com JSON, sem markdown: {\"correta\": true ou false, " +
+                    "\"corrigida\": \"a frase corrigida (igual, se já estiver certa)\", " +
+                    "\"explicacao\": \"1 a 2 linhas em português: o que estava errado ou por que está certo\", " +
+                    "\"traducao\": \"tradução da frase corrigida\"}"
+                val out = when (mode(app)) {
+                    NANO -> runNano(prompt)
+                    CLOUD -> runCloud(app, prompt)
+                    else -> throw IllegalStateException("A IA está desligada em Configurações.")
+                }
+                val a = out.indexOf('{'); val b = out.lastIndexOf('}')
+                val o = JSONObject(out.substring(a, b + 1))
+                Check(o.optBoolean("correta", false), o.optString("corrigida").trim(), o.optString("explicacao").trim(),
+                    o.optString("traducao").trim(), null)
+            } catch (e: Exception) {
+                Log.e(TAG, "check", e)
+                Check(false, "", "", "", e.message ?: e.javaClass.simpleName)
+            }
+            main.post { cb(res) }
+        }.start()
+    }
+
+    /**
      * Traduz as frases da gravação com a conversa como contexto, em partes (80 frases na nuvem, 15 no
      * Nano), guardando cada tradução como "Gemini". onlyMissing: só as que ainda não têm.
      * progress(feitas, total) e done(traduzidas, erro) rodam na thread principal.

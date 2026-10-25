@@ -436,8 +436,24 @@ class WordPickActivity : Activity() {
         super.onDestroy()
     }
 
+    override fun onCreateOptionsMenu(menu: android.view.Menu): Boolean {
+        menu.add(0, 101, 0, "Reportar erro")
+        return true
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) { finish(); return true }
+        if (item.itemId == 101) {
+            val c = cands.getOrNull(index)
+            if (c == null) { Toast.makeText(this, "Nada na tela para reportar", Toast.LENGTH_SHORT).show(); return true }
+            val shown = listOfNotNull(
+                Tr.cached(this, c.word.base)?.let { "palavra: $it" },
+                Tr.cached(this, c.line.text)?.let { "frase (ML Kit): $it" },
+                Tr.aiCached(this, c.line.text)?.let { "frase (Gemini): $it" },
+            ).joinToString(" · ")
+            Reports.dialog(this, c.line.text, c.word, c.line.recording ?: recording, "Escolha de palavras", shown)
+            return true
+        }
         return super.onOptionsItemSelected(item)
     }
 }

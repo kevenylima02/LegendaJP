@@ -17,6 +17,10 @@
         android:title="Revisar erros"
         android:showAsAction="never" />
     <item
+        android:id="@+id/action_reports"
+        android:title="Reportes"
+        android:showAsAction="never" />
+    <item
         android:id="@+id/action_settings"
         android:title="Configurações"
         android:showAsAction="never" />

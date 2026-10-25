@@ -116,7 +116,9 @@ class ViewerActivity : Activity() {
             val wav = Recordings.find(this, Recordings.baseName(name) + ".wav")?.uri
             val db = VocabDb.get(this)
             val tr = parsed.map { it.text }.filter { db.aiTranslation(it) != null || db.translation(it) != null }.toHashSet()
+            val level = try { TextLevel.analyze(parsed.map { it.text }) } catch (_: Exception) { null }
             runOnUiThread {
+                if (level != null) showLevel(level)
                 fullText = text
                 lines = parsed
                 translated = tr
@@ -223,7 +225,7 @@ class ViewerActivity : Activity() {
             setTextIsSelectable(true)
         }
         val head = TextView(this).apply {
-            text = Jp.highlight(sentence, VocabDb.studyKeys, getColor(R.color.saved_word))
+            text = Jp.highlight(sentence, VocabDb.studyKeys, getColor(R.color.saved_word), VocabDb.knownKeys, getColor(R.color.known_word))
             textSize = 20f
             setTextColor(getColor(R.color.text))
             setPadding(dp(24), dp(20), dp(24), dp(4))
@@ -238,6 +240,39 @@ class ViewerActivity : Activity() {
     }
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
+
+    private var levelExpanded = false
+
+    /** Cartão de dificuldade: resumo numa linha; tocar mostra os detalhes. */
+    private fun showLevel(r: TextLevel.Result) {
+        val v = findViewById<TextView>(R.id.levelInfo)
+        if (r.tokens == 0) { v.visibility = View.GONE; return }
+        fun pct(n: Int) = if (r.tokens == 0) 0 else (n * 100 + r.tokens / 2) / r.tokens
+        val green = getColor(R.color.known_word)
+        val purple = getColor(R.color.saved_word)
+        val sec = getColor(R.color.text_secondary)
+        val sb = android.text.SpannableStringBuilder()
+        fun colored(t: String, c: Int) { val a = sb.length; sb.append(t); sb.setSpan(android.text.style.ForegroundColorSpan(c), a, sb.length, 0) }
+        fun bold(t: String) { val a = sb.length; sb.append(t); sb.setSpan(android.text.style.StyleSpan(android.graphics.Typeface.BOLD), a, sb.length, 0) }
+        bold("Para você: ${r.label}")
+        sb.append(" · nível estimado N${r.estLevel}\n")
+        colored("■ conheço ${pct(r.known)}%", green); sb.append("  ")
+        colored("■ estudando ${pct(r.studying)}%", purple); sb.append("  ")
+        sb.append("□ novas ${pct(r.tokens - r.known - r.studying)}%")
+        if (levelExpanded) {
+            sb.append("\n\n")
+            sb.append("Palavras únicas: ${r.distinct} (${r.knownDistinct} conhecidas, ${r.studyingDistinct} em estudo)\n")
+            sb.append("Palavras no texto (com repetições): ${r.tokens}\n")
+            sb.append("Nível estimado: 90% das palavras usam kanji até N${r.estLevel} (palavras só em kana contam como N5)\n")
+            if (r.grammar.isNotEmpty()) sb.append("Gramática: " + listOf("N5", "N4", "N3", "N2", "N1").mapNotNull { l -> r.grammar[l]?.let { "$it $l" } }.joinToString(", ") + "\n")
+            colored("Fácil: 95%+ conhecidas ou em estudo · confortável: 85%+ · desafiador: 70%+ · difícil: menos. Verde = Já conheço; lavanda = em estudo.", sec)
+        } else {
+            colored("  (toque para detalhes)", sec)
+        }
+        v.text = sb
+        v.visibility = View.VISIBLE
+        v.setOnClickListener { levelExpanded = !levelExpanded; showLevel(r) }
+    }
 
     /** Frases que já têm alguma tradução (aparecem embaixo da frase). */
     private var translated: Set<String> = emptySet()
@@ -355,7 +390,7 @@ class ViewerActivity : Activity() {
             val tv = v.findViewById<TextView>(R.id.text)
             tv.movementMethod = LinkMovementMethod.getInstance()
             tv.highlightColor = Color.TRANSPARENT
-            tv.text = Jp.decorate(l.text, VocabDb.studyKeys, getColor(R.color.saved_word)) { w ->
+            tv.text = Jp.decorate(l.text, VocabDb.studyKeys, getColor(R.color.saved_word), VocabDb.knownKeys, getColor(R.color.known_word)) { w ->
                 WordCard.show(
                     this@ViewerActivity, w, l.text, Recordings.baseName(name), maxOf(0, l.sec),
                     onPlay = if (wavUri != null) ({ playFrom(l.sec) }) else null,

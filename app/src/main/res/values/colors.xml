@@ -15,4 +15,5 @@
     <color name="text_secondary">#6B7083</color>
     <color name="level_track">#E3E5EE</color>
     <color name="saved_word">#5B4FE8</color>
+    <color name="known_word">#1E8E4E</color>
 </resources>

@@ -29,6 +29,14 @@ object StudyGen {
             Item(Focus.KANJI, "Montar a palavra com kanji", s.text, s.sec, s.endSec, Jlpt.wordLevel(word.base), word.key, s.recording)
         class Write(s: Line, val word: Jp.Word) :
             Item(Focus.KANJI, "Escrever a palavra à mão", s.text, s.sec, s.endSec, Jlpt.wordLevel(word.base), word.key, s.recording)
+        /** Exercício de uso da gramática (GrammarDrill): múltipla escolha ligada a um padrão do catálogo. */
+        class Drill(kind: String, s: Line, val pointId: String, val prompt: String, val answer: String, val options: List<String>, val note: String, val word: Jp.Word?, lvl: Int) :
+            Item(Focus.GRAMATICA, kind, s.text, s.sec, s.endSec, lvl, null, s.recording)
+        /** Frase livre usando um padrão, corrigida pela IA. */
+        class FreeWrite(s: Line, val pointId: String, val word: Jp.Word?) :
+            Item(Focus.GRAMATICA, "Escrever com o padrão (IA)", s.text, s.sec, s.endSec,
+                Grammar.point(pointId)?.level?.removePrefix("N")?.toIntOrNull() ?: 5, null, s.recording)
+
         /** Flashcard da revisão espaçada: frente e verso; a nota (De novo…Fácil) é escolhida. */
         class Flash(val card: Srs.Card, val word: Jp.Word?, val point: Grammar.Point?, s: Line) :
             Item(
@@ -55,7 +63,11 @@ object StudyGen {
     val allKinds: List<Kind> = listOf(
         Kind("Identificar o padrão", Focus.GRAMATICA, Difficulty.FACIL, "A frase e 4 nomes de padrão gramatical.", TRAINS_GRAMMAR),
         Kind("Lacuna gramatical", Focus.GRAMATICA, Difficulty.MEDIO, "O trecho do padrão é apagado; escolha o que completa.", TRAINS_GRAMMAR),
-        Kind("Ordenar a frase", Focus.GRAMATICA, Difficulty.MEDIO, "Monte a frase com os pedaços embaralhados.", TRAINS_GRAMMAR),
+        Kind("Ordenar a frase", Focus.GRAMATICA, Difficulty.MEDIO, "Monte a frase com os pedaços embaralhados, com a tradução como guia.", TRAINS_GRAMMAR),
+        Kind("Qual forma combina", Focus.GRAMATICA, Difficulty.FACIL, "O padrão fixo; escolha a forma do verbo ou adjetivo que encaixa (食べ＿＿とき).", TRAINS_GRAMMAR),
+        Kind("Português → padrão", Focus.GRAMATICA, Difficulty.FACIL, "Com a mesma palavra, qual forma tem o sentido pedido («quero …»).", TRAINS_GRAMMAR),
+        Kind("Transforme com o padrão", Focus.GRAMATICA, Difficulty.MEDIO, "Aplique o padrão à palavra; as erradas são os erros comuns de conjugação.", TRAINS_GRAMMAR),
+        Kind("Escrever com o padrão (IA)", Focus.GRAMATICA, Difficulty.DIFICIL, "Escreva uma frase sua usando o padrão; a IA corrige (precisa da IA ligada).", TRAINS_GRAMMAR),
         Kind("Lacuna com áudio", Focus.VOCAB, Difficulty.FACIL, "Uma palavra escondida na frase, 4 opções, com áudio.", TRAINS_MEANING),
         Kind("Tradução → palavra", Focus.VOCAB, Difficulty.FACIL, "Dada a tradução, escolha a palavra (precisa de tradução em cache).", TRAINS_MEANING),
         Kind("Palavra → tradução", Focus.VOCAB, Difficulty.FACIL, "Dada a palavra, escolha o significado (precisa de tradução em cache).", TRAINS_MEANING),
@@ -131,6 +143,8 @@ object StudyGen {
         is Item.Write -> item.word
         is Item.Parts -> item.word
         is Item.Flash -> item.word
+        is Item.Drill -> item.word
+        is Item.FreeWrite -> item.word
         else -> null
     }
 
@@ -187,9 +201,12 @@ object StudyGen {
     private fun grammarExercise(ctx: Context, c: Srs.Card, rnd: kotlin.random.Random, disabled: Set<String>): Item? {
         val s = c.sentence ?: return null
         val line = lineFor(ctx, c.recording, s, c.sec)
-        return generateAll(ctx, listOf(line), rnd, null, grammar = true).filter {
-            it.kind !in disabled && ((it is Item.GrammarQ && it.hit.point.id == c.key) || (it is Item.GrammarCloze && it.hit.point.id == c.key))
-        }.randomOrNull(rnd)
+        val words = try { Jp.words(line.text) } catch (_: Exception) { emptyList() }
+        val drills = GrammarDrill.items(ctx, line, words.filter { it.posKey in setOf("動詞", "形容詞") }, listOf(c.key),
+            Prefs(ctx).levels, rnd, pointId = c.key, withAi = Ai.enabled(ctx))
+        return (generateAll(ctx, listOf(line), rnd, null, grammar = true).filter {
+            (it is Item.GrammarQ && it.hit.point.id == c.key) || (it is Item.GrammarCloze && it.hit.point.id == c.key)
+        } + drills).filter { it.kind !in disabled }.randomOrNull(rnd)
     }
 
     private val txtLines = android.util.LruCache<String, List<Line>>(8)
@@ -273,6 +290,9 @@ object StudyGen {
                 val chunks = try { Jp.chunks(s) } catch (_: Exception) { emptyList() }
                 if (chunks.size in 4..9) out.add(Item.Order(line, chunks, sentenceLevel))
                 val present = hits.map { it.point.id }.toSet()
+                // Usar a gramática: com uma palavra da frase (verbo/adjetivo) ou um verbo comum
+                val drillWords = ws.filter { it.posKey in setOf("動詞", "形容詞") && (onlyKeys == null || it.key in onlyKeys) && it.key !in known }
+                out.addAll(GrammarDrill.items(ctx, line, drillWords, present.toList(), Prefs(ctx).levels, rnd, withAi = Ai.enabled(ctx)))
                 for (hit in hits) {
                     val wrong = Grammar.all.filter { it.id !in present }.shuffled(rnd).take(3)
                     out.add(Item.GrammarQ(line, hit, (wrong + hit.point).shuffled(rnd)))

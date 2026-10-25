@@ -38,6 +38,11 @@ object StudyCodec {
             is Item.Kanji -> o.put("t", "kanji").put("word", wordJson(item.word)).put("tiles", JSONArray(item.tiles))
             is Item.Write -> o.put("t", "write").put("word", wordJson(item.word))
             is Item.Flash -> o.put("t", "flash") // flashcards não vão para a fila de erros
+            is Item.Drill -> o.put("t", "drill").put("kind", item.kind).put("point", item.pointId).put("prompt", item.prompt)
+                .put("answer", item.answer).put("options", JSONArray(item.options)).put("note", item.note)
+                .put("word", if (item.word != null) wordJson(item.word) else JSONObject.NULL)
+            is Item.FreeWrite -> o.put("t", "free").put("point", item.pointId)
+                .put("word", if (item.word != null) wordJson(item.word) else JSONObject.NULL)
             is Item.Parts -> o.put("t", "parts").put("word", wordJson(item.word)).put("kanji", item.kanji.toString())
                 .put("parts", JSONArray(item.parts.map { it.encode() })).put("tiles", JSONArray(item.tiles.map { it.encode() }))
         }
@@ -68,6 +73,12 @@ object StudyCodec {
                 )
                 "kanji" -> Item.Kanji(line, word(o.getJSONObject("word")), strings(o.getJSONArray("tiles")))
                 "write" -> Item.Write(line, word(o.getJSONObject("word")))
+                "drill" -> Item.Drill(
+                    o.getString("kind"), line, o.getString("point"), o.getString("prompt"), o.getString("answer"),
+                    strings(o.getJSONArray("options")), o.getString("note"),
+                    if (o.isNull("word")) null else word(o.getJSONObject("word")), o.getInt("level")
+                )
+                "free" -> Item.FreeWrite(line, o.getString("point"), if (o.isNull("word")) null else word(o.getJSONObject("word")))
                 "parts" -> Item.Parts(
                     line, word(o.getJSONObject("word")), o.getString("kanji")[0],
                     strings(o.getJSONArray("parts")).mapNotNull { KanjiParts.decode(it) },
