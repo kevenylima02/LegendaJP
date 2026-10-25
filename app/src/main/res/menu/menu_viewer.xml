@@ -10,6 +10,18 @@
         android:icon="@android:drawable/ic_menu_share"
         android:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_gen_audio"
+        android:title="Gerar áudio"
+        android:showAsAction="never" />
+    <item
+        android:id="@+id/action_speakers_ai"
+        android:title="✦ Identificar locutores (IA)"
+        android:showAsAction="never" />
+    <item
+        android:id="@+id/action_speakers"
+        android:title="Locutores (nomes)"
+        android:showAsAction="never" />
+    <item
         android:id="@+id/action_rename"
         android:title="Renomear"
         android:showAsAction="never" />

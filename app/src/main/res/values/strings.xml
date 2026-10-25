@@ -24,4 +24,5 @@
     <string name="overlay_allow">Permitir</string>
     <string name="overlay_later">Sem legenda flutuante</string>
     <string name="vocab">Vocabulário</string>
+    <string name="viewer_hint">Toque no tempo para ouvir; nas palavras para salvar; toque longo na frase para a gramática.</string>
 </resources>

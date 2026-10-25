@@ -94,6 +94,11 @@ class Prefs(ctx: Context) {
         get() = sp.getBoolean("trPreferGemini", true)
         set(v) = sp.edit().putBoolean("trPreferGemini", v).apply()
 
+    /** Gerar áudio de texto importado: AudioGen.PHONE (TTS do celular) ou AudioGen.GEMINI. */
+    var ttsEngine: String
+        get() = sp.getString("ttsEngine", AudioGen.PHONE) ?: AudioGen.PHONE
+        set(v) = sp.edit().putString("ttsEngine", v).apply()
+
     var geminiModel: String
         get() = sp.getString("geminiModel", Ai.DEFAULT_MODEL) ?: Ai.DEFAULT_MODEL
         set(v) = sp.edit().putString("geminiModel", v.trim()).apply()

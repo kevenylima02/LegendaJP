@@ -32,6 +32,8 @@ class ViewerActivity : Activity() {
         const val EXTRA_URI = "uri"
         const val EXTRA_NAME = "name"
         const val EXTRA_SEEK = "seek"
+        /** Abrir e já gerar o áudio (texto recém-importado). */
+        const val EXTRA_GEN_AUDIO = "genAudio"
     }
 
     private data class Line(val sec: Int, val text: String)
@@ -117,15 +119,26 @@ class ViewerActivity : Activity() {
             val db = VocabDb.get(this)
             val tr = parsed.map { it.text }.filter { db.aiTranslation(it) != null || db.translation(it) != null }.toHashSet()
             val level = try { TextLevel.analyze(parsed.map { it.text }) } catch (_: Exception) { null }
+            val base = Recordings.baseName(name)
+            val sp = Speakers.lines(this, base)
+            val spInfos = Speakers.infos(this, base)
             runOnUiThread {
+                speakerOf = sp
+                speakerInfos = spInfos
+                player?.release(); player = null; prepared = false
                 if (level != null) showLevel(level)
                 fullText = text
                 lines = parsed
                 translated = tr
                 adapter.notifyDataSetChanged()
                 wavUri = wav
-                if (wav != null) setupPlayer(wav)
-                else findViewById<TextView>(R.id.hint).text = "Sem áudio salvo para esta transcrição."
+                val hint = findViewById<TextView>(R.id.hint)
+                if (wav != null) { setupPlayer(wav); hint.text = getString(R.string.viewer_hint) }
+                else hint.text = "Sem áudio salvo para esta transcrição. Gere em ⋮ → Gerar áudio."
+                if (intent.getBooleanExtra(EXTRA_GEN_AUDIO, false)) {
+                    intent.removeExtra(EXTRA_GEN_AUDIO)
+                    generateAudio()
+                }
             }
         }.start()
     }
@@ -242,6 +255,58 @@ class ViewerActivity : Activity() {
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 
     private var levelExpanded = false
+    private var speakerOf: Map<Int, String> = emptyMap()
+    private var speakerInfos: List<Speakers.Info> = emptyList()
+
+    // ---------- gerar áudio e locutores ----------
+
+    private fun confirmGenerate() {
+        val engine = Prefs(this).ttsEngine
+        val label = if (engine == AudioGen.GEMINI) "Gemini (nuvem; no plano grátis, 3 pedidos por minuto)" else "voz do celular (grátis, offline)"
+        val msg = "Gerar o áudio com $label? Cada locutor ganha uma voz. Troque o tipo em Configurações." +
+            if (wavUri != null) "\n\nIsto substitui o áudio atual desta gravação." else ""
+        AlertDialog.Builder(this).setTitle("Gerar áudio").setMessage(msg)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton("Gerar") { _, _ -> generateAudio() }.show()
+    }
+
+    private fun generateAudio() {
+        val bar = android.widget.ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply { isIndeterminate = true }
+        val label = TextView(this).apply { text = "Preparando…"; setTextColor(getColor(R.color.text)); textSize = 14f }
+        val box = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(dp(24), dp(16), dp(24), dp(8))
+            addView(label); addView(bar)
+        }
+        player?.let { try { if (it.isPlaying) it.pause() } catch (_: IllegalStateException) {} }
+        val dlg = AlertDialog.Builder(this).setTitle("Gerando o áudio").setView(box).setCancelable(false)
+            .setNegativeButton("Parar") { _, _ -> AudioGen.stopRequested = true }.show()
+        AudioGen.generate(this, name, Prefs(this).ttsEngine,
+            progress = { msg, done, total ->
+                bar.isIndeterminate = false; bar.max = maxOf(1, total); bar.progress = done
+                label.text = "$msg\n$done de $total frases"
+            },
+            done = { err ->
+                if (dlg.isShowing) dlg.dismiss()
+                Toast.makeText(this, err?.let { "Não terminou: $it" } ?: "Áudio gerado", Toast.LENGTH_LONG).show()
+                if (err == null) load()
+            })
+    }
+
+    private fun identifySpeakers() {
+        if (wavUri == null) { Toast.makeText(this, "Gere ou grave o áudio primeiro", Toast.LENGTH_LONG).show(); return }
+        val label = TextView(this).apply { text = "✦ Ouvindo o áudio…"; setTextColor(getColor(R.color.text)); textSize = 14f; setPadding(dp(24), dp(16), dp(24), dp(8)) }
+        val dlg = AlertDialog.Builder(this).setTitle("Locutores").setView(label).setCancelable(false).show()
+        Ai.identifySpeakers(this, Recordings.baseName(name),
+            progress = { done, total -> label.text = "✦ Ouvindo o áudio… parte ${done + 1} de $total" },
+            done = { n, err ->
+                if (dlg.isShowing) dlg.dismiss()
+                if (err != null) { Toast.makeText(this, "Não consegui: $err", Toast.LENGTH_LONG).show(); return@identifySpeakers }
+                Toast.makeText(this, if (n == 1) "1 pessoa fala nesta gravação" else "$n pessoas falam nesta gravação", Toast.LENGTH_LONG).show()
+                load()
+                if (n > 1) Speakers.editDialog(this, Recordings.baseName(name)) { load() }
+            })
+    }
 
     /** Título dado (ou a data) no topo; com título, a data fica embaixo. */
     private fun showTitle() {
@@ -366,6 +431,9 @@ class ViewerActivity : Activity() {
             }
             R.id.action_translate_ai -> translateAll()
             R.id.action_rename -> Recordings.renameDialog(this, name) { showTitle() }
+            R.id.action_gen_audio -> confirmGenerate()
+            R.id.action_speakers_ai -> identifySpeakers()
+            R.id.action_speakers -> Speakers.editDialog(this, Recordings.baseName(name)) { load() }
             R.id.action_copy -> {
                 getSystemService(ClipboardManager::class.java)
                     .setPrimaryClip(ClipData.newPlainText("LegendaJP", fullText))
@@ -398,6 +466,15 @@ class ViewerActivity : Activity() {
             val l = lines[position]
             val stamp = v.findViewById<TextView>(R.id.stamp)
             stamp.text = if (l.sec >= 0) CaptureService.formatTime(l.sec) else ""
+            // Locutor (cor por pessoa)
+            val spv = v.findViewById<TextView>(R.id.speaker)
+            val sid = speakerOf[position]
+            if (sid != null) {
+                val ids = speakerInfos.map { it.id }.ifEmpty { speakerOf.values.distinct().sorted() }
+                spv.text = speakerInfos.firstOrNull { it.id == sid }?.name ?: sid
+                spv.setTextColor(Speakers.colorOf(sid, ids))
+                spv.visibility = View.VISIBLE
+            } else spv.visibility = View.GONE
             stamp.setOnClickListener { playFrom(l.sec) }
             val tv = v.findViewById<TextView>(R.id.text)
             tv.movementMethod = LinkMovementMethod.getInstance()

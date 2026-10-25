@@ -104,6 +104,9 @@ class SettingsActivity : Activity() {
         }
         findViewById<android.widget.EditText>(R.id.geminiKey).setText(prefs.geminiKey)
         findViewById<android.widget.EditText>(R.id.geminiModel).setText(prefs.geminiModel)
+        val tts = findViewById<RadioGroup>(R.id.ttsEngine)
+        tts.check(if (prefs.ttsEngine == AudioGen.GEMINI) R.id.ttsGemini else R.id.ttsPhone)
+        tts.setOnCheckedChangeListener { _, id -> prefs.ttsEngine = if (id == R.id.ttsGemini) AudioGen.GEMINI else AudioGen.PHONE }
         val prefer = findViewById<Switch>(R.id.swPreferGemini)
         prefer.isChecked = prefs.trPreferGemini
         prefer.setOnCheckedChangeListener { _, on -> prefs.trPreferGemini = on }

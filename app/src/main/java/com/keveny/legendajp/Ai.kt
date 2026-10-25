@@ -166,6 +166,90 @@ object Ai {
         }.start()
     }
 
+    /**
+     * Locutores: manda o áudio (em partes de 6 min) com as frases numeradas e pede quem fala cada uma.
+     * Os ids continuam os mesmos entre as partes (o pedido leva as vozes já identificadas).
+     * progress(feitas, total) e done(nº de locutores, erro) rodam na thread principal.
+     */
+    fun identifySpeakers(ctx: Context, recording: String, progress: (Int, Int) -> Unit, done: (Int, String?) -> Unit) {
+        val app = ctx.applicationContext
+        Thread {
+            var count = 0
+            val err = try {
+                if (mode(app) != CLOUD) throw IllegalStateException("Precisa do Gemini na nuvem (Configurações → IA → Nuvem): o Nano não ouve áudio.")
+                val txt = Recordings.find(app, "$recording.txt") ?: throw IllegalStateException("Transcrição não encontrada")
+                val wavItem = Recordings.find(app, "$recording.wav") ?: throw IllegalStateException("Esta gravação não tem áudio")
+                val lines = StudyGen.lines(Recordings.readText(app, txt.uri))
+                if (lines.none { it.sec >= 0 }) throw IllegalStateException("As frases não têm tempo no áudio")
+                val pcm = app.contentResolver.openInputStream(wavItem.uri)!!.use { AudioGen.readWav(it.readBytes()) }
+                val totalSec = pcm.size / 16000
+                val chunk = 6 * 60
+                val windows = (0 until maxOf(1, (totalSec + chunk - 1) / chunk)).map { it * chunk }
+                val bySpeaker = HashMap<Int, String>()
+                val descr = LinkedHashMap<String, String>()
+                for ((w, from) in windows.withIndex()) {
+                    val idx = lines.indices.filter { lines[it].sec >= from && lines[it].sec < from + chunk }
+                    main.post { progress(w, windows.size) }
+                    if (idx.isEmpty()) continue
+                    val a = (maxOf(0, from - 1) * 16000).coerceAtMost(pcm.size)
+                    val endSec = minOf(totalSec, (lines.getOrNull(idx.last() + 1)?.sec ?: totalSec) + 1)
+                    val b = (endSec * 16000).coerceIn(a, pcm.size)
+                    val part = pcm.copyOfRange(a, b)
+                    val bytes = ByteArray(part.size * 2)
+                    for (i in part.indices) { bytes[i * 2] = (part[i].toInt() and 0xff).toByte(); bytes[i * 2 + 1] = (part[i].toInt() shr 8).toByte() }
+                    val wav = AudioGen.wavHeader(bytes.size.toLong()) + bytes
+                    val sb = StringBuilder("O áudio é um trecho de uma gravação em japonês. Frases do trecho (número global, segundo em que começa no trecho, texto):\n")
+                    for (i in idx) sb.append('[').append(i + 1).append("] (").append(lines[i].sec - maxOf(0, from - 1)).append("s) ").append(lines[i].text).append('\n')
+                    if (descr.isNotEmpty()) {
+                        sb.append("Vozes já identificadas nas partes anteriores (use os mesmos ids se for a mesma pessoa): ")
+                        sb.append(descr.entries.joinToString("; ") { "${it.key} = ${it.value}" }).append('\n')
+                    }
+                    sb.append("Identifique pela voz quem fala cada frase. Use ids A, B, C… Se só uma pessoa fala, use A em todas. ")
+                    sb.append("Responda somente com JSON: {\"locutores\": [{\"id\": \"A\", \"descricao\": \"voz feminina, aguda\"}], \"frases\": [{\"n\": 1, \"l\": \"A\"}]}")
+                    val body = JSONObject()
+                        .put("contents", JSONArray().put(JSONObject().put("parts", JSONArray()
+                            .put(JSONObject().put("inlineData", JSONObject().put("mimeType", "audio/wav")
+                                .put("data", android.util.Base64.encodeToString(wav, android.util.Base64.NO_WRAP))))
+                            .put(JSONObject().put("text", sb.toString())))))
+                        .put("generationConfig", JSONObject().put("responseMimeType", "application/json").put("temperature", 0.1))
+                    val out = runCloudBody(app, body)
+                    val o = JSONObject(out.substring(out.indexOf('{'), out.lastIndexOf('}') + 1))
+                    o.optJSONArray("locutores")?.let { arr ->
+                        for (k in 0 until arr.length()) arr.optJSONObject(k)?.let { s ->
+                            val id = s.optString("id").trim().uppercase()
+                            if (id.isNotEmpty() && id !in descr) descr[id] = s.optString("descricao")
+                        }
+                    }
+                    o.optJSONArray("frases")?.let { arr ->
+                        for (k in 0 until arr.length()) arr.optJSONObject(k)?.let { f ->
+                            val n = f.optInt("n", 0) - 1
+                            val l = f.optString("l").trim().uppercase()
+                            if (n in idx && l.isNotEmpty()) bySpeaker[n] = l
+                        }
+                    }
+                }
+                // Ids 1, 2… viram A, B… na ordem em que aparecem
+                val order = bySpeaker.toSortedMap().values.distinct()
+                val rename = order.withIndex().associate { (i, id) -> id to if (id.length == 1 && id[0] in 'A'..'Z') id else ('A' + i).toString() }
+                val finalLines = bySpeaker.mapValues { rename.getValue(it.value) }
+                val old = Speakers.infos(app, recording).associateBy { it.id }
+                val infos = order.map { id ->
+                    val nid = rename.getValue(id)
+                    val d = descr[id] ?: ""
+                    Speakers.Info(nid, old[nid]?.name ?: nid, when { "femin" in d.lowercase() -> true; "mascul" in d.lowercase() -> false; else -> null })
+                }
+                Speakers.save(app, recording, finalLines, infos)
+                count = infos.size
+                null
+            } catch (e: Exception) {
+                Log.e(TAG, "identifySpeakers", e)
+                e.message ?: e.javaClass.simpleName
+            }
+            val n = count
+            main.post { done(n, err) }
+        }.start()
+    }
+
     /** Título curto em português para a gravação, a partir da transcrição (e das traduções que houver). */
     fun suggestTitle(ctx: Context, recording: String, cb: (String?, String?) -> Unit) {
         val app = ctx.applicationContext
@@ -411,6 +495,31 @@ object Ai {
     // =====================================================================
     // Gemini na nuvem (REST)
     // =====================================================================
+
+    /** Pedido com corpo pronto (ex.: áudio + texto) ao modelo da nuvem; devolve o texto da resposta. */
+    private fun runCloudBody(ctx: Context, body: JSONObject): String {
+        val p = Prefs(ctx)
+        val key = p.geminiKey.ifBlank { TEST_KEY }
+        if (key.isBlank()) throw IllegalStateException("Sem chave do Gemini: cole a sua em Configurações → Inteligência artificial.")
+        val model = p.geminiModel.ifBlank { DEFAULT_MODEL }
+        val conn = URL("https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent").openConnection() as HttpURLConnection
+        try {
+            conn.requestMethod = "POST"; conn.connectTimeout = 15000; conn.readTimeout = 180000; conn.doOutput = true
+            conn.setRequestProperty("Content-Type", "application/json")
+            conn.setRequestProperty("x-goog-api-key", key)
+            conn.outputStream.use { it.write(body.toString().toByteArray(Charsets.UTF_8)) }
+            val code = conn.responseCode
+            val text = (if (code in 200..299) conn.inputStream else conn.errorStream)?.bufferedReader(Charsets.UTF_8)?.use { it.readText() } ?: ""
+            if (code !in 200..299) {
+                val msg = try { JSONObject(text).getJSONObject("error").optString("message") } catch (_: Exception) { text.take(200) }
+                throw RuntimeException("Gemini respondeu $code: $msg")
+            }
+            val parts = JSONObject(text).optJSONArray("candidates")?.optJSONObject(0)?.optJSONObject("content")?.optJSONArray("parts") ?: return ""
+            return (0 until parts.length()).map { parts.getJSONObject(it) }.filter { !it.optBoolean("thought", false) }.joinToString("") { it.optString("text") }
+        } finally {
+            conn.disconnect()
+        }
+    }
 
     private fun runCloud(ctx: Context, prompt: String, maxTokens: Int = 2048): String {
         val p = Prefs(ctx)

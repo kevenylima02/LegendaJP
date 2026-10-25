@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 /** Vocabulário salvo: palavras (forma de dicionário) e as frases onde apareceram. */
-class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 12) {
+class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 13) {
 
     companion object {
         @Volatile private var instance: VocabDb? = null
@@ -69,6 +69,7 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         createSkip(db)
         Reports.createTable(db)
         createTitles(db)
+        Speakers.createTables(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -83,6 +84,7 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         if (oldVersion < 10) createSkip(db)
         if (oldVersion < 11) Reports.createTable(db)
         if (oldVersion < 12) createTitles(db)
+        if (oldVersion < 13) Speakers.createTables(db)
     }
 
     /** Marca/desmarca "já conheço". Ao marcar, tira a palavra da fila de erros. */
@@ -241,6 +243,11 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         writableDatabase.insertWithOnConflict("timing", null, ContentValues().apply {
             put("recording", recording); put("sentence", sentence); put("words", words)
         }, SQLiteDatabase.CONFLICT_REPLACE)
+    }
+
+    /** Apaga os tempos das palavras de uma gravação (quando o áudio é gerado de novo). */
+    fun deleteTiming(recording: String) {
+        writableDatabase.delete("timing", "recording=?", arrayOf(recording))
     }
 
     fun timing(recording: String, sentence: String): String? =
