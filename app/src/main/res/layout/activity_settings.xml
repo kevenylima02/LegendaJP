@@ -105,6 +105,75 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
+            android:text="Inteligência artificial"
+            android:textColor="@color/text"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Bloco ✦ IA no fim do retorno dos exercícios e na tela da palavra: traduzir com contexto e explicar palavra ou gramática. O Nano roda no celular (se o aparelho tiver suporte); a nuvem usa o Gemini do Google com uma chave do AI Studio."
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
+
+        <RadioGroup
+            android:id="@+id/aiModes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <RadioButton android:id="@+id/aiOff" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp" android:text="Desligada" />
+            <RadioButton android:id="@+id/aiNano" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="2dp" android:layout_marginEnd="2dp" android:text="Nano" />
+            <RadioButton android:id="@+id/aiCloud" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="4dp" android:text="Nuvem" />
+        </RadioGroup>
+
+        <EditText
+            android:id="@+id/geminiKey"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="Chave do AI Studio (vazio = chave de teste)"
+            android:inputType="textPassword"
+            android:singleLine="true"
+            android:textColor="@color/text"
+            android:textColorHint="@color/text_secondary"
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/geminiModel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Modelo da nuvem"
+            android:inputType="text"
+            android:singleLine="true"
+            android:textColor="@color/text"
+            android:textColorHint="@color/text_secondary"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnAiTest"
+            style="@style/Button.Outline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Testar a IA" />
+
+        <TextView
+            android:id="@+id/aiTestResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp"
+            android:textIsSelectable="true" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
             android:text="Captura"
             android:textColor="@color/text"
             android:textSize="16sp"

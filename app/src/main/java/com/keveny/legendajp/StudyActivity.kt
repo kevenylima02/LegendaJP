@@ -11,6 +11,8 @@ import android.os.Looper
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
+import android.text.style.RelativeSizeSpan
+import android.text.style.StyleSpan
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
@@ -71,6 +73,17 @@ class StudyActivity : Activity() {
     private lateinit var strokeRow: android.widget.LinearLayout
     private lateinit var partsBox: android.widget.FrameLayout
     private lateinit var buildView: KanjiBuildView
+    private lateinit var subtitle: TextView
+    private lateinit var timingInfo: TextView
+    private lateinit var btnSubs: Button
+    private lateinit var aiBox: android.widget.LinearLayout
+    private var aiPanel: AiPanel? = null
+
+    // ---------- legenda com a palavra falada ----------
+    private var subsOn = false                       // começa escondida; vale para a sessão toda
+    private var timing: WordTiming.Timing? = null    // tempo das palavras do item na tela
+    private val timingCache = HashMap<String, WordTiming.Timing?>()
+    private val karaoke = Runnable { tickKaraoke() }
     private val slotViews = mutableListOf<TextView>()
     private val slotValues = mutableListOf<String>()
     private var activeSlot = 0
@@ -138,6 +151,18 @@ class StudyActivity : Activity() {
         btnUndo.setOnClickListener { undoTile() }
         btnNext.setOnClickListener { onNextClicked() }
         btnPrev.setOnClickListener { onPrevClicked() }
+        subtitle = findViewById(R.id.subtitle)
+        timingInfo = findViewById(R.id.timingInfo)
+        btnSubs = findViewById(R.id.btnSubs)
+        aiBox = findViewById(R.id.aiBox)
+        btnSubs.setOnClickListener { subsOn = !subsOn; updateSubs() }
+        timingInfo.setOnClickListener {
+            val msg = if (timing?.exact == true)
+                "Tempo exato: o reconhecedor do Android informou quando cada palavra foi dita nesta gravação."
+            else
+                "Tempo estimado: esta gravação não tem o tempo de cada palavra. O destaque é calculado pela parte do áudio com voz e pelo tamanho de cada palavra, então pode adiantar ou atrasar um pouco."
+            Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+        }
 
         val mistakes = intent.getBooleanExtra(EXTRA_MISTAKES, false)
         val saved = intent.getBooleanExtra(EXTRA_SAVED, false)
@@ -371,6 +396,13 @@ class StudyActivity : Activity() {
         strokeRow.removeAllViews()
         draw.guide = null
         draw.showGuide = false
+        ui.removeCallbacks(karaoke)
+        timing = null
+        subtitle.visibility = View.GONE
+        timingInfo.visibility = View.GONE
+        btnSubs.visibility = View.GONE
+        aiPanel?.hide()
+        aiPanel = null
     }
 
     private var reviewPass = 0
@@ -384,6 +416,8 @@ class StudyActivity : Activity() {
         val hasAudio = item.sec >= 0 && (if (multiRecording) item.recording != null else prepared)
         btnAudio.visibility = if (hasAudio) View.VISIBLE else View.GONE
         btnAudio.setOnClickListener { if (multiRecording) playFromRecording(item) else play(item) }
+        if (hasAudio) loadTiming(item)
+        updateSubs()
         val pre = if (phase == Phase.REVIEW) "Revisão · " else ""
 
         when (item) {
@@ -492,6 +526,7 @@ class StudyActivity : Activity() {
         answered = true
         stopAudio()
         applyResult(item, given, ok)
+        updateSubs()
         when (phase) {
             Phase.MAIN -> {
                 results[frontier] = Result(given, ok)
@@ -549,6 +584,7 @@ class StudyActivity : Activity() {
             }
         }
         showFeedback(item, ok, given, answer)
+        setupAi(item)
     }
 
     private fun record(item: Item, ok: Boolean, given: String, answer: String) {
@@ -852,6 +888,100 @@ class StudyActivity : Activity() {
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 
     // =====================================================================
+    // Legenda com a palavra falada
+    // =====================================================================
+
+    private fun itemRecording(item: Item): String? = item.recording ?: if (multiRecording) null else recording
+
+    private fun loadTiming(item: Item) {
+        val rec = itemRecording(item)
+        val key = "$rec|${item.sec}|${item.sentence}"
+        if (timingCache.containsKey(key)) { timing = timingCache[key]; updateSubs(); return }
+        Thread {
+            val t = try { WordTiming.get(this, rec, item.sentence, item.sec, item.endSec) } catch (_: Exception) { null }
+            runOnUiThread {
+                timingCache[key] = t
+                if (current === item) { timing = t; updateSubs() }
+            }
+        }.start()
+    }
+
+    /** Botão Legenda, a legenda e o aviso de tempo exato/estimado. No "Ordenar a frase" só depois de responder. */
+    private fun updateSubs() {
+        val item = current
+        val can = item != null && item.sec >= 0 && btnAudio.visibility == View.VISIBLE &&
+            (phase == Phase.MAIN || phase == Phase.REVIEW) && !(item is Item.Order && !answered)
+        btnSubs.visibility = if (can) View.VISIBLE else View.GONE
+        btnSubs.text = if (subsOn) "Ocultar legenda" else "Legenda"
+        val show = can && subsOn
+        subtitle.visibility = if (show) View.VISIBLE else View.GONE
+        val t = timing
+        timingInfo.visibility = if (show && t != null) View.VISIBLE else View.GONE
+        timingInfo.text = if (t?.exact == true) "ⓘ tempo exato das palavras" else "ⓘ tempo estimado"
+        if (show) renderSubtitle(playingPos())
+    }
+
+    /** Antes de responder, a palavra (ou o trecho) do exercício vira ＿ na legenda. */
+    private fun maskOf(item: Item): IntRange? = when (item) {
+        is Item.GrammarCloze -> item.hit.start until item.hit.end
+        is Item.GrammarQ, is Item.Order -> null
+        else -> StudyGen.wordOf(item)?.let { w ->
+            if (w.start >= 0 && w.start < w.end && w.end <= item.sentence.length) w.start until w.end else null
+        }
+    }
+
+    private fun renderSubtitle(pos: Long?) {
+        val item = current ?: return
+        val s = item.sentence
+        val mask = if (answered) null else maskOf(item)
+        val text = if (mask != null) s.replaceRange(mask.first, mask.last + 1, "＿".repeat(mask.last + 1 - mask.first)) else s
+        val sb = SpannableStringBuilder(text)
+        val t = timing
+        if (t != null && pos != null && pos in t.fromMs..t.toMs) {
+            val seg = t.segs.lastOrNull { it.ms <= pos }
+            if (seg != null && seg.start < seg.end && seg.end <= text.length) {
+                sb.setSpan(ForegroundColorSpan(getColor(R.color.accent)), seg.start, seg.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                sb.setSpan(StyleSpan(android.graphics.Typeface.BOLD), seg.start, seg.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                sb.setSpan(RelativeSizeSpan(1.2f), seg.start, seg.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+        }
+        subtitle.text = sb
+    }
+
+    private fun playingPos(): Long? = try {
+        if (prepared && player?.isPlaying == true) player!!.currentPosition.toLong() else null
+    } catch (_: IllegalStateException) { null }
+
+    private fun tickKaraoke() {
+        val pos = playingPos()
+        if (subtitle.visibility == View.VISIBLE) renderSubtitle(pos)
+        if (pos != null) ui.postDelayed(karaoke, 60)
+    }
+
+    // =====================================================================
+    // ✦ IA no fim do retorno
+    // =====================================================================
+
+    private fun setupAi(item: Item) {
+        aiPanel?.hide()
+        aiPanel = null
+        if (!Ai.enabled(this)) return
+        val rec = itemRecording(item)
+        val level = Prefs(this).level
+        val reqs = mutableListOf(Ai.Request(Ai.Task.TRANSLATE, item.sentence, rec, level = level))
+        StudyGen.wordOf(item)?.let { w ->
+            reqs.add(Ai.Request(Ai.Task.WORD, item.sentence, rec, w.surface, "forma de dicionário ${w.base}, leitura ${w.reading}, ${w.pos}", level))
+        }
+        when (item) {
+            is Item.GrammarQ -> reqs.add(Ai.Request(Ai.Task.GRAMMAR, item.sentence, rec, item.hit.point.name, item.sentence.substring(item.hit.start, item.hit.end), level))
+            is Item.GrammarCloze -> reqs.add(Ai.Request(Ai.Task.GRAMMAR, item.sentence, rec, item.hit.point.name, item.sentence.substring(item.hit.start, item.hit.end), level))
+            is Item.Order -> reqs.add(Ai.Request(Ai.Task.GRAMMAR, item.sentence, rec, level = level))
+            else -> {}
+        }
+        aiPanel = AiPanel(this, aiBox, reqs).also { it.show() }
+    }
+
+    // =====================================================================
     // Sair no meio
     // =====================================================================
 
@@ -897,7 +1027,11 @@ class StudyActivity : Activity() {
         p.setOnPreparedListener {
             prepared = true
             val it = current
-            if (it != null && it.sec >= 0 && (phase == Phase.MAIN || phase == Phase.REVIEW)) btnAudio.visibility = View.VISIBLE
+            if (it != null && it.sec >= 0 && (phase == Phase.MAIN || phase == Phase.REVIEW)) {
+                btnAudio.visibility = View.VISIBLE
+                loadTiming(it)
+                updateSubs()
+            }
         }
         p.setOnErrorListener { _, _, _ -> true }
         try {
@@ -912,10 +1046,14 @@ class StudyActivity : Activity() {
         val p = player ?: return
         if (!prepared || item.sec < 0) return
         try {
-            val startMs = maxOf(0, item.sec * 1000 - 500)
-            val endMs = maxOf(startMs + 1500, item.endSec * 1000 - 300)
+            // Com o tempo das palavras, toca só a parte com voz
+            val t = timing
+            val startMs = if (t != null) t.fromMs.toInt() else maxOf(0, item.sec * 1000 - 500)
+            val endMs = if (t != null) maxOf(startMs + 1000, t.toMs.toInt()) else maxOf(startMs + 1500, item.endSec * 1000 - 300)
             p.seekTo(startMs)
             p.start()
+            ui.removeCallbacks(karaoke)
+            ui.postDelayed(karaoke, 80)
             ui.removeCallbacks(stopAt)
             stopAt = Runnable { try { if (p.isPlaying) p.pause() } catch (_: IllegalStateException) {} }
             ui.postDelayed(stopAt, (endMs - startMs).toLong())

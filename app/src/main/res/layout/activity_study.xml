@@ -126,11 +126,33 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <LinearLayout
+                <!-- Legenda do áudio: a palavra falada acende -->
+                <TextView
+                    android:id="@+id/subtitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:orientation="horizontal">
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_button_outline"
+                    android:padding="10dp"
+                    android:textColor="@color/text"
+                    android:textSize="20sp"
+                    android:lineSpacingExtra="6dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/timingInfo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="2dp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
+
+                <com.keveny.legendajp.FlowLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp">
 
                     <Button
                         android:id="@+id/btnAudio"
@@ -141,14 +163,21 @@
                         android:visibility="gone" />
 
                     <Button
+                        android:id="@+id/btnSubs"
+                        style="@style/Button.Outline"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Legenda"
+                        android:visibility="gone" />
+
+                    <Button
                         android:id="@+id/btnUndo"
                         style="@style/Button.Outline"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
                         android:text="Desfazer"
                         android:visibility="gone" />
-                </LinearLayout>
+                </com.keveny.legendajp.FlowLayout>
             </LinearLayout>
 
             <com.keveny.legendajp.FlowLayout
@@ -195,6 +224,15 @@
                         android:orientation="horizontal" />
                 </HorizontalScrollView>
             </LinearLayout>
+
+            <!-- ✦ IA: traduzir com contexto, explicar palavra/gramática -->
+            <LinearLayout
+                android:id="@+id/aiBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical"
+                android:visibility="gone" />
         </LinearLayout>
     </ScrollView>
 

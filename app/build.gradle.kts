@@ -1,6 +1,16 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+}
+
+// Chave do Gemini fora do git: local.properties (gemini.key=...) ou variável GEMINI_API_KEY (segredo do Actions)
+val geminiKey: String = run {
+    val f = rootProject.file("local.properties")
+    val props = Properties()
+    if (f.exists()) f.inputStream().use { props.load(it) }
+    (props.getProperty("gemini.key") ?: System.getenv("GEMINI_API_KEY") ?: "").trim()
 }
 
 android {
@@ -11,8 +21,13 @@ android {
         applicationId = "com.keveny.legendajp"
         minSdk = 33          // EXTRA_AUDIO_SOURCE e sessões segmentadas exigem Android 13+
         targetSdk = 34
-        versionCode = 18
-        versionName = "0.18"
+        versionCode = 19
+        versionName = "0.19"
+        buildConfigField("String", "GEMINI_KEY", "\"$geminiKey\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     signingConfigs {
@@ -60,4 +75,7 @@ dependencies {
     implementation("com.google.mlkit:translate:17.0.3")
     // Reconhecimento de escrita à mão (modelo de japonês baixado na primeira vez)
     implementation("com.google.mlkit:digital-ink-recognition:19.0.0")
+    // Gemini Nano no aparelho (AICore), para as explicações com IA
+    implementation("com.google.mlkit:genai-prompt:1.0.0-beta4")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 }

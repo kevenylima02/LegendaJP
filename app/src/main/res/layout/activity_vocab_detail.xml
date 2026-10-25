@@ -118,6 +118,16 @@
             android:text="Já conheço" />
 
         <Button
+            android:id="@+id/btnAi"
+            style="@style/Button.Outline"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:text="✦ IA" />
+
+        <Button
             android:id="@+id/btnStudyWord"
             style="@style/Button.Primary"
             android:layout_width="0dp"

@@ -64,6 +64,10 @@ class VocabDetailActivity : Activity() {
                         Toast.LENGTH_SHORT).show()
                     load()
                 }
+                val ai = findViewById<android.widget.Button>(R.id.btnAi)
+                val first = o.firstOrNull()
+                ai.visibility = if (Ai.enabled(this) && first != null) android.view.View.VISIBLE else android.view.View.GONE
+                ai.setOnClickListener { if (first != null) explainWithAi(w, first) }
                 findViewById<android.widget.Button>(R.id.btnStudyWord).setOnClickListener {
                     startActivity(
                         Intent(this, StudyActivity::class.java)
@@ -75,6 +79,36 @@ class VocabDetailActivity : Activity() {
                 adapter.notifyDataSetChanged()
             }
         }.start()
+    }
+
+    /** ✦ IA: explica a palavra na primeira frase onde ela apareceu e traduz a frase com contexto. */
+    private fun explainWithAi(w: VocabDb.Word, o: VocabDb.Occurrence) {
+        val pad = (16 * resources.displayMetrics.density).toInt()
+        val box = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(pad, pad, pad, pad)
+        }
+        val head = TextView(this).apply {
+            text = o.sentence
+            textSize = 17f
+            setTextColor(getColor(R.color.text))
+        }
+        val panelBox = android.widget.LinearLayout(this).apply { orientation = android.widget.LinearLayout.VERTICAL }
+        box.addView(head)
+        box.addView(panelBox)
+        val scroll = android.widget.ScrollView(this).apply { addView(box) }
+        val level = Prefs(this).level
+        val panel = AiPanel(this, panelBox, listOf(
+            Ai.Request(Ai.Task.WORD, o.sentence, o.recording, o.surface, "forma de dicionário ${w.base}, leitura ${w.reading}, ${w.pos}", level),
+            Ai.Request(Ai.Task.TRANSLATE, o.sentence, o.recording, level = level),
+        ))
+        panel.show()
+        android.app.AlertDialog.Builder(this)
+            .setTitle("✦ ${w.base}")
+            .setView(scroll)
+            .setPositiveButton("Fechar", null)
+            .setOnDismissListener { panel.hide() }
+            .show()
     }
 
     private var strokesShownFor = ""

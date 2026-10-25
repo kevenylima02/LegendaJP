@@ -39,6 +39,14 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   kanji, a frase com tradução e a ordem dos traços animada.
 - **Tela da palavra**: ordem dos traços de cada kanji, leituras e significados, e **Estudar esta palavra**
   (exercícios de kanji e vocabulário só dela; inclui "Significado do kanji").
+- **✦ IA** (Configurações → Inteligência artificial: Desligada, Gemini Nano no aparelho ou Gemini na nuvem):
+  bloco no fim do retorno dos exercícios e botão ✦ IA na tela da palavra. Traduz a frase com contexto
+  (frases vizinhas da gravação), explica a palavra na frase e a gramática, sempre no mesmo formato.
+  As respostas ficam salvas. A chave do Gemini nunca vai para o git: em Configurações, ou embutida na
+  compilação a partir de `gemini.key` no local.properties ou do segredo `GEMINI_API_KEY` do Actions.
+- **Legenda no exercício**: botão Legenda; durante o áudio a palavra falada acende. Gravações novas pedem o
+  tempo de cada palavra ao reconhecedor do Android (quando ele informa); nas outras o tempo é estimado
+  pela voz no WAV, com o aviso "ⓘ tempo estimado".
 - **Escolher palavras** antes de estudar (Misto, Vocabulário e Kanji): um cartão por palavra com leitura,
   significado, kanji (leituras, partes e ordem dos traços) e a frase com áudio; Pular, Já conheço ou Estudar,
   até o número de Configurações (10 por padrão). Os exercícios saem só dessas palavras.

@@ -57,6 +57,20 @@ class Prefs(ctx: Context) {
         get() = sp.getStringSet("disabledKinds", emptySet()) ?: emptySet()
         set(v) = sp.edit().putStringSet("disabledKinds", v).apply()
 
+    /** IA: Ai.OFF, Ai.NANO (no aparelho) ou Ai.CLOUD (Gemini na nuvem). */
+    var aiMode: Int
+        get() = sp.getInt("aiMode", Ai.CLOUD)
+        set(v) = sp.edit().putInt("aiMode", v).apply()
+
+    /** Chave do Google AI Studio; vazia = chave de teste embutida. */
+    var geminiKey: String
+        get() = sp.getString("geminiKey", "") ?: ""
+        set(v) = sp.edit().putString("geminiKey", v.trim()).apply()
+
+    var geminiModel: String
+        get() = sp.getString("geminiModel", Ai.DEFAULT_MODEL) ?: Ai.DEFAULT_MODEL
+        set(v) = sp.edit().putString("geminiModel", v.trim()).apply()
+
     var language: String
         get() = sp.getString("language", "ja-JP") ?: "ja-JP"
         set(v) = sp.edit().putString("language", v).apply()

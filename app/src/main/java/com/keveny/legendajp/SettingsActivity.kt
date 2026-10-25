@@ -83,12 +83,43 @@ class SettingsActivity : Activity() {
             })
         }
 
+        // IA
+        val modes = findViewById<RadioGroup>(R.id.aiModes)
+        modes.check(when (prefs.aiMode) { Ai.OFF -> R.id.aiOff; Ai.NANO -> R.id.aiNano; else -> R.id.aiCloud })
+        modes.setOnCheckedChangeListener { _, id ->
+            prefs.aiMode = when (id) { R.id.aiOff -> Ai.OFF; R.id.aiNano -> Ai.NANO; else -> Ai.CLOUD }
+            findViewById<android.widget.TextView>(R.id.aiTestResult).text = ""
+        }
+        findViewById<android.widget.EditText>(R.id.geminiKey).setText(prefs.geminiKey)
+        findViewById<android.widget.EditText>(R.id.geminiModel).setText(prefs.geminiModel)
+        val testBtn = findViewById<Button>(R.id.btnAiTest)
+        testBtn.setOnClickListener {
+            saveAiFields()
+            val out = findViewById<android.widget.TextView>(R.id.aiTestResult)
+            testBtn.isEnabled = false
+            out.text = "Testando…"
+            Ai.test(this, progress = { out.text = it }) { msg ->
+                testBtn.isEnabled = true
+                out.text = msg
+            }
+        }
+
         val wav = findViewById<Switch>(R.id.swWav)
         wav.isChecked = prefs.saveWav
         wav.setOnCheckedChangeListener { _, on -> prefs.saveWav = on }
     }
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
+
+    private fun saveAiFields() {
+        prefs.geminiKey = findViewById<android.widget.EditText>(R.id.geminiKey).text.toString()
+        prefs.geminiModel = findViewById<android.widget.EditText>(R.id.geminiModel).text.toString().ifBlank { Ai.DEFAULT_MODEL }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        saveAiFields()
+    }
 
     override fun onResume() {
         super.onResume()

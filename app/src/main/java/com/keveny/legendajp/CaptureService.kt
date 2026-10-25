@@ -109,6 +109,10 @@ class CaptureService : Service() {
     // Posição no áudio (em bytes PCM) e início da frase em andamento
     @Volatile private var totalBytes = 0L
     private var phraseStartSec = -1
+    /** Posição do áudio (ms) em que a sessão atual do reconhecedor começou: base dos tempos das palavras. */
+    private var sessionStartMs = 0L
+    /** Tempo das palavras de cada frase (ms no áudio antes do corte), gravado no banco no fim. */
+    private val pendingTimings = mutableListOf<Pair<String, List<WordTiming.Seg>>>()
     private var firstPhraseSec = -1
     private var lastPhraseEndSec = -1
     @Volatile private var peakLevel = 0
@@ -480,7 +484,10 @@ class CaptureService : Service() {
             putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_ENCODING, AudioFormat.ENCODING_PCM_16BIT)
             putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_SAMPLING_RATE, SAMPLE_RATE)
             putExtra(RecognizerIntent.EXTRA_SEGMENTED_SESSION, RecognizerIntent.EXTRA_AUDIO_SOURCE)
+            // Android 14+: pede o tempo de cada palavra (nem todo reconhecedor devolve)
+            putExtra(RecognizerIntent.EXTRA_REQUEST_WORD_TIMING, true)
         }
+        sessionStartMs = totalBytes * 1000 / BYTES_PER_SEC
         gotCallback = false
         handler.removeCallbacks(watchdog)
         handler.postDelayed(watchdog, 15000)
@@ -514,8 +521,15 @@ class CaptureService : Service() {
             ?.firstOrNull()?.trim().orEmpty()
         if (text.isEmpty()) return
         segments++
-        val start = if (phraseStartSec >= 0) phraseStartSec else maxOf(0, audioSec - 3)
+        var start = if (phraseStartSec >= 0) phraseStartSec else maxOf(0, audioSec - 3)
         phraseStartSec = -1
+        val segs = bundle?.let { wordTimes(it, text) } ?: emptyList()
+        if (segs.isNotEmpty()) {
+            // Com o tempo das palavras, o início da frase fica exato
+            val exact = (segs.first().ms / 1000).toInt()
+            if (kotlin.math.abs(exact - start) <= 5) start = exact
+            pendingTimings.add(text to segs)
+        }
         if (firstPhraseSec < 0) firstPhraseSec = start
         lastPhraseEndSec = audioSec
         val line = "[${formatTime(start)}] $text"
@@ -525,6 +539,37 @@ class CaptureService : Service() {
         TranscriptStore.notifyChanged()
         val rec = baseName
         Thread { try { VocabDb.get(this).recordOccurrences(text, rec, start) } catch (_: Exception) {} }.start()
+    }
+
+    /**
+     * Tempo de cada palavra (RecognitionPart), como trechos da frase com o ms no áudio. Vazio quando o
+     * reconhecedor não informa ou quando os números não fazem sentido.
+     */
+    private fun wordTimes(bundle: Bundle, text: String): List<WordTiming.Seg> {
+        val parts = try {
+            bundle.getParcelableArrayList(SpeechRecognizer.RECOGNITION_PARTS, android.speech.RecognitionPart::class.java)
+        } catch (_: Exception) { null }
+        if (parts.isNullOrEmpty()) return emptyList()
+        Log.i(TAG, "partes: ${parts.size}, início da sessão ${sessionStartMs} ms, primeiras: " +
+            parts.take(4).joinToString { "${it.formattedText ?: it.rawText}@${it.timestampMillis}" })
+        val audioMs = totalBytes * 1000 / BYTES_PER_SEC
+        val segs = mutableListOf<WordTiming.Seg>()
+        var cursor = 0
+        for (p in parts) {
+            val cands = listOfNotNull(p.formattedText, p.rawText).map { it.trim() }.filter { it.isNotEmpty() }
+            var idx = -1
+            var len = 0
+            for (c in cands) { idx = text.indexOf(c, cursor); if (idx >= 0) { len = c.length; break } }
+            if (idx < 0) continue
+            val ms = sessionStartMs + p.timestampMillis
+            if (p.timestampMillis <= 0 && segs.isNotEmpty()) continue
+            if (ms < 0 || ms > audioMs + 2000) return emptyList()
+            segs.add(WordTiming.Seg(idx, idx + len, ms))
+            cursor = idx + len
+        }
+        // Tempos sempre em ordem e espalhados (todos iguais = o reconhecedor não informou)
+        if (segs.size < 2 || segs.zipWithNext().any { (a, b) -> b.ms < a.ms } || segs.first().ms == segs.last().ms) return emptyList()
+        return segs
     }
 
     /** Cria o .txt na primeira frase; assim nenhuma gravação vazia vai para a pasta. */
@@ -665,6 +710,17 @@ class CaptureService : Service() {
         }
         val wavInfo = saveWav(keep = hasText, fromSec = trimStart, toSec = trimEnd)
         if (wavInfo.isNotEmpty()) shiftTranscript(trimStart)
+        if (wavInfo.isNotEmpty() && pendingTimings.isNotEmpty()) {
+            val offsetMs = trimStart * 1000L
+            val rec = baseName
+            val list = pendingTimings.toList()
+            Thread {
+                val db = VocabDb.get(this)
+                for ((sentence, segs) in list) {
+                    db.putTiming(rec, sentence, WordTiming.encode(segs.map { it.copy(ms = maxOf(0, it.ms - offsetMs)) }))
+                }
+            }.start()
+        }
         val diag = "${modeName(mode)} · ${formatTime(audioSec)} de áudio · pico $peakLevel% · $restarts reinícios"
         Log.i(TAG, diag)
 

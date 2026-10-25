@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 /** Vocabulário salvo: palavras (forma de dicionário) e as frases onde apareceram. */
-class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 6) {
+class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 7) {
 
     companion object {
         @Volatile private var instance: VocabDb? = null
@@ -63,6 +63,7 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         createTr(db)
         createStudy(db)
         createMistakes(db)
+        createTimingAndAi(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -71,6 +72,7 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         if (oldVersion < 4) addScores(db)
         if (oldVersion < 5) createMistakes(db)
         if (oldVersion < 6) db.execSQL("ALTER TABLE words ADD COLUMN known INTEGER NOT NULL DEFAULT 0")
+        if (oldVersion < 7) createTimingAndAi(db)
     }
 
     /** Marca/desmarca "já conheço". Ao marcar, tira a palavra da fila de erros. */
@@ -214,6 +216,34 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
     fun putTranslation(text: String, translation: String) {
         writableDatabase.insertWithOnConflict("tr", null, ContentValues().apply {
             put("text", text); put("translation", translation); put("created", System.currentTimeMillis())
+        }, SQLiteDatabase.CONFLICT_REPLACE)
+    }
+
+    // ---------- tempo das palavras (reconhecedor) e respostas da IA ----------
+
+    private fun createTimingAndAi(db: SQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS timing (recording TEXT NOT NULL, sentence TEXT NOT NULL, words TEXT NOT NULL, PRIMARY KEY(recording, sentence))")
+        db.execSQL("CREATE TABLE IF NOT EXISTS ai (k TEXT PRIMARY KEY, out TEXT NOT NULL, created INTEGER NOT NULL)")
+    }
+
+    /** words: WordTiming.encode (trechos da frase com o ms em que começam no WAV). */
+    fun putTiming(recording: String, sentence: String, words: String) {
+        writableDatabase.insertWithOnConflict("timing", null, ContentValues().apply {
+            put("recording", recording); put("sentence", sentence); put("words", words)
+        }, SQLiteDatabase.CONFLICT_REPLACE)
+    }
+
+    fun timing(recording: String, sentence: String): String? =
+        readableDatabase.rawQuery("SELECT words FROM timing WHERE recording=? AND sentence=?", arrayOf(recording, sentence)).use { c ->
+            if (c.moveToFirst()) c.getString(0) else null
+        }
+
+    fun aiGet(k: String): String? =
+        readableDatabase.rawQuery("SELECT out FROM ai WHERE k=?", arrayOf(k)).use { c -> if (c.moveToFirst()) c.getString(0) else null }
+
+    fun aiPut(k: String, out: String) {
+        writableDatabase.insertWithOnConflict("ai", null, ContentValues().apply {
+            put("k", k); put("out", out); put("created", System.currentTimeMillis())
         }, SQLiteDatabase.CONFLICT_REPLACE)
     }
 
