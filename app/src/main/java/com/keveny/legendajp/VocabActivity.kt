@@ -133,7 +133,8 @@ class VocabActivity : Activity() {
             v.findViewById<TextView>(R.id.base).text = w.base
             v.findViewById<TextView>(R.id.reading).text = if (w.reading != w.base) w.reading else ""
             v.findViewById<TextView>(R.id.meta).text = "${w.pos} · ${dateFmt.format(Date(w.created))}"
-            v.findViewById<TextView>(R.id.count).text = if (w.count == 1) "1 frase" else "${w.count} frases"
+            v.findViewById<TextView>(R.id.count).text = if (w.known) "conheço ✓" else if (w.count == 1) "1 frase" else "${w.count} frases"
+            v.alpha = if (w.known) 0.55f else 1f
             Score.bind(v.findViewById(R.id.barKanji), w.kanjiScore)
             Score.bind(v.findViewById(R.id.barMeaning), w.meaningScore)
             return v

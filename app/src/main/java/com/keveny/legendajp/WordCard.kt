@@ -25,6 +25,7 @@ object WordCard {
         val tr = view.findViewById<TextView>(R.id.cardTr)
         val save = view.findViewById<Button>(R.id.cardSave)
         val play = view.findViewById<Button>(R.id.cardPlay)
+        val knownBtn = view.findViewById<Button>(R.id.cardKnown)
 
         base.text = w.base
         reading.text = if (w.reading != w.base) w.reading else ""
@@ -60,6 +61,20 @@ object WordCard {
             val saved = db.isSaved(w)
             save.text = if (saved) "Remover" else "Salvar"
             save.setBackgroundResource(if (saved) R.drawable.bg_button_stop else R.drawable.bg_button_primary)
+            knownBtn.text = if (db.isKnown(w.key)) "Conheço ✓" else "Já conheço"
+        }
+        knownBtn.setTextColor(if (light) 0xFFFFFFFF.toInt() else ctx.getColor(R.color.text))
+        knownBtn.setOnClickListener {
+            if (db.isKnown(w.key)) {
+                db.setKnown(w.key, false)
+                Toast.makeText(ctx, "${w.base} volta a aparecer nos exercícios", Toast.LENGTH_SHORT).show()
+            } else {
+                if (!db.isSaved(w)) db.save(w, sentence, recording, sec)
+                db.setKnown(w.key, true)
+                Toast.makeText(ctx, "${w.base}: já conheço. Não aparece mais nos exercícios", Toast.LENGTH_SHORT).show()
+            }
+            refresh()
+            onChanged()
         }
         refresh()
         save.setOnClickListener {

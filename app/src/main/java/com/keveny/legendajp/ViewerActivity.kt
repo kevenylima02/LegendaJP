@@ -220,7 +220,7 @@ class ViewerActivity : Activity() {
             setTextIsSelectable(true)
         }
         val head = TextView(this).apply {
-            text = Jp.highlight(sentence, VocabDb.savedKeys, getColor(R.color.saved_word))
+            text = Jp.highlight(sentence, VocabDb.studyKeys, getColor(R.color.saved_word))
             textSize = 20f
             setTextColor(getColor(R.color.text))
             setPadding(dp(24), dp(20), dp(24), dp(4))
@@ -293,7 +293,7 @@ class ViewerActivity : Activity() {
             val tv = v.findViewById<TextView>(R.id.text)
             tv.movementMethod = LinkMovementMethod.getInstance()
             tv.highlightColor = Color.TRANSPARENT
-            tv.text = Jp.decorate(l.text, VocabDb.savedKeys, getColor(R.color.saved_word)) { w ->
+            tv.text = Jp.decorate(l.text, VocabDb.studyKeys, getColor(R.color.saved_word)) { w ->
                 WordCard.show(
                     this@ViewerActivity, w, l.text, Recordings.baseName(name), maxOf(0, l.sec),
                     onPlay = if (wavUri != null) ({ playFrom(l.sec) }) else null,

@@ -160,8 +160,10 @@ class StudyActivity : Activity() {
             val built: List<Item>
             var wav: Uri? = null
             if (mistakes) {
-                built = VocabDb.get(this).mistakes().shuffled().take(MISTAKES_PER_SESSION)
+                built = VocabDb.get(this).mistakes().shuffled()
                     .mapNotNull { StudyCodec.decode(it.json) }
+                    .filter { it.wordKey == null || it.wordKey !in VocabDb.knownKeys }
+                    .take(MISTAKES_PER_SESSION)
             } else {
                 val lines = if (saved) StudyGen.linesFromVocab(this) else {
                     val text = try { Recordings.readText(this, uri!!) } catch (_: Exception) { "" }

@@ -39,6 +39,10 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   kanji, a frase com tradução e a ordem dos traços animada.
 - **Tela da palavra**: ordem dos traços de cada kanji, leituras e significados, e **Estudar esta palavra**
   (exercícios de kanji e vocabulário só dela; inclui "Significado do kanji").
+- **Já conheço** (no cartão da palavra e na tela da palavra): a palavra sai dos exercícios, da fila de erros e do
+  destaque nas legendas; "Estudar esta palavra" continua funcionando para ela.
+- **Meia tela**: com pouca altura (tela dividida, janela, paisagem) a tela principal vira uma barra fina
+  (estado, Iniciar/Parar, Vocab, Gravações, menu) e a legenda ocupa o resto.
 - **Revisar erros** (menu ⋮ e menu Estudar): fila única com tudo que foi errado; sessões de 10 itens
   aleatórios; acertou, sai da fila.
 - **Estudar no Vocabulário**: sessão só com as palavras salvas e as frases de origem (áudio da gravação de

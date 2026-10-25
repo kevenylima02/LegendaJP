@@ -54,6 +54,16 @@ class VocabDetailActivity : Activity() {
                 Score.bind(findViewById(R.id.barKanji), w.kanjiScore)
                 Score.bind(findViewById(R.id.barMeaning), w.meaningScore)
                 showStrokes(w.base)
+                val kb = findViewById<android.widget.Button>(R.id.btnKnown)
+                kb.text = if (w.known) "Conheço ✓" else "Já conheço"
+                if (w.known) findViewById<TextView>(R.id.meta).append(" · já conheço (fora dos exercícios)")
+                kb.setOnClickListener {
+                    VocabDb.get(this).setKnown(w.key, !w.known)
+                    Toast.makeText(this,
+                        if (!w.known) "${w.base}: já conheço. Não aparece mais nos exercícios" else "${w.base} volta a aparecer nos exercícios",
+                        Toast.LENGTH_SHORT).show()
+                    load()
+                }
                 findViewById<android.widget.Button>(R.id.btnStudyWord).setOnClickListener {
                     startActivity(
                         Intent(this, StudyActivity::class.java)
@@ -154,7 +164,7 @@ class VocabDetailActivity : Activity() {
             val v = convertView ?: LayoutInflater.from(parent.context).inflate(R.layout.item_occurrence, parent, false)
             val o = occ[position]
             v.findViewById<TextView>(R.id.sentence).text =
-                Jp.highlight(o.sentence, VocabDb.savedKeys, getColor(R.color.saved_word))
+                Jp.highlight(o.sentence, VocabDb.studyKeys, getColor(R.color.saved_word))
             v.findViewById<TextView>(R.id.meta).text =
                 "${Recordings.prettyName(o.recording)} · ${CaptureService.formatTime(o.sec)}"
             v.findViewById<TextView>(R.id.play).setOnClickListener { play(o) }

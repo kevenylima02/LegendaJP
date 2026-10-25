@@ -58,6 +58,7 @@ class MainActivity : Activity() {
             if (TranscriptStore.state == TranscriptStore.State.RUNNING) {
                 val sec = ((System.currentTimeMillis() - TranscriptStore.startedAt) / 1000).toInt()
                 timer.text = CaptureService.formatTime(sec)
+                if (compact) findViewById<TextView>(R.id.compactTimer).text = timer.text
                 ui.postDelayed(this, 1000)
             }
         }
@@ -95,6 +96,7 @@ class MainActivity : Activity() {
         }
 
         btnMain.setOnClickListener { onMainButton() }
+        setupCompact()
         findViewById<Button>(R.id.btnRecordings).setOnClickListener {
             startActivity(Intent(this, RecordingsActivity::class.java))
         }
@@ -143,6 +145,43 @@ class MainActivity : Activity() {
         return true
     }
 
+    // ---------- Layout compacto (meia tela / janela baixa) ----------
+
+    private var compact = false
+
+    /**
+     * Com pouca altura (tela dividida, janela flutuante, paisagem), esconde o cartão de estado,
+     * as fontes e os botões grandes; fica uma barra fina e a legenda ocupando o resto.
+     */
+    private fun setupCompact() {
+        compact = resources.configuration.screenHeightDp in 1..559
+        val big = if (compact) View.GONE else View.VISIBLE
+        findViewById<View>(R.id.statusCard).visibility = big
+        sourceGroup.visibility = big
+        findViewById<View>(R.id.bottomRow).visibility = big
+        btnMain.visibility = big
+        findViewById<View>(R.id.compactBar).visibility = if (compact) View.VISIBLE else View.GONE
+        if (compact) {
+            actionBar?.hide()
+            val root = findViewById<View>(R.id.compactBar).parent as View
+            val p = (8 * resources.displayMetrics.density).toInt()
+            root.setPadding(p, 0, p, p)
+            (findViewById<View>(R.id.transcriptCard).layoutParams as android.widget.LinearLayout.LayoutParams).topMargin = p
+            transcript.textSize = 17f
+            findViewById<Button>(R.id.compactMain).setOnClickListener { onMainButton() }
+            findViewById<Button>(R.id.compactVocab).setOnClickListener { startActivity(Intent(this, VocabActivity::class.java)) }
+            findViewById<Button>(R.id.compactRec).setOnClickListener { startActivity(Intent(this, RecordingsActivity::class.java)) }
+            findViewById<Button>(R.id.compactMenu).setOnClickListener { v ->
+                val pm = android.widget.PopupMenu(this, v)
+                pm.menuInflater.inflate(R.menu.menu_main, pm.menu)
+                pm.setOnMenuItemClickListener { onOptionsItemSelected(it) }
+                pm.show()
+            }
+        } else {
+            actionBar?.show()
+        }
+    }
+
     // ---------- UI ----------
 
     private fun render() {
@@ -160,6 +199,15 @@ class MainActivity : Activity() {
             TranscriptStore.State.IDLE -> getColor(R.color.text_secondary)
         }
         (statusDot.background.mutate() as GradientDrawable).setColor(dotColor)
+        if (compact) {
+            (findViewById<View>(R.id.compactDot).background.mutate() as GradientDrawable).setColor(dotColor)
+            findViewById<TextView>(R.id.compactStatus).text = TranscriptStore.status
+            val cm = findViewById<Button>(R.id.compactMain)
+            val run = state != TranscriptStore.State.IDLE
+            cm.text = getString(if (run) R.string.stop else R.string.start)
+            cm.setBackgroundResource(if (run) R.drawable.bg_button_stop else R.drawable.bg_button_primary)
+            cm.isEnabled = state != TranscriptStore.State.STOPPING
+        }
 
         val running = state != TranscriptStore.State.IDLE
         btnMain.text = getString(if (running) R.string.stop else R.string.start)
@@ -172,7 +220,7 @@ class MainActivity : Activity() {
         )
 
         val lines = TranscriptStore.lines
-        val key = lines.joinToString("\n") + "\u0000" + VocabDb.savedKeys.size
+        val key = lines.joinToString("\n") + "\u0000" + VocabDb.keysVersion
         if (lines.isEmpty()) {
             transcript.text = getString(R.string.empty_transcript)
             transcript.setTextColor(getColor(R.color.text_secondary))
@@ -183,7 +231,7 @@ class MainActivity : Activity() {
             for ((i, line) in lines.withIndex()) {
                 val (sec, sentence) = Recordings.parseLine(line)
                 if (i > 0) sb.append("\n")
-                sb.append(Jp.decorate(sentence, VocabDb.savedKeys, getColor(R.color.saved_word)) { w ->
+                sb.append(Jp.decorate(sentence, VocabDb.studyKeys, getColor(R.color.saved_word)) { w ->
                     WordCard.show(this, w, sentence, TranscriptStore.recording, maxOf(0, sec),
                         onChanged = { renderedKey = ""; render() })
                 })

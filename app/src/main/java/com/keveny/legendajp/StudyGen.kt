@@ -112,7 +112,9 @@ object StudyGen {
         val hitsBySentence = sentences.map { it to (try { Grammar.find(it.text) } catch (_: Exception) { emptyList() }) }
         val allHits = hitsBySentence.flatMap { (l, hs) -> hs.map { l to it } }
         val out = mutableListOf<Item>()
-        fun eligible(w: Jp.Word) = onlyKeys == null || w.key in onlyKeys
+        val singleWord = onlyKeys != null && onlyKeys.size == 1
+        val known = VocabDb.knownKeys
+        fun eligible(w: Jp.Word) = (onlyKeys == null || w.key in onlyKeys) && (singleWord || w.key !in known)
 
         for ((line, ws) in analyzed) {
             val s = line.text

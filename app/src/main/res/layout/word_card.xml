@@ -72,6 +72,14 @@
             android:visibility="gone" />
 
         <Button
+            android:id="@+id/cardKnown"
+            style="@style/Button.Outline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="Já conheço" />
+
+        <Button
             android:id="@+id/cardSave"
             style="@style/Button.Primary"
             android:layout_width="wrap_content"
