@@ -77,6 +77,11 @@ class Prefs(ctx: Context) {
         get() = sp.getString("geminiKey", "") ?: ""
         set(v) = sp.edit().putString("geminiKey", v.trim()).apply()
 
+    /** Tradução mostrada primeiro: a do Gemini quando houver (true) ou a do ML Kit. */
+    var trPreferGemini: Boolean
+        get() = sp.getBoolean("trPreferGemini", true)
+        set(v) = sp.edit().putBoolean("trPreferGemini", v).apply()
+
     var geminiModel: String
         get() = sp.getString("geminiModel", Ai.DEFAULT_MODEL) ?: Ai.DEFAULT_MODEL
         set(v) = sp.edit().putString("geminiModel", v.trim()).apply()

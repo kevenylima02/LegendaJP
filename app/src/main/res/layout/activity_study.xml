@@ -205,6 +205,17 @@
                 android:textIsSelectable="true"
                 android:visibility="gone" />
 
+            <!-- Frase e tradução; tocar alterna entre ML Kit e Gemini -->
+            <TextView
+                android:id="@+id/trLine"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textColor="@color/text"
+                android:textSize="15sp"
+                android:lineSpacingExtra="4dp"
+                android:visibility="gone" />
+
             <LinearLayout
                 android:id="@+id/strokeBox"
                 android:layout_width="match_parent"

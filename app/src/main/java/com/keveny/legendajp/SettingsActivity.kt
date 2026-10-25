@@ -98,6 +98,9 @@ class SettingsActivity : Activity() {
         }
         findViewById<android.widget.EditText>(R.id.geminiKey).setText(prefs.geminiKey)
         findViewById<android.widget.EditText>(R.id.geminiModel).setText(prefs.geminiModel)
+        val prefer = findViewById<Switch>(R.id.swPreferGemini)
+        prefer.isChecked = prefs.trPreferGemini
+        prefer.setOnCheckedChangeListener { _, on -> prefs.trPreferGemini = on }
         val testBtn = findViewById<Button>(R.id.btnAiTest)
         testBtn.setOnClickListener {
             saveAiFields()

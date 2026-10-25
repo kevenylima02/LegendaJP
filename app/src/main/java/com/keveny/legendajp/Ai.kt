@@ -82,7 +82,11 @@ object Ai {
         val app = ctx.applicationContext
         Thread {
             val res = try {
-                if (!fresh) cached(app, r)?.let { hit -> main.post { cb(hit) }; return@Thread }
+                if (!fresh) cached(app, r)?.let { hit ->
+                    if (r.task == Task.TRANSLATE) keepTranslation(app, r.sentence, hit.raw)
+                    main.post { cb(hit) }
+                    return@Thread
+                }
                 val prompt = prompt(app, r)
                 val out = when (mode(app)) {
                     NANO -> runNano(prompt)
@@ -90,13 +94,91 @@ object Ai {
                     else -> throw IllegalStateException("A IA está desligada em Configurações.")
                 }
                 val parsed = parse(r.task, out, modelLabel(app), cached = false)
-                if (parsed.error == null) VocabDb.get(app).aiPut(cacheKey(app, r), out)
+                if (parsed.error == null) {
+                    VocabDb.get(app).aiPut(cacheKey(app, r), out)
+                    if (r.task == Task.TRANSLATE) keepTranslation(app, r.sentence, out)
+                }
                 parsed
             } catch (e: Exception) {
                 Log.e(TAG, "ask", e)
                 Result(emptyList(), "", e.message ?: e.javaClass.simpleName, modelLabel(app), false)
             }
             main.post { cb(res) }
+        }.start()
+    }
+
+    /** A "traducao" da resposta vira a tradução do Gemini da frase (ao lado da do ML Kit). */
+    private fun keepTranslation(ctx: Context, sentence: String, out: String) {
+        val a = out.indexOf('{'); val b = out.lastIndexOf('}')
+        val t = try { if (a >= 0 && b > a) JSONObject(out.substring(a, b + 1)).optString("traducao").trim() else "" } catch (_: Exception) { "" }
+        if (t.isNotEmpty()) VocabDb.get(ctx).putAiTranslation(sentence, t)
+    }
+
+    // =====================================================================
+    // Traduzir a gravação inteira
+    // =====================================================================
+
+    @Volatile var stopRequested = false
+
+    /**
+     * Traduz as frases da gravação com a conversa como contexto, em partes (80 frases na nuvem, 15 no
+     * Nano), guardando cada tradução como "Gemini". onlyMissing: só as que ainda não têm.
+     * progress(feitas, total) e done(traduzidas, erro) rodam na thread principal.
+     */
+    fun translateRecording(
+        ctx: Context, recording: String, onlyMissing: Boolean,
+        progress: (Int, Int) -> Unit, done: (Int, String?) -> Unit
+    ) {
+        val app = ctx.applicationContext
+        stopRequested = false
+        Thread {
+            var count = 0
+            val err = try {
+                val item = Recordings.find(app, "$recording.txt") ?: throw IllegalStateException("Transcrição não encontrada.")
+                val lines = StudyGen.lines(Recordings.readText(app, item.uri), recording)
+                txtCache.put(recording, lines)
+                val db = VocabDb.get(app)
+                val todo = lines.indices.filter { !onlyMissing || db.aiTranslation(lines[it].text) == null }
+                val nano = mode(app) == NANO
+                val chunk = if (nano) 15 else 80
+                val total = lines.lastOrNull()?.endSec ?: 0
+                main.post { progress(0, todo.size) }
+                for (part in todo.chunked(chunk)) {
+                    if (stopRequested) break
+                    val first = part.first(); val last = part.last()
+                    // Contexto: a conversa inteira na nuvem (até 60 min); senão, um pedaço em volta
+                    val ctxRange = when {
+                        nano -> maxOf(0, first - 5)..minOf(lines.size - 1, last + 5)
+                        total <= FULL_MAX_SEC -> lines.indices
+                        else -> maxOf(0, first - 40)..minOf(lines.size - 1, last + 15)
+                    }
+                    val sb = StringBuilder()
+                    sb.append("Você traduz transcrições automáticas de áudio em japonês para o português do Brasil. ")
+                    sb.append("A transcrição pode ter erros; use o contexto da conversa para escolher o sentido certo.\n")
+                    sb.append("Transcrição (cada frase com seu número):\n")
+                    for (i in ctxRange) sb.append('[').append(i + 1).append("] ").append(lines[i].text).append('\n')
+                    sb.append("\nTraduza somente as frases de número: ").append(part.joinToString(",") { (it + 1).toString() })
+                    sb.append(". Tradução natural, fiel ao sentido, sem explicações.\n")
+                    sb.append("Responda somente com JSON, sem markdown: {\"traducoes\": [{\"n\": número, \"pt\": \"tradução\"}, ...]}")
+                    val out = if (nano) runNano(sb.toString(), 1024) else runCloud(app, sb.toString(), 16384)
+                    val a = out.indexOf('{'); val b = out.lastIndexOf('}')
+                    val arr = JSONObject(out.substring(a, b + 1)).optJSONArray("traducoes") ?: JSONArray()
+                    for (k in 0 until arr.length()) {
+                        val o = arr.optJSONObject(k) ?: continue
+                        val i = o.optInt("n", 0) - 1
+                        val pt = o.optString("pt").trim()
+                        if (i in part && pt.isNotEmpty()) { db.putAiTranslation(lines[i].text, pt); count++ }
+                    }
+                    val n = count
+                    main.post { progress(n, todo.size) }
+                }
+                null
+            } catch (e: Exception) {
+                Log.e(TAG, "translateRecording", e)
+                e.message ?: e.javaClass.simpleName
+            }
+            val n = count
+            main.post { done(n, err) }
         }.start()
     }
 
@@ -209,19 +291,19 @@ object Ai {
     // Gemini na nuvem (REST)
     // =====================================================================
 
-    private fun runCloud(ctx: Context, prompt: String): String {
+    private fun runCloud(ctx: Context, prompt: String, maxTokens: Int = 2048): String {
         val p = Prefs(ctx)
         val key = p.geminiKey.ifBlank { TEST_KEY }
         if (key.isBlank()) throw IllegalStateException("Sem chave do Gemini: cole a sua em Configurações → Inteligência artificial.")
         val model = p.geminiModel.ifBlank { DEFAULT_MODEL }
         val body = JSONObject()
             .put("contents", JSONArray().put(JSONObject().put("parts", JSONArray().put(JSONObject().put("text", prompt)))))
-            .put("generationConfig", JSONObject().put("responseMimeType", "application/json").put("temperature", 0.3).put("maxOutputTokens", 2048))
+            .put("generationConfig", JSONObject().put("responseMimeType", "application/json").put("temperature", 0.3).put("maxOutputTokens", maxTokens))
         val conn = URL("https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent").openConnection() as HttpURLConnection
         try {
             conn.requestMethod = "POST"
             conn.connectTimeout = 15000
-            conn.readTimeout = 45000
+            conn.readTimeout = if (maxTokens > 4096) 180000 else 45000
             conn.doOutput = true
             conn.setRequestProperty("Content-Type", "application/json")
             conn.setRequestProperty("x-goog-api-key", key)
@@ -249,7 +331,7 @@ object Ai {
 
     private fun nanoClient(): GenerativeModel = nano ?: synchronized(this) { nano ?: Generation.getClient().also { nano = it } }
 
-    private fun runNano(prompt: String): String = runBlocking {
+    private fun runNano(prompt: String, maxTokens: Int = 512): String = runBlocking {
         val m = nanoClient()
         when (m.checkStatus()) {
             FeatureStatus.UNAVAILABLE -> throw IllegalStateException("O Gemini Nano não está disponível neste aparelho.")
@@ -258,7 +340,7 @@ object Ai {
         }
         val resp = m.generateContent(generateContentRequest(TextPart(prompt)) {
             temperature = 0.3f
-            maxOutputTokens = 512
+            maxOutputTokens = maxTokens
         })
         resp.candidates.firstOrNull()?.text ?: ""
     }

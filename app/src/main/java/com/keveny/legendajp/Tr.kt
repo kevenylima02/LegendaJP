@@ -27,6 +27,9 @@ object Tr {
 
     fun cached(ctx: Context, text: String): String? = VocabDb.get(ctx).translation(text)
 
+    /** Tradução do Gemini (✦ IA ou "Traduzir com IA" no visualizador), se houver. */
+    fun aiCached(ctx: Context, text: String): String? = VocabDb.get(ctx).aiTranslation(text)
+
     /** Garante o modelo baixado; avisa o usuário na primeira vez. */
     private fun ensureModel(ctx: Context, cb: (Boolean) -> Unit) {
         if (modelReady) { cb(true); return }

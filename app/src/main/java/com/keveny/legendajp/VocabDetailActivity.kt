@@ -204,16 +204,18 @@ class VocabDetailActivity : Activity() {
             v.findViewById<TextView>(R.id.play).setOnClickListener { play(o) }
             val trView = v.findViewById<TextView>(R.id.translation)
             val trBtn = v.findViewById<TextView>(R.id.translate)
-            val cached = Tr.cached(this@VocabDetailActivity, o.sentence)
+            val cached = Tr.cached(this@VocabDetailActivity, o.sentence) ?: Tr.aiCached(this@VocabDetailActivity, o.sentence)
             if (cached != null) {
-                trView.text = cached; trView.visibility = View.VISIBLE; trBtn.visibility = View.GONE
+                trView.visibility = View.VISIBLE; trBtn.visibility = View.GONE
+                TrSwitch.bind(this@VocabDetailActivity, trView, o.sentence)
             } else {
                 trView.visibility = View.GONE; trBtn.visibility = View.VISIBLE
                 trBtn.setOnClickListener {
                     trBtn.text = "Traduzindo…"
                     Tr.translate(this@VocabDetailActivity, o.sentence) { t ->
                         if (t != null) {
-                            trView.text = t; trView.visibility = View.VISIBLE; trBtn.visibility = View.GONE
+                            trView.visibility = View.VISIBLE; trBtn.visibility = View.GONE
+                            TrSwitch.bind(this@VocabDetailActivity, trView, o.sentence)
                         } else {
                             trBtn.text = "Traduzir"
                             Toast.makeText(this@VocabDetailActivity, "Não consegui traduzir agora", Toast.LENGTH_SHORT).show()

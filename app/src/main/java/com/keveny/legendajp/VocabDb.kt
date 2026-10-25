@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 /** Vocabulário salvo: palavras (forma de dicionário) e as frases onde apareceram. */
-class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 8) {
+class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 9) {
 
     companion object {
         @Volatile private var instance: VocabDb? = null
@@ -65,6 +65,7 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         createMistakes(db)
         createTimingAndAi(db)
         Srs.createTables(db)
+        createTrAi(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -75,6 +76,7 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         if (oldVersion < 6) db.execSQL("ALTER TABLE words ADD COLUMN known INTEGER NOT NULL DEFAULT 0")
         if (oldVersion < 7) createTimingAndAi(db)
         if (oldVersion < 8) Srs.createTables(db)
+        if (oldVersion < 9) createTrAi(db)
     }
 
     /** Marca/desmarca "já conheço". Ao marcar, tira a palavra da fila de erros. */
@@ -239,6 +241,22 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         readableDatabase.rawQuery("SELECT words FROM timing WHERE recording=? AND sentence=?", arrayOf(recording, sentence)).use { c ->
             if (c.moveToFirst()) c.getString(0) else null
         }
+
+    /** Traduções feitas pelo Gemini; ficam ao lado das do ML Kit (tabela tr), sem substituir. */
+    private fun createTrAi(db: SQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS tr_ai (text TEXT PRIMARY KEY, translation TEXT NOT NULL, created INTEGER NOT NULL)")
+    }
+
+    fun aiTranslation(text: String): String? =
+        readableDatabase.rawQuery("SELECT translation FROM tr_ai WHERE text=?", arrayOf(text)).use { c ->
+            if (c.moveToFirst()) c.getString(0) else null
+        }
+
+    fun putAiTranslation(text: String, translation: String) {
+        writableDatabase.insertWithOnConflict("tr_ai", null, ContentValues().apply {
+            put("text", text); put("translation", translation); put("created", System.currentTimeMillis())
+        }, SQLiteDatabase.CONFLICT_REPLACE)
+    }
 
     fun aiGet(k: String): String? =
         readableDatabase.rawQuery("SELECT out FROM ai WHERE k=?", arrayOf(k)).use { c -> if (c.moveToFirst()) c.getString(0) else null }

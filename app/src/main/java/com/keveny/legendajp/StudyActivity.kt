@@ -84,6 +84,7 @@ class StudyActivity : Activity() {
     private lateinit var aiBox: android.widget.LinearLayout
     private var aiPanel: AiPanel? = null
     private lateinit var btnEasy: Button
+    private lateinit var trLine: TextView
 
     // ---------- revisão espaçada ----------
     private var flashRevealed = false
@@ -169,6 +170,7 @@ class StudyActivity : Activity() {
         btnSubs = findViewById(R.id.btnSubs)
         aiBox = findViewById(R.id.aiBox)
         btnEasy = findViewById(R.id.btnEasy)
+        trLine = findViewById(R.id.trLine)
         btnEasy.setOnClickListener {
             val before = lastSrs ?: return@setOnClickListener
             btnEasy.isEnabled = false
@@ -443,6 +445,7 @@ class StudyActivity : Activity() {
         aiPanel?.hide()
         aiPanel = null
         btnEasy.visibility = View.GONE
+        trLine.visibility = View.GONE
         flashRevealed = false
         flashGrade = 0
     }
@@ -779,16 +782,9 @@ class StudyActivity : Activity() {
             else -> {}
         }
 
-        // Frase e tradução
-        sb.append("\n\n")
-        colored("Frase", sec)
-        sb.append("\n").append(item.sentence)
-        val trSentence = Tr.cached(this, item.sentence)
-        sb.append("\n")
-        if (trSentence != null) colored(trSentence, sec) else { colored("traduzindo…", sec); pending.add(item.sentence) }
-
         feedback.text = sb
         feedback.visibility = View.VISIBLE
+        showSentenceTr(item.sentence)
 
         // Pede o que falta; quando chegar, redesenha se o item ainda estiver na tela
         for (text in pending) {
@@ -962,6 +958,18 @@ class StudyActivity : Activity() {
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 
+    /** "Frase" + a frase + a tradução (ML Kit ou Gemini; tocar alterna). */
+    private fun showSentenceTr(sentence: String) {
+        if (sentence.isBlank()) { trLine.visibility = View.GONE; return }
+        val pre = SpannableStringBuilder()
+        val a = pre.length
+        pre.append("Frase")
+        pre.setSpan(ForegroundColorSpan(getColor(R.color.text_secondary)), a, pre.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        pre.append("\n").append(sentence).append("\n")
+        trLine.visibility = View.VISIBLE
+        TrSwitch.bind(this, trLine, sentence, pre)
+    }
+
     // =====================================================================
     // Revisão espaçada: alvo da nota e flashcards
     // =====================================================================
@@ -1106,11 +1114,6 @@ class StudyActivity : Activity() {
                 }
             }
         }
-        if (item.sentence.isNotEmpty()) {
-            sb.append("\n\n"); grey("Frase"); sb.append("\n").append(item.sentence).append("\n")
-            val tr = Tr.cached(this, item.sentence)
-            if (tr != null) grey(tr) else { grey("traduzindo…"); pending.add(item.sentence) }
-        }
         val card = Srs.get(this, item.card.kind, item.card.key)
         if (card != null && card.reps > 0) {
             sb.append("\n\n")
@@ -1119,6 +1122,7 @@ class StudyActivity : Activity() {
         }
         feedback.text = sb
         feedback.visibility = View.VISIBLE
+        showSentenceTr(item.sentence)
         for (t in pending) Tr.translate(this, t) { _ -> if (current === item) showFlashBack(item) }
         if (item.card.kind != Srs.GRAMMAR && item.card.label.any(StudyGen::isKanji)) showStrokes(item.card.label)
     }

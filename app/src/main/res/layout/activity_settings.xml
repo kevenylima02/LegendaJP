@@ -183,6 +183,15 @@
             android:textColorHint="@color/text_secondary"
             android:textSize="14sp" />
 
+        <Switch
+            android:id="@+id/swPreferGemini"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Mostrar primeiro a tradução do Gemini (quando houver); tocar na tradução alterna com a do ML Kit"
+            android:textColor="@color/text"
+            android:textSize="14sp" />
+
         <Button
             android:id="@+id/btnAiTest"
             style="@style/Button.Outline"

@@ -50,6 +50,10 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   (a transcrição inteira até 60 min na nuvem; ±2 min no Nano), explica a palavra na frase e a gramática, sempre no mesmo formato.
   As respostas ficam salvas. A chave do Gemini nunca vai para o git: em Configurações, ou embutida na
   compilação a partir de `gemini.key` no local.properties ou do segredo `GEMINI_API_KEY` do Actions.
+- **Duas traduções, ML Kit ⇄ Gemini**: as do Gemini (✦ IA e "✦ Traduzir gravação com IA" no menu do
+  visualizador) ficam ao lado das do ML Kit, sem substituir. Onde aparece a tradução de uma frase, a etiqueta
+  diz a fonte e tocar alterna; o Gemini aparece primeiro quando houver (Configurações). A gravação inteira é
+  traduzida em partes (80 frases na nuvem, 15 no Nano) com a conversa como contexto e barra de progresso.
 - **Legenda no exercício**: botão Legenda; durante o áudio a palavra falada acende. Gravações novas pedem o
   tempo de cada palavra ao reconhecedor do Android (quando ele informa); nas outras o tempo é estimado
   pela voz no WAV, com o aviso "ⓘ tempo estimado".

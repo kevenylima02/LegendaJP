@@ -114,9 +114,12 @@ class ViewerActivity : Activity() {
                 .filter { it.isNotBlank() && !it.startsWith("#") }
                 .map { val (s, t) = Recordings.parseLine(it); Line(s, t) }
             val wav = Recordings.find(this, Recordings.baseName(name) + ".wav")?.uri
+            val db = VocabDb.get(this)
+            val tr = parsed.map { it.text }.filter { db.aiTranslation(it) != null || db.translation(it) != null }.toHashSet()
             runOnUiThread {
                 fullText = text
                 lines = parsed
+                translated = tr
                 adapter.notifyDataSetChanged()
                 wavUri = wav
                 if (wav != null) setupPlayer(wav)
@@ -236,6 +239,64 @@ class ViewerActivity : Activity() {
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 
+    /** Frases que já têm alguma tradução (aparecem embaixo da frase). */
+    private var translated: Set<String> = emptySet()
+
+    /** ✦ Traduz a gravação inteira com o Gemini, em partes, com progresso. Nada do ML Kit é apagado. */
+    private fun translateAll() {
+        if (!Ai.enabled(this)) {
+            Toast.makeText(this, "Ative a IA em Configurações → Inteligência artificial", Toast.LENGTH_LONG).show()
+            return
+        }
+        val db = VocabDb.get(this)
+        val texts = lines.map { it.text }.distinct()
+        val have = texts.count { db.aiTranslation(it) != null }
+        val missing = texts.size - have
+        val b = AlertDialog.Builder(this).setTitle("✦ Traduzir com ${Ai.modelLabel(this)}")
+            .setMessage(
+                "${texts.size} frases · $have já traduzidas pelo Gemini.\n\n" +
+                    "A conversa inteira vai como contexto. As traduções do ML Kit continuam salvas: " +
+                    "toque numa tradução para alternar entre as duas."
+            )
+            .setNegativeButton(android.R.string.cancel, null)
+        if (missing > 0) b.setPositiveButton("Traduzir $missing") { _, _ -> runTranslate(onlyMissing = true) }
+        if (have > 0) b.setNeutralButton("Refazer todas") { _, _ -> runTranslate(onlyMissing = false) }
+        b.show()
+    }
+
+    private fun runTranslate(onlyMissing: Boolean) {
+        val bar = android.widget.ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply { isIndeterminate = true }
+        val label = TextView(this).apply { text = "Preparando…"; setTextColor(getColor(R.color.text)); textSize = 14f }
+        val box = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(dp(24), dp(16), dp(24), dp(8))
+            addView(label); addView(bar)
+        }
+        val dlg = AlertDialog.Builder(this).setTitle("✦ Traduzindo a gravação").setView(box).setCancelable(false)
+            .setNegativeButton("Parar") { _, _ -> Ai.stopRequested = true }
+            .show()
+        Ai.translateRecording(this, Recordings.baseName(name), onlyMissing,
+            progress = { done, total ->
+                bar.isIndeterminate = false
+                bar.max = maxOf(1, total)
+                bar.progress = done
+                label.text = "$done de $total frases"
+            },
+            done = { n, err ->
+                if (dlg.isShowing) dlg.dismiss()
+                Toast.makeText(this, if (err != null) "Parou: $err ($n traduzidas)" else "$n frases traduzidas pelo Gemini", Toast.LENGTH_LONG).show()
+                refreshTranslations()
+            })
+    }
+
+    private fun refreshTranslations() {
+        Thread {
+            val db = VocabDb.get(this)
+            val tr = lines.map { it.text }.filter { db.aiTranslation(it) != null || db.translation(it) != null }.toHashSet()
+            runOnUiThread { translated = tr; adapter.notifyDataSetChanged() }
+        }.start()
+    }
+
     // ---------- Menu ----------
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -257,6 +318,7 @@ class ViewerActivity : Activity() {
                 val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, fullText)
                 startActivity(Intent.createChooser(send, getString(R.string.share)))
             }
+            R.id.action_translate_ai -> translateAll()
             R.id.action_copy -> {
                 getSystemService(ClipboardManager::class.java)
                     .setPrimaryClip(ClipData.newPlainText("LegendaJP", fullText))
@@ -310,6 +372,15 @@ class ViewerActivity : Activity() {
             // Toque fora de uma palavra toca o trecho
             tv.setOnClickListener {
                 if (android.os.SystemClock.uptimeMillis() - Jp.lastWordTap > 400) playFrom(l.sec)
+            }
+            // Tradução embaixo da frase, quando já existe (tocar alterna ML Kit ⇄ Gemini)
+            val trv = v.findViewById<TextView>(R.id.tr)
+            if (l.text in translated) {
+                trv.visibility = View.VISIBLE
+                TrSwitch.bind(this@ViewerActivity, trv, l.text)
+            } else {
+                trv.visibility = View.GONE
+                trv.setOnClickListener(null)
             }
             v.setBackgroundColor(if (position == currentIndex) getColor(R.color.accent_soft) else 0)
             return v

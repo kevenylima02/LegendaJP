@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fonte da tradução mostrada (TrSwitch) -->
+    <item name="trSource" type="id" />
+    <item name="trText" type="id" />
+</resources>

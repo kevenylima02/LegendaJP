@@ -245,9 +245,7 @@ class WordPickActivity : Activity() {
         }
         findViewById<TextView>(R.id.sentence).text = ss
         val sentenceTr = findViewById<TextView>(R.id.sentenceTr)
-        val str = Tr.cached(this, s)
-        sentenceTr.text = str ?: "traduzindo…"
-        if (str == null) Tr.translate(this, s) { t -> if (cands.getOrNull(index) === c) sentenceTr.text = t ?: "" }
+        TrSwitch.bind(this, sentenceTr, s)
 
         btnAudio.visibility = if (c.line.sec >= 0 && c.line.recording != null) View.VISIBLE else View.GONE
         btnAudio.setOnClickListener { play(c.line) }
