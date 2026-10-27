@@ -284,6 +284,24 @@ object Jp {
      * Devolve a frase com cada palavra de conteúdo tocável e as salvas em cor própria.
      * O TextView precisa de movementMethod = LinkMovementMethod.
      */
+    /**
+     * Expressões salvas pelo marcador livre do leitor (ex.: 気になる) que aparecem na frase, como
+     * palavras tocáveis. Ficam por cima das palavras do Kuromoji, para o trecho inteiro ganhar a cor.
+     */
+    fun expressions(sentence: String): List<Word> {
+        val map = VocabDb.expressions
+        if (map.isEmpty()) return emptyList()
+        val out = mutableListOf<Word>()
+        for ((e, reading) in map) {
+            var i = sentence.indexOf(e)
+            while (i >= 0) {
+                out.add(Word(e, e, e, reading, "expressão", VocabDb.EXPR, "", i, i + e.length))
+                i = sentence.indexOf(e, i + e.length)
+            }
+        }
+        return out
+    }
+
     fun decorate(
         sentence: String,
         saved: Set<String>,
@@ -294,10 +312,12 @@ object Jp {
     ): CharSequence {
         val sb = SpannableStringBuilder(sentence)
         val list = try { words(sentence) } catch (_: Exception) { return sentence }
-        for (w in list) {
+        // As expressões vêm depois (e com prioridade) para o toque e a cor valerem no trecho inteiro
+        for ((n, w) in (list + expressions(sentence)).withIndex()) {
             val isKnown = w.key in known
             val isSaved = w.key in saved || isKnown
             val color = if (isKnown) knownColor else savedColor
+            val flags = Spanned.SPAN_EXCLUSIVE_EXCLUSIVE or (if (n >= list.size) 1 shl Spanned.SPAN_PRIORITY_SHIFT else 0)
             sb.setSpan(object : ClickableSpan() {
                 override fun onClick(widget: View) {
                     val now = android.os.SystemClock.uptimeMillis()
@@ -309,8 +329,8 @@ object Jp {
                     ds.isUnderlineText = false
                     if (isSaved) ds.color = color
                 }
-            }, w.start, w.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            if (isSaved) sb.setSpan(ForegroundColorSpan(color), w.start, w.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }, w.start, w.end, flags)
+            if (isSaved) sb.setSpan(ForegroundColorSpan(color), w.start, w.end, flags)
         }
         return sb
     }

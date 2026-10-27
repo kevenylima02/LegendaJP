@@ -58,9 +58,15 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   exercício de kanji nunca ganha leitura antes da resposta. Na legenda flutuante é opcional (desligado).
 - **Textos** (botão na tela principal): colar, compartilhar de outro app (Compartilhar → Michi), arquivo .txt,
   foto ou imagem da galeria (ML Kit lê no celular; "✦ Ler com IA" usa o Gemini, melhor para texto vertical e
-  mangá). O leitor tem palavras tocáveis, cores, **furigana por cima dos kanji (botão rápido para esconder)**, tamanho da letra,
-  traduções embaixo dos parágrafos, toque longo na frase (tradução, gramática, áudio), Estudar, ✦ Traduzir e
-  Criar áudio (um narrador). Salvos como texto_AAAAMMDD_HHMMSS.txt (#p entre parágrafos).
+  mangá). O leitor tem cara de página (temas Papel, Sépia e Noite em ⋮ → Tema da página), progresso e volta
+  de onde parou. A barra embaixo muda o que o toque faz: ✋ só rola; ✨ varinha abre um balão com leitura,
+  classe, significado, ☆ Salvar e Já conheço; 🖍 marcador livre: arrasta o dedo sobre um trecho e abre o
+  bloco com tradução (ML Kit e ✦ IA), as palavras do trecho (salvar/conheço), gramática, Ouvir e **Salvar
+  como expressão** (o trecho vira uma entrada do vocabulário e fica destacado e tocável onde aparecer — útil
+  quando o Kuromoji corta a palavra errado); 🔊 lê a frase tocada (áudio do texto ou voz do celular),
+  destacando-a. Também ふ (furigana), A− e A+. Toque longo na frase: tradução, gramática e áudio. Menu:
+  Estudar, traduções embaixo dos parágrafos, ✦ Traduzir, Criar áudio. Salvos como texto_AAAAMMDD_HHMMSS.txt
+  (#p entre parágrafos).
 - **Importar texto** (Gravações → ⋮): colar ou escolher .txt/.srt. Formato Michi (modelo em ⋮ → Formato do texto):
   `# michi: 1`, `# titulo: …`, `# locutores: A=Nome (feminino), B=Nome (masculino)`, e uma frase por linha
   `A: 日本語のフレーズ。 | tradução`. Vira uma gravação sem áudio, com título, locutores e traduções.

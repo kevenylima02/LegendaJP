@@ -5,52 +5,98 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
+import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
+import android.text.style.BackgroundColorSpan
 import android.text.style.StyleSpan
 import android.util.TypedValue
+import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.widget.PopupWindow
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 
 /**
- * Leitor de textos (estilo Kindle): parágrafos com as palavras tocáveis (cartão da palavra, salvar,
- * Já conheço), cores de conhecidas/em estudo, furigana por cima dos kanji (liga/desliga), tamanho da
- * letra e traduções. Toque longo numa frase: tradução (ML Kit ⇄ Gemini), gramática e áudio.
+ * Leitor de textos com cara de página: tema de papel (ou sépia/noite), progresso e volta de onde
+ * parou. A barra de ferramentas embaixo muda o que o toque faz: ✋ só rola; ✨ varinha mostra o
+ * significado da palavra num balão; 🖍 marcador livre (arrasta o dedo sobre um trecho: tradução,
+ * palavras do trecho, salvar como expressão); 🔊 lê a frase tocada (áudio do texto ou voz do
+ * celular). Toque longo numa frase: tradução, gramática e áudio.
  */
 class ReaderActivity : Activity() {
 
     companion object {
         const val EXTRA_NAME = "name"
+        const val HAND = "hand"
+        const val WAND = "wand"
+        const val MARK = "mark"
+        const val LISTEN = "listen"
+
+        /** Cores da página: fundo, texto, secundário, palavra salva, conhecida, marcação, cartão, borda. */
+        class Theme(val id: String, val label: String, val bg: Int, val text: Int, val secondary: Int,
+                    val saved: Int, val known: Int, val highlight: Int, val card: Int, val outline: Int)
+
+        val themes = listOf(
+            Theme("paper", "Papel", 0xFFFBF6EA.toInt(), 0xFF2B2418.toInt(), 0xFF8A7B63.toInt(), 0xFF4F43D6.toInt(), 0xFF1E7A45.toInt(), 0x66F5C542, 0xFFFFFDF7.toInt(), 0xFFE3D9C2.toInt()),
+            Theme("sepia", "Sépia", 0xFFF0E2C4.toInt(), 0xFF4A3A22.toInt(), 0xFF8E7A58.toInt(), 0xFF4036B8.toInt(), 0xFF1B6B3E.toInt(), 0x66F0B429, 0xFFF7EDD8.toInt(), 0xFFD9C8A4.toInt()),
+            Theme("night", "Noite", 0xFF141519.toInt(), 0xFFD9DAE0.toInt(), 0xFF8F93A3.toInt(), 0xFFC5CBFF.toInt(), 0xFF7BD88F.toInt(), 0x66F5C542, 0xFF1F2026.toInt(), 0xFF34363F.toInt()),
+        )
     }
 
     private lateinit var name: String
     private lateinit var base: String
+    private lateinit var root: FrameLayout
+    private lateinit var scroll: ScrollView
     private lateinit var content: LinearLayout
+    private lateinit var toolbar: LinearLayout
+    private lateinit var progressLabel: TextView
+    private val toolButtons = HashMap<String, TextView>()
     private var paragraphs: List<List<Texts.Sentence>> = emptyList()
     private var hasAudio = false
     private var player: MediaPlayer? = null
+    private var tts: TextToSpeech? = null
     private val ui = Handler(Looper.getMainLooper())
     private var stopAt = Runnable {}
+    private var restored = false
+    private var tool = WAND
+    private var popup: PopupWindow? = null
+
+    /** Onde cada frase está desenhada (parágrafo e trecho), para destacar e posicionar o balão. */
+    private val placed = HashMap<Texts.Sentence, Pair<TextView, IntRange>>()
+
+    private val theme: Theme get() = themes.firstOrNull { it.id == Prefs(this).readerTheme } ?: themes[0]
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         actionBar?.setDisplayHomeAsUpEnabled(true)
         name = intent.getStringExtra(EXTRA_NAME) ?: run { finish(); return }
         base = Recordings.baseName(name)
-        content = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(20), dp(8), dp(20), dp(40)) }
-        setContentView(ScrollView(this).apply { addView(content) })
+        tool = Prefs(this).readerTool
+        content = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(24), dp(12), dp(24), dp(96)) }
+        scroll = ScrollView(this).apply { addView(content); isVerticalScrollBarEnabled = false }
+        scroll.setOnScrollChangeListener { _, _, _, _, _ -> updateProgress() }
+        root = FrameLayout(this).apply { addView(scroll) }
+        buildToolbar()
+        setContentView(root)
         load()
     }
 
@@ -68,16 +114,99 @@ class ReaderActivity : Activity() {
                 hasAudio = audio
                 render(level)
                 invalidateOptionsMenu()
+                if (!restored) {
+                    restored = true
+                    val y = Prefs(this).readerPos(base)
+                    if (y > 0) scroll.post { scroll.scrollTo(0, y); updateProgress() }
+                }
             }
         }.start()
     }
 
+    // ---------- barra de ferramentas ----------
+
+    private fun buildToolbar() {
+        toolbar = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(6), dp(4), dp(6), dp(4))
+            elevation = dp(6).toFloat()
+        }
+        fun button(id: String, icon: String, hint: String, onClick: () -> Unit) {
+            val b = TextView(this).apply {
+                text = icon; textSize = 19f; gravity = Gravity.CENTER
+                setPadding(dp(10), dp(6), dp(10), dp(6))
+                contentDescription = hint
+                setOnClickListener { onClick() }
+                setOnLongClickListener { Toast.makeText(this@ReaderActivity, hint, Toast.LENGTH_SHORT).show(); true }
+            }
+            toolButtons[id] = b
+            toolbar.addView(b)
+        }
+        button(HAND, "✋", "Mão: só rolar a página") { setTool(HAND) }
+        button(WAND, "✨", "Varinha: toque na palavra para ver o significado") { setTool(WAND) }
+        button(MARK, "🖍", "Marcador: arraste o dedo sobre um trecho") { setTool(MARK) }
+        button(LISTEN, "🔊", "Ouvir: toque na frase para ouvir") { setTool(LISTEN) }
+        toolbar.addView(View(this), LinearLayout.LayoutParams(dp(1), dp(22)).apply { marginStart = dp(4); marginEnd = dp(4) })
+        button("furi", "ふ", "Furigana") {
+            val prefs = Prefs(this)
+            if (!Furigana.enabled(this)) Toast.makeText(this, "Furigana desligado em Configurações", Toast.LENGTH_SHORT).show()
+            else { prefs.furigana = !prefs.furigana; render(); styleToolbar() }
+        }
+        button("minus", "A−", "Letra menor") { val p = Prefs(this); p.readerSize = (p.readerSize - 2).coerceAtLeast(14); render() }
+        button("plus", "A+", "Letra maior") { val p = Prefs(this); p.readerSize = (p.readerSize + 2).coerceAtMost(34); render() }
+        progressLabel = TextView(this).apply { text = "0%"; textSize = 12f; setPadding(dp(8), 0, dp(6), 0) }
+        toolbar.addView(progressLabel)
+        root.addView(toolbar, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+            bottomMargin = dp(14)
+        })
+        styleToolbar()
+    }
+
+    private fun setTool(t: String) {
+        tool = t
+        Prefs(this).readerTool = t
+        styleToolbar()
+        val hint = when (t) {
+            HAND -> "Mão: o toque não abre nada"
+            WAND -> "Varinha: toque numa palavra"
+            MARK -> "Marcador: arraste o dedo sobre um trecho"
+            else -> "Ouvir: toque numa frase"
+        }
+        Toast.makeText(this, hint, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun styleToolbar() {
+        val th = theme
+        val sep = toolbar.getChildAt(4)
+        sep.setBackgroundColor(th.outline)
+        toolbar.background = GradientDrawable().apply { cornerRadius = dp(22).toFloat(); setColor(th.card); setStroke(dp(1), th.outline) }
+        val furiOn = Prefs(this).furigana && Furigana.enabled(this)
+        for ((id, b) in toolButtons) {
+            val on = id == tool || (id == "furi" && furiOn)
+            b.background = if (on) GradientDrawable().apply { cornerRadius = dp(16).toFloat(); setColor(getColor(R.color.accent_soft)) } else null
+            b.setTextColor(th.text)
+        }
+        progressLabel.setTextColor(th.secondary)
+    }
+
+    private fun updateProgress() {
+        val max = content.height - scroll.height
+        val pct = if (max <= 0) 100 else (scroll.scrollY * 100 / max).coerceIn(0, 100)
+        progressLabel.text = "$pct%"
+    }
+
     private var lastLevel: TextLevel.Result? = null
 
-    /** Desenha tudo de novo (furigana, tamanho, cores e traduções). */
+    /** Desenha tudo de novo (tema, furigana, tamanho, cores e traduções). */
     private fun render(level: TextLevel.Result? = lastLevel) {
         lastLevel = level
         content.removeAllViews()
+        placed.clear()
+        highlighted = null
+        val th = theme
+        root.setBackgroundColor(th.bg)
         val prefs = Prefs(this)
         val size = prefs.readerSize.toFloat()
         val furigana = prefs.furigana && Furigana.enabled(this)
@@ -86,64 +215,268 @@ class ReaderActivity : Activity() {
             content.addView(TextView(this).apply {
                 text = "Para você: ${level.label} · nível estimado N${level.estLevel} · conheço ${pct(level.known)}% · estudando ${pct(level.studying)}%"
                 textSize = 12f
-                setTextColor(getColor(R.color.text_secondary))
-                setPadding(0, 0, 0, dp(12))
+                setTextColor(th.secondary)
+                setPadding(0, 0, 0, dp(16))
             })
         }
         if (paragraphs.isEmpty()) {
-            content.addView(TextView(this).apply { text = "Texto vazio."; textSize = 16f; setTextColor(getColor(R.color.text)) })
+            content.addView(TextView(this).apply { text = "Texto vazio."; textSize = 16f; setTextColor(th.text) })
             return
         }
-        val saved = getColor(R.color.saved_word)
-        val known = getColor(R.color.known_word)
         for (para in paragraphs) {
             val sb = SpannableStringBuilder()
             val ranges = mutableListOf<Pair<IntRange, Texts.Sentence>>()
+            val tv = TextView(this)
             for (s in para) {
                 val off = sb.length
-                sb.append(Jp.decorate(s.text, VocabDb.studyKeys, saved, VocabDb.knownKeys, known) { w ->
-                    WordCard.show(this, w, s.text, base, maxOf(0, s.sec),
-                        onPlay = if (hasAudio && s.sec >= 0) ({ playSentence(s) }) else null,
-                        onChanged = { render() })
-                })
+                sb.append(Jp.decorate(s.text, VocabDb.studyKeys, th.saved, VocabDb.knownKeys, th.known) { w -> onWordTap(tv, w, s) })
                 if (furigana) Furigana.decorate(this, sb, off, s.text)
                 ranges.add(off until sb.length to s)
             }
-            val tv = TextView(this).apply {
+            tv.apply {
                 text = sb
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
-                setTextColor(getColor(R.color.text))
+                setTextColor(th.text)
                 // O furigana ocupa o espaço entre as linhas (e o topo do parágrafo)
-                val extra = if (furigana) size * 0.62f else size * 0.3f
+                val extra = if (furigana) size * 0.62f else size * 0.42f
                 setLineSpacing(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, extra, resources.displayMetrics), 1f)
-                setPadding(0, if (furigana) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, size * 0.55f, resources.displayMetrics).toInt() else 0, 0, dp(10))
+                setPadding(0, if (furigana) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, size * 0.55f, resources.displayMetrics).toInt() else 0, 0, dp(14))
                 movementMethod = LinkMovementMethod.getInstance()
                 highlightColor = Color.TRANSPARENT
             }
-            // Toque longo: a frase sob o dedo
-            var lastX = 0f
-            var lastY = 0f
-            tv.setOnTouchListener { _, ev -> if (ev.action == MotionEvent.ACTION_DOWN) { lastX = ev.x; lastY = ev.y }; false }
-            tv.setOnLongClickListener {
-                val o = tv.getOffsetForPosition(lastX, lastY)
-                val s = ranges.firstOrNull { o in it.first }?.second ?: ranges.lastOrNull()?.second
-                if (s != null) {
-                    Jp.suppressTapUntil = android.os.SystemClock.uptimeMillis() + 1000
-                    showSentence(s)
-                }
-                true
-            }
+            for ((r, s) in ranges) placed[s] = tv to r
+            attachTouch(tv, ranges)
             content.addView(tv)
             if (prefs.readerTranslations) content.addView(paragraphTranslation(para))
         }
+        scroll.post { updateProgress() }
+    }
+
+    /** O que o toque faz depende da ferramenta (a mão não faz nada; o marcador é tratado no toque). */
+    private fun onWordTap(tv: TextView, w: Jp.Word, s: Texts.Sentence) {
+        when (tool) {
+            HAND, MARK -> {}
+            WAND -> showWandPopup(tv, w, s)
+            LISTEN -> speak(s)
+        }
+    }
+
+    /** Toque longo: a frase sob o dedo. Marcador: arrastar seleciona o trecho. */
+    private fun attachTouch(tv: TextView, ranges: List<Pair<IntRange, Texts.Sentence>>) {
+        var lastX = 0f
+        var lastY = 0f
+        var anchor = -1
+        var selStart = -1
+        var selEnd = -1
+        val spannable = tv.text as Spannable
+        val markSpan = BackgroundColorSpan(theme.highlight)
+        fun select(a: Int, b: Int) {
+            selStart = minOf(a, b); selEnd = maxOf(a, b) + 1
+            spannable.removeSpan(markSpan)
+            spannable.setSpan(markSpan, selStart, selEnd.coerceAtMost(spannable.length), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        tv.setOnTouchListener { _, ev ->
+            if (tool != MARK) {
+                if (ev.action == MotionEvent.ACTION_DOWN) { lastX = ev.x; lastY = ev.y }
+                return@setOnTouchListener false
+            }
+            when (ev.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    tv.parent.requestDisallowInterceptTouchEvent(true)
+                    anchor = tv.getOffsetForPosition(ev.x, ev.y).coerceIn(0, maxOf(0, spannable.length - 1))
+                    select(anchor, anchor)
+                }
+                MotionEvent.ACTION_MOVE -> if (anchor >= 0) select(anchor, tv.getOffsetForPosition(ev.x, ev.y).coerceIn(0, maxOf(0, spannable.length - 1)))
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    tv.parent.requestDisallowInterceptTouchEvent(false)
+                    if (ev.actionMasked == MotionEvent.ACTION_UP && anchor >= 0 && selEnd > selStart) {
+                        val text = spannable.subSequence(selStart, selEnd.coerceAtMost(spannable.length)).toString().trim()
+                        val s = ranges.firstOrNull { selStart in it.first }?.second ?: ranges.last().second
+                        if (text.isNotEmpty()) showSelection(text, s) { spannable.removeSpan(markSpan) }
+                        else spannable.removeSpan(markSpan)
+                    } else spannable.removeSpan(markSpan)
+                    anchor = -1
+                }
+            }
+            true
+        }
+        tv.setOnLongClickListener {
+            if (tool == MARK) return@setOnLongClickListener true
+            val o = tv.getOffsetForPosition(lastX, lastY)
+            val s = ranges.firstOrNull { o in it.first }?.second ?: ranges.lastOrNull()?.second
+            if (s != null) {
+                Jp.suppressTapUntil = android.os.SystemClock.uptimeMillis() + 1000
+                showSentence(s)
+            }
+            true
+        }
+    }
+
+    // ---------- varinha: balão com o significado ----------
+
+    private fun showWandPopup(tv: TextView, w: Jp.Word, s: Texts.Sentence) {
+        popup?.dismiss()
+        val th = theme
+        val db = VocabDb.get(this)
+        val box = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(12), dp(16), dp(10))
+            background = GradientDrawable().apply { cornerRadius = dp(14).toFloat(); setColor(th.card); setStroke(dp(1), th.outline) }
+            elevation = dp(8).toFloat()
+        }
+        val head = SpannableStringBuilder()
+        head.append(w.base)
+        head.setSpan(StyleSpan(Typeface.BOLD), 0, head.length, 0)
+        if (w.reading != w.base) head.append("  ").append(w.reading)
+        box.addView(TextView(this).apply { text = head; textSize = 20f; setTextColor(th.text) })
+        val info = buildString {
+            append(w.pos)
+            if (w.conjugation.isNotEmpty() && w.surface != w.base) append(" · ${w.surface} = ${w.base} + ${w.conjugation}")
+        }
+        box.addView(TextView(this).apply { text = info; textSize = 12f; setTextColor(th.secondary) })
+        val tr = TextView(this).apply { text = "…"; textSize = 15f; setTextColor(th.text); setPadding(0, dp(6), 0, dp(6)); maxWidth = dp(280) }
+        box.addView(tr)
+        val meaning = Tr.cached(this, w.base)
+        if (meaning != null) tr.text = meaning else Tr.translate(this, w.base) { t -> if (!isFinishing) tr.text = t ?: "(sem tradução)" }
+        val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        fun small(label: String): Button = Button(this).apply {
+            text = label; textSize = 12f; isAllCaps = false
+            setTextColor(th.text); background = GradientDrawable().apply { cornerRadius = dp(12).toFloat(); setColor(th.bg); setStroke(dp(1), th.outline) }
+            setPadding(dp(12), dp(4), dp(12), dp(4)); minHeight = 0; minimumHeight = 0
+            row.addView(this, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginEnd = dp(6) })
+        }
+        val saveBtn = small("")
+        val knownBtn = small("")
+        fun refresh() {
+            saveBtn.text = if (db.isSaved(w)) "★ Salva" else "☆ Salvar"
+            knownBtn.text = if (db.isKnown(w.key)) "✓ Conheço" else "Já conheço"
+        }
+        refresh()
+        saveBtn.setOnClickListener {
+            if (db.isSaved(w)) db.remove(w) else db.save(w, s.text, base, maxOf(0, s.sec))
+            refresh(); render()
+        }
+        knownBtn.setOnClickListener {
+            if (db.isKnown(w.key)) db.setKnown(w.key, false) else { if (!db.isSaved(w)) db.save(w, s.text, base, maxOf(0, s.sec)); db.setKnown(w.key, true) }
+            refresh(); render()
+        }
+        small("Mais…").setOnClickListener {
+            popup?.dismiss()
+            WordCard.show(this, w, s.text, base, maxOf(0, s.sec), onPlay = if (hasAudio && s.sec >= 0) ({ playSentence(s) }) else null, onChanged = { render() })
+        }
+        box.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4) })
+        val p = PopupWindow(box, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true).apply {
+            isOutsideTouchable = true
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        }
+        popup = p
+        // Logo abaixo da linha onde a palavra está
+        val layout = tv.layout
+        val off = ((placed[s]?.second?.first ?: 0) + w.start).coerceIn(0, maxOf(0, tv.text.length - 1))
+        val line = layout?.getLineForOffset(off) ?: 0
+        val x = layout?.getPrimaryHorizontal(off)?.toInt() ?: 0
+        val yOff = if (layout != null) layout.getLineBottom(line) + tv.paddingTop - tv.height else 0
+        p.showAsDropDown(tv, (x - dp(8)).coerceAtLeast(0), yOff + dp(4))
+    }
+
+    // ---------- marcador livre: trecho selecionado ----------
+
+    /** Trecho marcado: tradução (ML Kit e IA), palavras do trecho com salvar/conheço, salvar como expressão. */
+    private fun showSelection(sel: String, s: Texts.Sentence, onClose: () -> Unit) {
+        val db = VocabDb.get(this)
+        val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(22), dp(16), dp(22), dp(8)) }
+        box.addView(TextView(this).apply {
+            textSize = 22f; setTextColor(getColor(R.color.text))
+            Furigana.set(this@ReaderActivity, this, Jp.highlight(sel, VocabDb.studyKeys, getColor(R.color.saved_word), VocabDb.knownKeys, getColor(R.color.known_word)), sel)
+        })
+        if (sel != s.text) box.addView(TextView(this).apply { text = "Na frase: ${s.text}"; textSize = 12f; setTextColor(getColor(R.color.text_secondary)); setPadding(0, dp(2), 0, dp(8)) })
+        val tr = TextView(this).apply { text = "ML Kit: …"; textSize = 15f; setTextColor(getColor(R.color.text)) }
+        box.addView(tr)
+        Tr.translate(this, sel) { t -> if (!isFinishing) tr.text = "ML Kit: " + (t ?: "(sem tradução)") }
+        val aiTr = TextView(this).apply { textSize = 15f; setTextColor(getColor(R.color.text)); visibility = View.GONE; setPadding(0, dp(4), 0, 0) }
+        box.addView(aiTr)
+        val aiBtn = Button(this).apply {
+            text = "✦ Traduzir com IA"; isAllCaps = false; textSize = 13f
+            setOnClickListener {
+                if (!Ai.enabled(this@ReaderActivity)) { Toast.makeText(this@ReaderActivity, "Ative a IA em Configurações", Toast.LENGTH_LONG).show(); return@setOnClickListener }
+                aiTr.visibility = View.VISIBLE; aiTr.text = "✦ pensando…"
+                Ai.ask(this@ReaderActivity, Ai.Request(Ai.Task.TRANSLATE, sel, base, note = if (sel != s.text) "Trecho marcado dentro da frase: ${s.text}" else ""), fresh = false) { r ->
+                    if (isFinishing) return@ask
+                    aiTr.text = if (r.error != null) "✦ ${r.error}" else r.fields.joinToString("\n") { (k, v) -> if (k.isBlank()) v else "$k: $v" }
+                }
+            }
+        }
+        box.addView(aiBtn, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4) })
+
+        // Palavras do trecho
+        val words = try { Jp.words(sel) } catch (_: Exception) { emptyList() }
+        if (words.isNotEmpty()) {
+            box.addView(TextView(this).apply { text = "Palavras no trecho"; textSize = 13f; setTypeface(null, Typeface.BOLD); setTextColor(getColor(R.color.text)); setPadding(0, dp(14), 0, dp(4)) })
+            for (w in words) {
+                val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(4), 0, dp(4)) }
+                val label = TextView(this).apply { textSize = 15f; setTextColor(getColor(R.color.text)) }
+                fun fill(t: String?) {
+                    label.text = (if (w.reading != w.base) "${w.base}（${w.reading}）" else w.base) + " · ${w.pos}\n" + (t ?: "…")
+                }
+                fill(Tr.cached(this, w.base))
+                if (Tr.cached(this, w.base) == null) Tr.translate(this, w.base) { t -> if (!isFinishing) fill(t ?: "(sem tradução)") }
+                row.addView(label, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                val save = Button(this).apply { textSize = 12f; isAllCaps = false; minHeight = 0; minimumHeight = 0; setPadding(dp(10), dp(4), dp(10), dp(4)) }
+                val known = Button(this).apply { textSize = 12f; isAllCaps = false; minHeight = 0; minimumHeight = 0; setPadding(dp(10), dp(4), dp(10), dp(4)) }
+                fun refresh() {
+                    save.text = if (db.isSaved(w)) "★" else "☆"
+                    known.text = if (db.isKnown(w.key)) "✓" else "Conheço"
+                }
+                save.setOnClickListener { if (db.isSaved(w)) db.remove(w) else db.save(w, s.text, base, maxOf(0, s.sec)); refresh(); render() }
+                known.setOnClickListener {
+                    if (db.isKnown(w.key)) db.setKnown(w.key, false) else { if (!db.isSaved(w)) db.save(w, s.text, base, maxOf(0, s.sec)); db.setKnown(w.key, true) }
+                    refresh(); render()
+                }
+                refresh()
+                row.addView(save, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(6) })
+                row.addView(known, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(6) })
+                box.addView(row)
+            }
+        }
+        val hits = try { Grammar.find(sel) } catch (_: Exception) { emptyList() }
+        if (hits.isNotEmpty()) {
+            box.addView(TextView(this).apply {
+                text = hits.joinToString("\n") { "${it.point.name} ${it.point.level}: ${it.point.explanation}" }
+                textSize = 13f; setTextColor(getColor(R.color.text)); setPadding(0, dp(10), 0, 0)
+            })
+        }
+
+        // O trecho inteiro como expressão (quando o Kuromoji cortou a palavra errado, por exemplo)
+        val expr = expressionWord(sel, s.text)
+        val multi = words.size != 1 || words[0].surface != sel
+        val b = AlertDialog.Builder(this).setView(ScrollView(this).apply { addView(box) })
+            .setNegativeButton("Fechar", null).setOnDismissListener { onClose() }
+        if (multi && sel.length <= 30) {
+            b.setPositiveButton(if (db.isSaved(expr)) "Remover expressão" else "Salvar como expressão") { _, _ ->
+                if (db.isSaved(expr)) { db.remove(expr); Toast.makeText(this, "Expressão removida", Toast.LENGTH_SHORT).show() }
+                else { db.save(expr, s.text, base, maxOf(0, s.sec)); Toast.makeText(this, "「$sel」 salva como expressão: fica destacada e tocável nos textos", Toast.LENGTH_LONG).show() }
+                render()
+            }
+        }
+        b.setNeutralButton("🔊 Ouvir") { _, _ -> speakText(sel) }
+        b.show()
+    }
+
+    /** O trecho como palavra do vocabulário (classe "expressão", leitura pelo Kuromoji). */
+    private fun expressionWord(text: String, sentence: String): Jp.Word {
+        val reading = try {
+            Jp.hiragana(Jp.tokenize(text).joinToString("") { t -> if (t.reading == "*" || t.reading.isNullOrEmpty()) t.surface else t.reading })
+        } catch (_: Exception) { text }
+        val start = sentence.indexOf(text).coerceAtLeast(0)
+        return Jp.Word(text, text, text, reading, "expressão", VocabDb.EXPR, "", start, start + text.length)
     }
 
     /** Tradução do parágrafo (Gemini quando houver, senão ML Kit; pede o que falta). */
     private fun paragraphTranslation(para: List<Texts.Sentence>): TextView {
         val tv = TextView(this).apply {
             textSize = 14f
-            setTextColor(getColor(R.color.text_secondary))
-            setPadding(0, 0, 0, dp(18))
+            setTextColor(theme.secondary)
+            setPadding(0, 0, 0, dp(20))
         }
         fun fill() {
             val parts = para.map { s -> Tr.aiCached(this, s.text) ?: Tr.cached(this, s.text) }
@@ -156,7 +489,7 @@ class ReaderActivity : Activity() {
         return tv
     }
 
-    /** Frase: texto, tradução (tocar alterna), padrões de gramática e áudio, se houver. */
+    /** Frase: texto, tradução (tocar alterna), padrões de gramática e áudio. */
     private fun showSentence(s: Texts.Sentence) {
         val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(22), dp(16), dp(22), dp(6)) }
         box.addView(TextView(this).apply {
@@ -179,12 +512,47 @@ class ReaderActivity : Activity() {
             box.addView(TextView(this).apply { text = sb; textSize = 14f; setTextColor(getColor(R.color.text)) })
         }
         val b = AlertDialog.Builder(this).setView(ScrollView(this).apply { addView(box) }).setNegativeButton("Fechar", null)
-        if (hasAudio && s.sec >= 0) b.setPositiveButton("▶ Ouvir", null)
+        b.setPositiveButton("▶ Ouvir", null)
         val dlg = b.show()
-        dlg.getButton(AlertDialog.BUTTON_POSITIVE)?.setOnClickListener { playSentence(s) }
+        dlg.getButton(AlertDialog.BUTTON_POSITIVE)?.setOnClickListener { speak(s) }
     }
 
-    // ---------- áudio (quando o texto ganhou áudio) ----------
+    // ---------- ouvir: áudio do texto ou voz do celular ----------
+
+    private var highlighted: Pair<TextView, BackgroundColorSpan>? = null
+
+    private fun highlight(s: Texts.Sentence?) {
+        highlighted?.let { (tv, span) -> (tv.text as? Spannable)?.removeSpan(span) }
+        highlighted = null
+        val (tv, r) = placed[s ?: return] ?: return
+        val span = BackgroundColorSpan(theme.highlight)
+        (tv.text as? Spannable)?.setSpan(span, r.first, (r.last + 1).coerceAtMost(tv.text.length), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        highlighted = tv to span
+    }
+
+    /** Lê a frase: com o áudio do texto quando houver, senão com a voz do celular. */
+    private fun speak(s: Texts.Sentence) {
+        if (hasAudio && s.sec >= 0) playSentence(s) else speakText(s.text, s)
+    }
+
+    private fun speakText(text: String, s: Texts.Sentence? = null) {
+        val t = tts
+        if (t == null) {
+            Toast.makeText(this, "Abrindo a voz do celular…", Toast.LENGTH_SHORT).show()
+            Thread {
+                val opened = try { AudioGen.openTts(this) } catch (e: Exception) { runOnUiThread { Toast.makeText(this, e.message, Toast.LENGTH_LONG).show() }; null }
+                if (opened != null) runOnUiThread { if (isFinishing) opened.shutdown() else { tts = opened; speakText(text, s) } }
+            }.start()
+            return
+        }
+        t.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+            override fun onStart(utteranceId: String) {}
+            override fun onDone(utteranceId: String) { runOnUiThread { highlight(null) } }
+            @Deprecated("API antiga") override fun onError(utteranceId: String) { runOnUiThread { highlight(null) } }
+        })
+        highlight(s)
+        t.speak(text, TextToSpeech.QUEUE_FLUSH, null, "reader")
+    }
 
     private fun playSentence(s: Texts.Sentence) {
         val all = paragraphs.flatten()
@@ -201,8 +569,9 @@ class ReaderActivity : Activity() {
             val start = maxOf(0, s.sec * 1000 - 300)
             p.seekTo(start)
             p.start()
+            highlight(s)
             ui.removeCallbacks(stopAt)
-            stopAt = Runnable { try { if (p.isPlaying) p.pause() } catch (_: IllegalStateException) {} }
+            stopAt = Runnable { try { if (p.isPlaying) p.pause() } catch (_: IllegalStateException) {}; highlight(null) }
             ui.postDelayed(stopAt, (maxOf(next, s.sec + 1) * 1000L - 200 - start))
         } catch (_: Exception) {}
     }
@@ -211,10 +580,14 @@ class ReaderActivity : Activity() {
         super.onPause()
         ui.removeCallbacks(stopAt)
         try { if (player?.isPlaying == true) player?.pause() } catch (_: IllegalStateException) {}
+        try { tts?.stop() } catch (_: Exception) {}
+        if (restored) Prefs(this).setReaderPos(base, scroll.scrollY)
     }
 
     override fun onDestroy() {
+        popup?.dismiss()
         player?.release(); player = null
+        tts?.shutdown(); tts = null
         super.onDestroy()
     }
 
@@ -223,9 +596,7 @@ class ReaderActivity : Activity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         val prefs = Prefs(this)
         menu.add(0, 1, 0, "Estudar").setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
-        menu.add(0, 2, 0, if (!Furigana.enabled(this)) "Furigana (desligado em Configurações)" else if (prefs.furigana) "Esconder furigana" else "Mostrar furigana")
-        menu.add(0, 3, 0, "Letra maior")
-        menu.add(0, 4, 0, "Letra menor")
+        menu.add(0, 2, 0, "Tema da página")
         menu.add(0, 5, 0, if (prefs.readerTranslations) "Esconder traduções" else "Mostrar traduções")
         menu.add(0, 6, 0, "✦ Traduzir texto com IA")
         menu.add(0, 7, 0, if (hasAudio) "Criar áudio de novo" else "Criar áudio do texto")
@@ -242,10 +613,12 @@ class ReaderActivity : Activity() {
             1 -> Recordings.find(this, "$base.txt")?.let {
                 startActivity(Intent(this, StudyMenuActivity::class.java).putExtra(StudyActivity.EXTRA_URI, it.uri).putExtra(StudyActivity.EXTRA_NAME, it.name))
             }
-            2 -> if (Furigana.enabled(this)) { prefs.furigana = !prefs.furigana; render(); invalidateOptionsMenu() }
-                 else startActivity(Intent(this, SettingsActivity::class.java))
-            3 -> { prefs.readerSize = (prefs.readerSize + 2).coerceAtMost(34); render() }
-            4 -> { prefs.readerSize = (prefs.readerSize - 2).coerceAtLeast(14); render() }
+            2 -> {
+                val cur = themes.indexOfFirst { it.id == prefs.readerTheme }.coerceAtLeast(0)
+                AlertDialog.Builder(this).setTitle("Tema da página")
+                    .setSingleChoiceItems(themes.map { it.label }.toTypedArray(), cur) { d, i -> prefs.readerTheme = themes[i].id; render(); styleToolbar(); d.dismiss() }
+                    .setNegativeButton(android.R.string.cancel, null).show()
+            }
             5 -> { prefs.readerTranslations = !prefs.readerTranslations; render(); invalidateOptionsMenu() }
             6 -> translateAll()
             7 -> createAudio()

@@ -27,6 +27,12 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
 
         /** Muda a cada recarga das chaves (para as telas saberem quando redesenhar). */
         @Volatile var keysVersion = 0
+
+        /** Classe das expressões salvas pelo marcador livre do leitor (trecho de vários tokens). */
+        const val EXPR = "表現"
+
+        /** Expressões salvas: texto → leitura. Destacadas e tocáveis onde aparecem (Jp.expressions). */
+        @Volatile var expressions: Map<String, String> = emptyMap()
             private set
     }
 
@@ -324,15 +330,18 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
     fun reloadKeys() {
         val keys = HashSet<String>()
         val known = HashSet<String>()
-        readableDatabase.rawQuery("SELECT base, pos_key, known FROM words", null).use { c ->
+        val expr = HashMap<String, String>()
+        readableDatabase.rawQuery("SELECT base, pos_key, known, reading FROM words", null).use { c ->
             while (c.moveToNext()) {
                 val k = c.getString(0) + "|" + c.getString(1)
                 keys.add(k)
                 if (c.getInt(2) == 1) known.add(k)
+                if (c.getString(1) == EXPR) expr[c.getString(0)] = c.getString(3)
             }
         }
         savedKeys = keys
         knownKeys = known
+        expressions = expr
         studyKeys = keys - known
         keysVersion++
     }

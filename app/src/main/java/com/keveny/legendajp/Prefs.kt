@@ -135,6 +135,18 @@ class Prefs(ctx: Context) {
         get() = sp.getInt("readerSize", 20)
         set(v) = sp.edit().putInt("readerSize", v).apply()
 
+    /** Leitor: tema da página (ReaderActivity.themes), ferramenta ativa e onde parou em cada texto. */
+    var readerTheme: String
+        get() = sp.getString("readerTheme", "paper") ?: "paper"
+        set(v) = sp.edit().putString("readerTheme", v).apply()
+
+    var readerTool: String
+        get() = sp.getString("readerTool", "wand") ?: "wand"
+        set(v) = sp.edit().putString("readerTool", v).apply()
+
+    fun readerPos(base: String): Int = sp.getInt("readerPos:$base", 0)
+    fun setReaderPos(base: String, y: Int) = sp.edit().putInt("readerPos:$base", y).apply()
+
     var readerTranslations: Boolean
         get() = sp.getBoolean("readerTranslations", false)
         set(v) = sp.edit().putBoolean("readerTranslations", v).apply()
