@@ -51,6 +51,44 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
+            android:text="Furigana"
+            android:textColor="@color/text"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="A leitura em cima dos kanji, nos textos, gravações, escolha de palavras e exercícios. “Só os que não domino”: some nas palavras marcadas Já conheço e nas que têm o cartão de kanji dominado na revisão. Nunca entrega a resposta de um exercício."
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
+
+        <RadioGroup
+            android:id="@+id/furiganaMode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <RadioButton android:id="@+id/furiAll" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp" android:text="Todos" />
+            <RadioButton android:id="@+id/furiUnknown" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1.6" android:layout_marginStart="2dp" android:layout_marginEnd="2dp" android:text="Só os que não domino" />
+            <RadioButton android:id="@+id/furiNone" style="@style/Chip" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="4dp" android:text="Nenhum" />
+        </RadioGroup>
+
+        <Switch
+            android:id="@+id/swOverlayFurigana"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Também na legenda flutuante (fica mais alta)"
+            android:textColor="@color/text"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
             android:text="Palavras por sessão"
             android:textColor="@color/text"
             android:textSize="16sp"

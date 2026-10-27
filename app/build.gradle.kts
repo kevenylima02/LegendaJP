@@ -21,8 +21,8 @@ android {
         applicationId = "com.keveny.legendajp"
         minSdk = 33          // EXTRA_AUDIO_SOURCE e sessões segmentadas exigem Android 13+
         targetSdk = 34
-        versionCode = 27
-        versionName = "0.27"
+        versionCode = 28
+        versionName = "0.28"
         buildConfigField("String", "GEMINI_KEY", "\"$geminiKey\"")
     }
 

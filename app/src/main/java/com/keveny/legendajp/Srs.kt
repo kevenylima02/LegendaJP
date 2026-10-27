@@ -177,6 +177,7 @@ object Srs {
 
     /** Dá a nota e devolve o cartão como estava antes (para o botão Fácil refazer a nota). */
     fun grade(ctx: Context, card: Card, g: Int, mode: String): Card {
+        changes++
         save(ctx, schedule(card, g))
         db(ctx).insert("srs_log", null, ContentValues().apply {
             put("card_id", card.id); put("ts", System.currentTimeMillis()); put("grade", g); put("mode", mode)
@@ -186,6 +187,7 @@ object Srs {
 
     /** Refaz a última nota de um cartão a partir do estado anterior. */
     fun regrade(ctx: Context, before: Card, g: Int) {
+        changes++
         save(ctx, schedule(before, g))
         db(ctx).execSQL(
             "UPDATE srs_log SET grade=? WHERE rowid = (SELECT MAX(rowid) FROM srs_log WHERE card_id=?)",
@@ -211,6 +213,22 @@ object Srs {
             ensure(ctx, MEANING, key, w.base)
             if (w.base.any(StudyGen::isKanji)) ensure(ctx, KANJI, key, w.base)
         }
+    }
+
+    @Volatile private var masteredCache: Set<String> = emptySet()
+    @Volatile private var masteredVersion = -1
+    @Volatile private var changes = 0
+
+    /** Palavras cujo cartão de kanji está dominado (estabilidade ≥ 21 dias): sem furigana no modo "não domino". */
+    fun masteredKanjiKeys(ctx: Context): Set<String> {
+        val v = changes * 100003 + VocabDb.keysVersion
+        if (v == masteredVersion) return masteredCache
+        val set = db(ctx).rawQuery("SELECT key FROM srs WHERE kind=? AND state=? AND stability >= ?", arrayOf(KANJI, REVIEW.toString(), MATURE_DAYS.toString())).use { c ->
+            buildSet { while (c.moveToNext()) add(c.getString(0)) }
+        }
+        masteredCache = set
+        masteredVersion = v
+        return set
     }
 
     /** Palavras com cartão já respondido pelo menos uma vez: saem da escolha (voltam pela Revisão). */

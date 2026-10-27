@@ -281,7 +281,7 @@ class WordPickActivity : Activity() {
             ss.setSpan(ForegroundColorSpan(getColor(R.color.accent)), w.start, w.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             ss.setSpan(StyleSpan(Typeface.BOLD), w.start, w.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
-        findViewById<TextView>(R.id.sentence).text = ss
+        Furigana.set(this, findViewById(R.id.sentence), ss, s)
         val sentenceTr = findViewById<TextView>(R.id.sentenceTr)
         TrSwitch.bind(this, sentenceTr, s)
 

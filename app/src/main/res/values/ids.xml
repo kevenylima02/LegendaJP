@@ -3,4 +3,6 @@
     <!-- Fonte da tradução mostrada (TrSwitch) -->
     <item name="trSource" type="id" />
     <item name="trText" type="id" />
+    <!-- Espaçamento original da TextView antes do furigana (Furigana.style) -->
+    <item name="furiBase" type="id" />
 </resources>

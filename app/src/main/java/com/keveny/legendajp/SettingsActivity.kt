@@ -36,6 +36,14 @@ class SettingsActivity : Activity() {
                 prefs.levels = set
             }
         }
+        val furi = findViewById<RadioGroup>(R.id.furiganaMode)
+        furi.check(when (prefs.furiganaMode) { Furigana.ALL -> R.id.furiAll; Furigana.NONE -> R.id.furiNone; else -> R.id.furiUnknown })
+        furi.setOnCheckedChangeListener { _, id ->
+            prefs.furiganaMode = when (id) { R.id.furiAll -> Furigana.ALL; R.id.furiNone -> Furigana.NONE; else -> Furigana.UNKNOWN }
+        }
+        val ovf = findViewById<Switch>(R.id.swOverlayFurigana)
+        ovf.isChecked = prefs.overlayFurigana
+        ovf.setOnCheckedChangeListener { _, on -> prefs.overlayFurigana = on }
         val words = findViewById<RadioGroup>(R.id.studyWords)
         words.check(when (prefs.studyWords) { 5 -> R.id.w5; 15 -> R.id.w15; 20 -> R.id.w20; else -> R.id.w10 })
         words.setOnCheckedChangeListener { _, id ->

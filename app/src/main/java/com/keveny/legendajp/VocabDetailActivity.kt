@@ -197,8 +197,8 @@ class VocabDetailActivity : Activity() {
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             val v = convertView ?: LayoutInflater.from(parent.context).inflate(R.layout.item_occurrence, parent, false)
             val o = occ[position]
-            v.findViewById<TextView>(R.id.sentence).text =
-                Jp.highlight(o.sentence, VocabDb.studyKeys, getColor(R.color.saved_word), VocabDb.knownKeys, getColor(R.color.known_word))
+            Furigana.set(this@VocabDetailActivity, v.findViewById(R.id.sentence),
+                Jp.highlight(o.sentence, VocabDb.studyKeys, getColor(R.color.saved_word), VocabDb.knownKeys, getColor(R.color.known_word)), o.sentence)
             v.findViewById<TextView>(R.id.meta).text =
                 "${Recordings.display(this@VocabDetailActivity, o.recording)} · ${CaptureService.formatTime(o.sec)}"
             v.findViewById<TextView>(R.id.play).setOnClickListener { play(o) }

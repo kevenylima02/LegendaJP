@@ -111,7 +111,17 @@ class Prefs(ctx: Context) {
         }.toMap()
         set(v) = sp.edit().putStringSet("voiceGenders", v.map { "${it.key}=${if (it.value) "f" else "m"}" }.toSet()).apply()
 
-    /** Leitor de textos: furigana por cima dos kanji, tamanho da letra (sp) e traduções embaixo dos parágrafos. */
+    /** Furigana no app inteiro: Furigana.ALL, UNKNOWN (só kanji que não domino) ou NONE. */
+    var furiganaMode: String
+        get() = sp.getString("furiganaMode", Furigana.UNKNOWN) ?: Furigana.UNKNOWN
+        set(v) = sp.edit().putString("furiganaMode", v).apply()
+
+    /** Furigana também na legenda flutuante (fica mais alta). */
+    var overlayFurigana: Boolean
+        get() = sp.getBoolean("overlayFurigana", false)
+        set(v) = sp.edit().putBoolean("overlayFurigana", v).apply()
+
+    /** Leitor de textos: botão rápido para esconder o furigana sem mudar a configuração. */
     var furigana: Boolean
         get() = sp.getBoolean("furigana", true)
         set(v) = sp.edit().putBoolean("furigana", v).apply()

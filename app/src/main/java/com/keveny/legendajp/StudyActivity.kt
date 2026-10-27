@@ -477,6 +477,7 @@ class StudyActivity : Activity() {
                 prompt.text = pre + "Monte a frase na ordem certa, guiando-se pela tradução (ouça o áudio se precisar)."
                 // A tradução guia a ordem (a frase em japonês fica escondida)
                 sentenceView.visibility = View.VISIBLE
+                Furigana.style(sentenceView, false)
                 TrSwitch.bind(this, sentenceView, item.sentence, "", scale = 0.75f)
                 built.visibility = View.VISIBLE
                 btnUndo.visibility = View.VISIBLE
@@ -500,14 +501,17 @@ class StudyActivity : Activity() {
             is Item.Cloze -> {
                 prompt.text = pre + "Qual palavra completa a frase?"
                 sentenceView.visibility = View.VISIBLE
-                sentenceView.text = item.sentence.replaceRange(item.word.start, item.word.end, "＿＿＿")
+                val masked = item.sentence.replaceRange(item.word.start, item.word.end, "＿＿＿")
+                Furigana.set(this, sentenceView, masked, masked)
                 for (o in item.options) addChoice(o)
             }
             is Item.GrammarCloze -> {
                 prompt.text = pre + "O que completa a frase? (padrão gramatical; use a tradução e, se precisar, o áudio)"
                 sentenceView.visibility = View.VISIBLE
-                TrSwitch.bind(this, sentenceView, item.sentence,
-                    item.sentence.replaceRange(item.hit.start, item.hit.end, "＿＿＿") + "\n", scale = 0.65f)
+                val masked = item.sentence.replaceRange(item.hit.start, item.hit.end, "＿＿＿")
+                val (pre, on) = Furigana.apply(this, masked, masked)
+                Furigana.style(sentenceView, on)
+                TrSwitch.bind(this, sentenceView, item.sentence, SpannableStringBuilder(pre).append("\n"), scale = 0.65f)
                 for (o in item.options) addChoice(o)
             }
             is Item.Kanji -> {
@@ -539,7 +543,7 @@ class StudyActivity : Activity() {
             is Item.GrammarQ -> {
                 prompt.text = pre + "Qual padrão gramatical aparece nesta frase?"
                 sentenceView.visibility = View.VISIBLE
-                sentenceView.text = item.sentence
+                Furigana.set(this, sentenceView, item.sentence, item.sentence)
                 for (o in item.options) addChoice(o.name)
             }
             is Item.Write -> {
@@ -1059,7 +1063,12 @@ class StudyActivity : Activity() {
         val a = pre.length
         pre.append("Frase")
         pre.setSpan(ForegroundColorSpan(getColor(R.color.text_secondary)), a, pre.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        pre.append("\n").append(sentence).append("\n")
+        pre.append("\n")
+        val off = pre.length
+        pre.append(sentence)
+        val on = Furigana.decorate(this, pre, off, sentence)
+        pre.append("\n")
+        Furigana.style(trLine, on)
         trLine.visibility = View.VISIBLE
         TrSwitch.bind(this, trLine, sentence, pre)
     }
@@ -1105,6 +1114,7 @@ class StudyActivity : Activity() {
         val accent = getColor(R.color.accent)
         val w = item.word
         val s = item.sentence
+        var furi = false
         fun sentenceWith(mask: Boolean) {
             if (s.isEmpty()) return
             sb.append("\n\n")
@@ -1117,6 +1127,9 @@ class StudyActivity : Activity() {
                 sb.append(s.substring(w.end))
             } else sb.append(s)
             sb.setSpan(RelativeSizeSpan(0.8f), a, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            // Num cartão de kanji a palavra já está escondida; a leitura dela nunca aparece
+            val shown = sb.subSequence(a, sb.length).toString()
+            if (Furigana.decorate(this, sb, a, shown, skip = if (mask && w != null) w.start until w.end else null)) furi = true
         }
         when (item.card.kind) {
             Srs.MEANING -> {
@@ -1141,8 +1154,10 @@ class StudyActivity : Activity() {
                     sb.setSpan(StyleSpan(android.graphics.Typeface.BOLD), b, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     sb.append(s.substring(hit.end))
                 } else sb.append(s)
+                if (Furigana.decorate(this, sb, 0, s)) furi = true
             }
         }
+        Furigana.style(sentenceView, furi)
         sentenceView.text = sb
         updateButtons()
     }
@@ -1153,6 +1168,7 @@ class StudyActivity : Activity() {
         flashRevealed = true
         if (item.card.kind == Srs.KANJI) {
             // No verso a palavra aparece inteira
+            Furigana.style(sentenceView, false)
             sentenceView.text = SpannableStringBuilder().also { bigSpan(it, item.card.label, 1.8f) }
         }
         showFlashBack(item)
@@ -1281,6 +1297,7 @@ class StudyActivity : Activity() {
                 sb.setSpan(RelativeSizeSpan(1.2f), seg.start, seg.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
         }
+        Furigana.style(subtitle, Furigana.decorate(this, sb, 0, text, skip = mask))
         subtitle.text = sb
     }
 

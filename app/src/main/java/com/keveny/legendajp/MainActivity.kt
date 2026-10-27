@@ -234,7 +234,7 @@ class MainActivity : Activity() {
         )
 
         val lines = TranscriptStore.lines
-        val key = lines.joinToString("\n") + "\u0000" + VocabDb.keysVersion
+        val key = lines.joinToString("\n") + "\u0000" + VocabDb.keysVersion + Furigana.mode(this)
         if (lines.isEmpty()) {
             transcript.text = getString(R.string.empty_transcript)
             transcript.setTextColor(getColor(R.color.text_secondary))
@@ -242,14 +242,18 @@ class MainActivity : Activity() {
         } else if (renderedKey != key) {
             renderedKey = key
             val sb = SpannableStringBuilder()
+            var furi = false
             for ((i, line) in lines.withIndex()) {
                 val (sec, sentence) = Recordings.parseLine(line)
                 if (i > 0) sb.append("\n")
+                val off = sb.length
                 sb.append(Jp.decorate(sentence, VocabDb.studyKeys, getColor(R.color.saved_word), VocabDb.knownKeys, getColor(R.color.known_word)) { w ->
                     WordCard.show(this, w, sentence, TranscriptStore.recording, maxOf(0, sec),
                         onChanged = { renderedKey = ""; render() })
                 })
+                if (Furigana.decorate(this, sb, off, sentence)) furi = true
             }
+            Furigana.style(transcript, furi)
             transcript.text = sb
             transcript.setTextColor(getColor(R.color.text))
             scroll.post { scroll.fullScroll(ScrollView.FOCUS_DOWN) }

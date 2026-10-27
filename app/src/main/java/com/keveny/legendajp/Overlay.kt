@@ -258,7 +258,7 @@ class Overlay(private val ctx: Context, private val prefs: Prefs) {
         }
         val lines = TranscriptStore.lines.takeLast(if (expanded) 4 else 2)
         val p = TranscriptStore.partial
-        val key = lines.joinToString("\n") + "\u0000" + p + "\u0000" + VocabDb.keysVersion
+        val key = lines.joinToString("\n") + "\u0000" + p + "\u0000" + VocabDb.keysVersion + prefs.overlayFurigana + Furigana.mode(ctx)
         if (key == lastRendered) return
         lastRendered = key
         if (lines.isEmpty()) {
@@ -266,13 +266,17 @@ class Overlay(private val ctx: Context, private val prefs: Prefs) {
             text.alpha = 0.6f
         } else {
             val sb = SpannableStringBuilder()
+            var furi = false
             for ((i, line) in lines.withIndex()) {
                 val (sec, sentence) = Recordings.parseLine(line)
                 if (i > 0) sb.append("\n")
+                val off = sb.length
                 sb.append(Jp.decorate(sentence, VocabDb.studyKeys, Jp.OVERLAY_SAVED_COLOR, VocabDb.knownKeys, Jp.OVERLAY_KNOWN_COLOR) { w ->
                     openCard(w, sentence, sec)
                 })
+                if (prefs.overlayFurigana && Furigana.decorate(ctx, sb, off, sentence)) furi = true
             }
+            Furigana.style(text, furi)
             text.text = sb
             text.alpha = 1f
         }

@@ -48,9 +48,14 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   "Copiar todos" leva os outros para ajuste no código. Tudo fica no celular.
 - **Dificuldade do áudio** no visualizador: % de palavras que você conhece (verde), está estudando (lavanda)
   e novas, nível JLPT estimado do texto e padrões de gramática por nível.
+- **Furigana configurável** (Configurações → Furigana: Todos / Só os que não domino / Nenhum): a leitura por cima
+  dos kanji nos textos, no visualizador, na tela principal, na escolha de palavras, na tela da palavra e nos
+  exercícios (frase da lacuna, gramática, legenda do áudio, frase do retorno, flashcards). "Não domino" tira o
+  furigana das palavras Já conheço e das com cartão de kanji dominado (estabilidade ≥ 21 dias). A palavra de um
+  exercício de kanji nunca ganha leitura antes da resposta. Na legenda flutuante é opcional (desligado).
 - **Textos** (botão na tela principal): colar, compartilhar de outro app (Compartilhar → Michi), arquivo .txt,
   foto ou imagem da galeria (ML Kit lê no celular; "✦ Ler com IA" usa o Gemini, melhor para texto vertical e
-  mangá). O leitor tem palavras tocáveis, cores, **furigana por cima dos kanji (liga/desliga)**, tamanho da letra,
+  mangá). O leitor tem palavras tocáveis, cores, **furigana por cima dos kanji (botão rápido para esconder)**, tamanho da letra,
   traduções embaixo dos parágrafos, toque longo na frase (tradução, gramática, áudio), Estudar, ✦ Traduzir e
   Criar áudio (um narrador). Salvos como texto_AAAAMMDD_HHMMSS.txt (#p entre parágrafos).
 - **Importar texto** (Gravações → ⋮): colar ou escolher .txt/.srt. Formato Michi (modelo em ⋮ → Formato do texto):

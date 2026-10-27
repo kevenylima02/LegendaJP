@@ -80,7 +80,7 @@ class ReaderActivity : Activity() {
         content.removeAllViews()
         val prefs = Prefs(this)
         val size = prefs.readerSize.toFloat()
-        val furigana = prefs.furigana
+        val furigana = prefs.furigana && Furigana.enabled(this)
         if (level != null && level.tokens > 0) {
             fun pct(n: Int) = (n * 100 + level.tokens / 2) / level.tokens
             content.addView(TextView(this).apply {
@@ -106,9 +106,7 @@ class ReaderActivity : Activity() {
                         onPlay = if (hasAudio && s.sec >= 0) ({ playSentence(s) }) else null,
                         onChanged = { render() })
                 })
-                if (furigana) for (r in Furigana.of(s.text)) {
-                    sb.setSpan(Furigana.Span(r.reading), off + r.start, off + r.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
+                if (furigana) Furigana.decorate(this, sb, off, s.text)
                 ranges.add(off until sb.length to s)
             }
             val tv = TextView(this).apply {
@@ -162,8 +160,8 @@ class ReaderActivity : Activity() {
     private fun showSentence(s: Texts.Sentence) {
         val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(22), dp(16), dp(22), dp(6)) }
         box.addView(TextView(this).apply {
-            text = Jp.highlight(s.text, VocabDb.studyKeys, getColor(R.color.saved_word), VocabDb.knownKeys, getColor(R.color.known_word))
             textSize = 20f; setTextColor(getColor(R.color.text)); setTextIsSelectable(true)
+            Furigana.set(this@ReaderActivity, this, Jp.highlight(s.text, VocabDb.studyKeys, getColor(R.color.saved_word), VocabDb.knownKeys, getColor(R.color.known_word)), s.text)
         })
         val tr = TextView(this).apply { textSize = 15f; setPadding(0, dp(8), 0, dp(8)) }
         TrSwitch.bind(this, tr, s.text)
@@ -225,7 +223,7 @@ class ReaderActivity : Activity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         val prefs = Prefs(this)
         menu.add(0, 1, 0, "Estudar").setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
-        menu.add(0, 2, 0, if (prefs.furigana) "Esconder furigana" else "Mostrar furigana")
+        menu.add(0, 2, 0, if (!Furigana.enabled(this)) "Furigana (desligado em Configurações)" else if (prefs.furigana) "Esconder furigana" else "Mostrar furigana")
         menu.add(0, 3, 0, "Letra maior")
         menu.add(0, 4, 0, "Letra menor")
         menu.add(0, 5, 0, if (prefs.readerTranslations) "Esconder traduções" else "Mostrar traduções")
@@ -244,7 +242,8 @@ class ReaderActivity : Activity() {
             1 -> Recordings.find(this, "$base.txt")?.let {
                 startActivity(Intent(this, StudyMenuActivity::class.java).putExtra(StudyActivity.EXTRA_URI, it.uri).putExtra(StudyActivity.EXTRA_NAME, it.name))
             }
-            2 -> { prefs.furigana = !prefs.furigana; render(); invalidateOptionsMenu() }
+            2 -> if (Furigana.enabled(this)) { prefs.furigana = !prefs.furigana; render(); invalidateOptionsMenu() }
+                 else startActivity(Intent(this, SettingsActivity::class.java))
             3 -> { prefs.readerSize = (prefs.readerSize + 2).coerceAtMost(34); render() }
             4 -> { prefs.readerSize = (prefs.readerSize - 2).coerceAtLeast(14); render() }
             5 -> { prefs.readerTranslations = !prefs.readerTranslations; render(); invalidateOptionsMenu() }
