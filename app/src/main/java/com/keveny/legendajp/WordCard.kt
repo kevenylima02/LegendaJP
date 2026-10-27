@@ -26,6 +26,7 @@ object WordCard {
         val save = view.findViewById<Button>(R.id.cardSave)
         val play = view.findViewById<Button>(R.id.cardPlay)
         val knownBtn = view.findViewById<Button>(R.id.cardKnown)
+        val kanjiBtn = view.findViewById<Button>(R.id.cardKnownKanji)
 
         base.text = w.base
         reading.text = if (w.reading != w.base) w.reading else ""
@@ -62,16 +63,32 @@ object WordCard {
             save.text = if (saved) "Remover" else "Salvar"
             save.setBackgroundResource(if (saved) R.drawable.bg_button_stop else R.drawable.bg_button_primary)
             knownBtn.text = if (db.isKnown(w)) "Conheço ✓" else "Já conheço"
+            kanjiBtn.text = if (db.isKnownKanji(w)) "Escrevo ✓" else "Sei escrever"
         }
         knownBtn.setTextColor(if (light) 0xFFFFFFFF.toInt() else ctx.getColor(R.color.text))
+        kanjiBtn.setTextColor(if (light) 0xFFFFFFFF.toInt() else ctx.getColor(R.color.text))
+        kanjiBtn.visibility = if (w.base.any(StudyGen::isKanji)) View.VISIBLE else View.GONE
         knownBtn.setOnClickListener {
             if (db.isKnown(w)) {
                 db.setKnown(w, false)
-                Toast.makeText(ctx, "${w.base} volta a aparecer nos exercícios", Toast.LENGTH_SHORT).show()
+                Toast.makeText(ctx, "${w.base} volta a aparecer nos exercícios de vocabulário", Toast.LENGTH_SHORT).show()
             } else {
                 if (!db.isSaved(w)) db.save(w, sentence, recording, sec)
                 db.setKnown(w, true)
-                Toast.makeText(ctx, "${w.base}: já conheço. Não aparece mais nos exercícios", Toast.LENGTH_SHORT).show()
+                Toast.makeText(ctx, "${w.base}: conheço a palavra. Sai do vocabulário" +
+                    (if (w.base.any(StudyGen::isKanji) && !db.isKnownKanji(w)) "; em Kanji ficam só os exercícios de escrita" else ""), Toast.LENGTH_LONG).show()
+            }
+            refresh()
+            onChanged()
+        }
+        kanjiBtn.setOnClickListener {
+            if (db.isKnownKanji(w)) {
+                db.setKnownKanji(w, false)
+                Toast.makeText(ctx, "${w.base} volta a aparecer nos exercícios de kanji", Toast.LENGTH_SHORT).show()
+            } else {
+                if (!db.isSaved(w)) db.save(w, sentence, recording, sec)
+                db.setKnownKanji(w, true)
+                Toast.makeText(ctx, "${w.base}: sei escrever. Sai dos exercícios de kanji", Toast.LENGTH_SHORT).show()
             }
             refresh()
             onChanged()

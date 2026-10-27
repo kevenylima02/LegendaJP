@@ -234,7 +234,7 @@ class StudyActivity : Activity() {
             } else if (mistakes) {
                 built = VocabDb.get(this).mistakes().shuffled()
                     .mapNotNull { StudyCodec.decode(it.json) }
-                    .filter { it.wordKey == null || it.wordKey !in VocabDb.knownKeys }
+                    .filter { !StudyGen.hiddenByKnown(it) }
                     .take(MISTAKES_PER_SESSION)
             } else {
                 val lines = if (saved) StudyGen.linesFromVocab(this) else if (Folders.isStudyName(recording)) Folders.lines(this, recording) else {
@@ -1090,10 +1090,11 @@ class StudyActivity : Activity() {
             val w = StudyGen.wordOf(item)
             val key = item.wordKey
             when {
-                w == null || key == null || key !in VocabDb.studyKeys -> null
+                w == null || key == null || key !in VocabDb.savedKeys -> null
                 StudyGen.trainsOf(item.kind) == StudyGen.TRAINS_KANJI ->
-                    if (w.base.any(StudyGen::isKanji)) SrsTarget(Srs.KANJI, key, w.base) else null
-                StudyGen.trainsOf(item.kind) == StudyGen.TRAINS_MEANING -> SrsTarget(Srs.MEANING, key, w.base)
+                    if (key in VocabDb.kanjiStudyKeys && w.base.any(StudyGen::isKanji)) SrsTarget(Srs.KANJI, key, w.base) else null
+                StudyGen.trainsOf(item.kind) == StudyGen.TRAINS_MEANING ->
+                    if (key in VocabDb.studyKeys) SrsTarget(Srs.MEANING, key, w.base) else null
                 else -> null
             }
         }

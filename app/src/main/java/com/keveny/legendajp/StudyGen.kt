@@ -84,6 +84,23 @@ object StudyGen {
 
     fun trainsOf(kind: String): String? = allKinds.firstOrNull { it.name == kind }?.trains
 
+    /** Exercícios de kanji que pedem para escrever/montar (os que sobram quando você já reconhece a palavra). */
+    val writingKinds = setOf("Leitura → palavra em kanji", "Montar a palavra com kanji", "Montar o kanji com as partes", "Escrever a palavra à mão")
+
+    /**
+     * O exercício está escondido pelas marcas da palavra? "Conheço a palavra" tira os de vocabulário e os de
+     * kanji de reconhecimento (leitura, significado); "sei escrever" tira todos os de kanji.
+     */
+    fun hiddenByKnown(item: Item): Boolean {
+        if (item.wordKey == null) return false
+        val w = wordOf(item) ?: return false
+        return when (trainsOf(item.kind)) {
+            TRAINS_KANJI -> Jp.keyIn(w, VocabDb.knownKanjiKeys) != null || (Jp.keyIn(w, VocabDb.knownKeys) != null && item.kind !in writingKinds)
+            TRAINS_MEANING -> Jp.keyIn(w, VocabDb.knownKeys) != null
+            else -> false
+        }
+    }
+
     fun isKanji(c: Char) = c in '一'..'鿿'
     private fun isKana(c: Char) = c in '぀'..'ヿ'
     private fun levelNum(level: String) = level.removePrefix("N").toIntOrNull() ?: 5
@@ -298,7 +315,12 @@ object StudyGen {
         val out = mutableListOf<Item>()
         val singleWord = onlyKeys != null && onlyKeys.size == 1
         val known = VocabDb.knownKeys
-        fun eligible(w: Jp.Word) = (onlyKeys == null || w.key in onlyKeys) && (singleWord || Jp.keyIn(w, known) == null)
+        val knownKanji = VocabDb.knownKanjiKeys
+        fun chosen(w: Jp.Word) = onlyKeys == null || w.key in onlyKeys
+        /** Vocabulário: fora as "conheço a palavra". */
+        fun eligible(w: Jp.Word) = chosen(w) && (singleWord || Jp.keyIn(w, known) == null)
+        /** Kanji: fora as "sei escrever"; as "conheço a palavra" ficam só com os de escrita (hiddenByKnown, no fim). */
+        fun eligibleKanji(w: Jp.Word) = chosen(w) && w.base.any(::isKanji) && (singleWord || Jp.keyIn(w, knownKanji) == null)
 
         for ((line, ws) in analyzed) {
             val s = line.text
@@ -327,8 +349,9 @@ object StudyGen {
             }
 
             // ----- Vocabulário: todas as palavras de conteúdo da frase -----
-            val content = ws.filter { it.posKey in setOf("名詞", "動詞", "形容詞") && eligible(it) }
+            val content = ws.filter { it.posKey in setOf("名詞", "動詞", "形容詞") && (eligible(it) || eligibleKanji(it)) }
             for (w in content) {
+                if (eligible(w)) {
                 if (w.surface.length >= 2 || Jp.keyIn(w, saved) != null) {
                     val same = allWords.filter { it.key != w.key && it.posKey == w.posKey }.shuffled(rnd).map { it.surface }
                     val fallback = allWords.filter { it.key != w.key }.shuffled(rnd).map { it.surface }
@@ -350,7 +373,10 @@ object StudyGen {
                     }
                 }
 
+                } // eligible (vocabulário)
+
                 // ----- Kanji -----
+                if (!eligibleKanji(w)) continue
                 val hasKanji = w.base.any(::isKanji)
                 val simple = w.base.all { isKanji(it) || isKana(it) }
                 if (hasKanji && simple && w.base.length >= 2) {
@@ -402,7 +428,7 @@ object StudyGen {
                 }
             }
         }
-        return out.filter { it !is Item.Choice || it.options.size == 4 }
+        return out.filter { (it !is Item.Choice || it.options.size == 4) && (singleWord || !hiddenByKnown(it)) }
     }
 
     /** Lê o .txt da gravação e monta as linhas com fim estimado (início da próxima frase). */

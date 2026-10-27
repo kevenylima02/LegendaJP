@@ -77,6 +77,14 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   pasta, Selecionar vários (marca e move de uma vez), Renomear, Apagar. Toque longo numa pasta: Estudar a
   pasta inteira (as frases de todos os itens juntas), Renomear, Apagar (os itens voltam para Sem pasta). Um
   texto criado ou importado dentro de uma pasta já entra nela. Só no banco: os arquivos não mudam de lugar.
+- **Conheço a palavra ≠ sei escrever**: duas marcas por palavra. "Já conheço" (palavra) tira a palavra dos
+  exercícios de vocabulário e dos flashcards de significado, pinta de verde e conta no "conheço X%"; em Kanji
+  ela continua, só com os exercícios de escrita (Leitura → palavra em kanji, Montar a palavra, Montar o kanji
+  com as partes, Escrever à mão), porque reconhecer você já mostrou que reconhece. "Sei escrever" (só em
+  palavras com kanji; botão no balão da varinha, no cartão da palavra, na tela da palavra e ✍ nas listas do
+  marcador) tira também dos exercícios e cartões de kanji. No escolhedor com foco Kanji o botão é "Sei
+  escrever". A tela da palavra mostra significado, leitura e escrita cada uma com o seu estado. Na atualização,
+  tudo que estava "conheço" vira "conheço a palavra"; o progresso de kanji é mantido.
 - **Verbo potencial = mesmo verbo**: 行ける, 読める, 話せる… contam como 行く, 読む, 話す (e vice-versa) no
   destaque, no "Já conheço", na contagem do texto e nos exercícios; salvar uma forma registra a ocorrência na
   outra. As conjugações comuns (行かない, 行きます) já voltavam ao verbo pelo Kuromoji.

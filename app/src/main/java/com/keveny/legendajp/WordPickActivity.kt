@@ -93,6 +93,8 @@ class WordPickActivity : Activity() {
 
         findViewById<Button>(R.id.btnSkip).setOnClickListener { decide(Choice.SKIP) }
         setupOrder()
+        // No foco Kanji a palavra pode já ser conhecida: a marca aqui é "sei escrever"
+        if (focus == StudyGen.Focus.KANJI) findViewById<Button>(R.id.btnKnown).text = "Sei escrever"
         findViewById<Button>(R.id.btnKnown).setOnClickListener { decide(Choice.KNOWN) }
         findViewById<Button>(R.id.btnStudy).setOnClickListener { decide(Choice.STUDY) }
         btnBack.setOnClickListener { undo() }
@@ -167,7 +169,7 @@ class WordPickActivity : Activity() {
             Thread {
                 val db = VocabDb.get(this)
                 if (!db.isSaved(w)) db.save(w, line.text, line.recording ?: recording, maxOf(0, line.sec))
-                db.setKnown(w.key, true)
+                if (focus == StudyGen.Focus.KANJI) db.setKnownKanji(w, true) else db.setKnown(w, true)
             }.start()
         }
         index++
@@ -189,7 +191,7 @@ class WordPickActivity : Activity() {
             val w = cands[d.index].word
             Thread {
                 val db = VocabDb.get(this)
-                db.setKnown(w.key, false)
+                if (focus == StudyGen.Focus.KANJI) db.setKnownKanji(w, false) else db.setKnown(w, false)
                 if (!d.wasSaved) db.remove(w)
             }.start()
         }
@@ -350,14 +352,15 @@ class WordPickActivity : Activity() {
         }
         if (excludedStudied.isNotEmpty() || excludedSkip.isNotEmpty()) {
             val b0 = sb.length
-            sb.append("\n\nFora da escolha: ${excludedStudied.size} já estudadas (voltam pela Revisão) e ${excludedSkip.size} puladas nas últimas 24 h. \"Já conheço\" também fica de fora.")
+            sb.append("\n\nFora da escolha: ${excludedStudied.size} já estudadas (voltam pela Revisão) e ${excludedSkip.size} puladas nas últimas 24 h. " +
+                (if (focus == StudyGen.Focus.KANJI) "\"Sei escrever\" também fica de fora; \"conheço a palavra\" continua aqui, só com exercícios de escrita." else "\"Já conheço\" também fica de fora."))
             sb.setSpan(ForegroundColorSpan(getColor(R.color.text_secondary)), b0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         val skipped = decisions.count { it.choice == Choice.SKIP }
         val known = decisions.count { it.choice == Choice.KNOWN }
         if (skipped + known > 0) {
             val b = sb.length
-            sb.append("\n\nPuladas: $skipped · Já conheço: $known")
+            sb.append("\n\nPuladas: $skipped · " + (if (focus == StudyGen.Focus.KANJI) "Sei escrever" else "Já conheço") + ": $known")
             sb.setSpan(ForegroundColorSpan(getColor(R.color.text_secondary)), b, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         if (cands.isNotEmpty() && index >= cands.size && list.size < target) {

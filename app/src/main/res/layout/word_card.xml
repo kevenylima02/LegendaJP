@@ -72,6 +72,15 @@
             android:visibility="gone" />
 
         <Button
+            android:id="@+id/cardKnownKanji"
+            style="@style/Button.Outline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="Sei escrever"
+            android:visibility="gone" />
+
+        <Button
             android:id="@+id/cardKnown"
             style="@style/Button.Outline"
             android:layout_width="wrap_content"

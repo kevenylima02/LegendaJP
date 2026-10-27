@@ -238,7 +238,11 @@ object Srs {
         }
 
     /** O cartão ainda vale? (palavra salva e não marcada como conhecida) */
-    fun active(c: Card): Boolean = c.kind == GRAMMAR || c.key in VocabDb.studyKeys
+    fun active(c: Card): Boolean = when (c.kind) {
+        GRAMMAR -> true
+        KANJI -> c.key in VocabDb.kanjiStudyKeys      // "conheço a palavra" não suspende o kanji; "sei escrever" sim
+        else -> c.key in VocabDb.studyKeys
+    }
 
     fun startOfDay(now: Long = System.currentTimeMillis()): Long = Calendar.getInstance().apply {
         timeInMillis = now

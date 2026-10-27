@@ -363,9 +363,11 @@ class ReaderActivity : Activity() {
         }
         val saveBtn = small("")
         val knownBtn = small("")
+        val kanjiBtn = if (w.base.any(StudyGen::isKanji)) small("") else null
         fun refresh() {
             saveBtn.text = if (db.isSaved(w)) "★ Salva" else "☆ Salvar"
             knownBtn.text = if (db.isKnown(w)) "✓ Conheço" else "Já conheço"
+            kanjiBtn?.text = if (db.isKnownKanji(w)) "✓ Escrevo" else "Sei escrever"
         }
         refresh()
         saveBtn.setOnClickListener {
@@ -375,6 +377,10 @@ class ReaderActivity : Activity() {
         knownBtn.setOnClickListener {
             if (db.isKnown(w)) db.setKnown(w, false) else { if (!db.isSaved(w)) db.save(w, s.text, base, maxOf(0, s.sec)); db.setKnown(w, true) }
             refresh(); render()
+        }
+        kanjiBtn?.setOnClickListener {
+            if (db.isKnownKanji(w)) db.setKnownKanji(w, false) else { if (!db.isSaved(w)) db.save(w, s.text, base, maxOf(0, s.sec)); db.setKnownKanji(w, true) }
+            refresh()
         }
         small("Mais…").setOnClickListener {
             popup?.dismiss()
@@ -446,18 +452,26 @@ class ReaderActivity : Activity() {
                 row.addView(label, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
                 val save = Button(this).apply { textSize = 12f; isAllCaps = false; minHeight = 0; minimumHeight = 0; setPadding(dp(10), dp(4), dp(10), dp(4)) }
                 val known = Button(this).apply { textSize = 12f; isAllCaps = false; minHeight = 0; minimumHeight = 0; setPadding(dp(10), dp(4), dp(10), dp(4)) }
+                val kanji = if (w.base.any(StudyGen::isKanji)) Button(this).apply { textSize = 12f; isAllCaps = false; minHeight = 0; minimumHeight = 0; setPadding(dp(10), dp(4), dp(10), dp(4)) } else null
                 fun refresh() {
                     save.text = if (db.isSaved(w)) "★" else "☆"
                     known.text = if (db.isKnown(w)) "✓" else "Conheço"
+                    kanji?.text = if (db.isKnownKanji(w)) "✍✓" else "✍"
                 }
                 save.setOnClickListener { if (db.isSaved(w)) db.remove(w) else db.save(w, s.text, base, maxOf(0, s.sec)); refresh(); render() }
                 known.setOnClickListener {
                     if (db.isKnown(w)) db.setKnown(w, false) else { if (!db.isSaved(w)) db.save(w, s.text, base, maxOf(0, s.sec)); db.setKnown(w, true) }
                     refresh(); render()
                 }
+                kanji?.setOnClickListener {
+                    if (db.isKnownKanji(w)) db.setKnownKanji(w, false) else { if (!db.isSaved(w)) db.save(w, s.text, base, maxOf(0, s.sec)); db.setKnownKanji(w, true) }
+                    refresh()
+                    Toast.makeText(this, if (db.isKnownKanji(w)) "${w.base}: sei escrever (fora dos exercícios de kanji)" else "${w.base} volta aos exercícios de kanji", Toast.LENGTH_SHORT).show()
+                }
                 refresh()
                 row.addView(save, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(6) })
                 row.addView(known, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(6) })
+                if (kanji != null) row.addView(kanji, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(6) })
                 box.addView(row)
             }
         }
@@ -515,10 +529,16 @@ class ReaderActivity : Activity() {
                 }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
                 val save = Button(this).apply { textSize = 12f; isAllCaps = false; minHeight = 0; minimumHeight = 0; setPadding(dp(10), dp(4), dp(10), dp(4)) }
                 val kn = Button(this).apply { textSize = 12f; isAllCaps = false; minHeight = 0; minimumHeight = 0; setPadding(dp(10), dp(4), dp(10), dp(4)) }
-                fun refresh() { save.text = if (db.isSaved(w)) "★" else "☆"; kn.text = if (db.isKnown(w)) "✓" else "Conheço" }
+                val kanji = if (w.base.any(StudyGen::isKanji)) Button(this).apply { textSize = 12f; isAllCaps = false; minHeight = 0; minimumHeight = 0; setPadding(dp(10), dp(4), dp(10), dp(4)) } else null
+                fun refresh() { save.text = if (db.isSaved(w)) "★" else "☆"; kn.text = if (db.isKnown(w)) "✓" else "Conheço"; kanji?.text = if (db.isKnownKanji(w)) "✍✓" else "✍" }
                 fun saveIt() {
                     db.save(w, s.text, base, maxOf(0, s.sec))
                     if (aw.meaning.isNotBlank()) db.putTranslation(w.base, aw.meaning)
+                }
+                kanji?.setOnClickListener {
+                    if (db.isKnownKanji(w)) db.setKnownKanji(w, false) else { if (!db.isSaved(w)) saveIt(); db.setKnownKanji(w, true) }
+                    refresh()
+                    Toast.makeText(this, if (db.isKnownKanji(w)) "${w.base}: sei escrever (fora dos exercícios de kanji)" else "${w.base} volta aos exercícios de kanji", Toast.LENGTH_SHORT).show()
                 }
                 save.setOnClickListener { if (db.isSaved(w)) db.remove(w) else saveIt(); refresh(); render() }
                 kn.setOnClickListener {
@@ -528,6 +548,7 @@ class ReaderActivity : Activity() {
                 refresh()
                 row.addView(save, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(6) })
                 row.addView(kn, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(6) })
+                if (kanji != null) row.addView(kanji, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(6) })
                 box.addView(row)
             }
             box.addView(TextView(this).apply {

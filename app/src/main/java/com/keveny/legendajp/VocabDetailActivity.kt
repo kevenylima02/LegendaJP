@@ -50,17 +50,28 @@ class VocabDetailActivity : Activity() {
                 title = w.base
                 findViewById<TextView>(R.id.base).text = w.base
                 findViewById<TextView>(R.id.reading).text = if (w.reading != w.base) w.reading else ""
-                findViewById<TextView>(R.id.meta).text = "${w.pos} · kanji ${Score.percent(w.kanjiScore)}% · significado ${Score.percent(w.meaningScore)}%"
+                val hasKanji = w.base.any(StudyGen::isKanji)
+                findViewById<TextView>(R.id.meta).text = w.pos + skillSummary(w, hasKanji)
                 Score.bind(findViewById(R.id.barKanji), w.kanjiScore)
                 Score.bind(findViewById(R.id.barMeaning), w.meaningScore)
                 showStrokes(w.base)
                 val kb = findViewById<android.widget.Button>(R.id.btnKnown)
                 kb.text = if (w.known) "Conheço ✓" else "Já conheço"
-                if (w.known) findViewById<TextView>(R.id.meta).append(" · já conheço (fora dos exercícios)")
                 kb.setOnClickListener {
                     VocabDb.get(this).setKnown(w.key, !w.known)
                     Toast.makeText(this,
-                        if (!w.known) "${w.base}: já conheço. Não aparece mais nos exercícios" else "${w.base} volta a aparecer nos exercícios",
+                        if (!w.known) "${w.base}: conheço a palavra. Sai dos exercícios de vocabulário" + (if (hasKanji && !w.knownKanji) "; em Kanji ficam só os de escrita" else "")
+                        else "${w.base} volta a aparecer nos exercícios de vocabulário",
+                        Toast.LENGTH_LONG).show()
+                    load()
+                }
+                val kk = findViewById<android.widget.Button>(R.id.btnKnownKanji)
+                kk.visibility = if (hasKanji) View.VISIBLE else View.GONE
+                kk.text = if (w.knownKanji) "Escrevo ✓" else "Sei escrever"
+                kk.setOnClickListener {
+                    VocabDb.get(this).setKnownKanji(w.key, !w.knownKanji)
+                    Toast.makeText(this,
+                        if (!w.knownKanji) "${w.base}: sei escrever. Sai dos exercícios de kanji" else "${w.base} volta a aparecer nos exercícios de kanji",
                         Toast.LENGTH_SHORT).show()
                     load()
                 }
@@ -79,6 +90,26 @@ class VocabDetailActivity : Activity() {
                 adapter.notifyDataSetChanged()
             }
         }.start()
+    }
+
+    /**
+     * Leitura / escrita / significado, cada uma com o seu estado: "conheço" (marca), "sei escrever" (marca)
+     * ou o domínio treinado (Score) e o cartão da revisão (kanji ou significado).
+     */
+    private fun skillSummary(w: VocabDb.Word, hasKanji: Boolean): String {
+        val meaning = if (w.known) "conheço ✓" else "${Score.percent(w.meaningScore)}% treinado"
+        val reading = if (w.known) "conheço ✓" else if (hasKanji) "${Score.percent(w.kanjiScore)}% treinado" else "—"
+        val writing = if (!hasKanji) "—" else if (w.knownKanji) "sei escrever ✓" else "${Score.percent(w.kanjiScore)}% treinado"
+        val sb = StringBuilder()
+        sb.append("\nSignificado: $meaning")
+        if (hasKanji) sb.append("\nLeitura do kanji: $reading\nEscrita do kanji: $writing")
+        val cards = listOfNotNull(
+            Srs.get(this, Srs.MEANING, w.key)?.let { "significado " + Srs.bucket(it) },
+            if (hasKanji) Srs.get(this, Srs.KANJI, w.key)?.let { "kanji " + Srs.bucket(it) } else null,
+        )
+        if (cards.isNotEmpty()) sb.append("\nRevisão: " + cards.joinToString(" · "))
+        if (w.known && !w.knownKanji && hasKanji) sb.append("\nEm Kanji ficam só os exercícios de escrita (Leitura → kanji, Montar, Partes, À mão).")
+        return sb.toString()
     }
 
     /** ✦ IA: explica a palavra na primeira frase onde ela apareceu e traduz a frase com contexto. */
