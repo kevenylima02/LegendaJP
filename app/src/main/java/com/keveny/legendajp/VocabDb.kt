@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 /** Vocabulário salvo: palavras (forma de dicionário) e as frases onde apareceram. */
-class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 14) {
+class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 15) {
 
     companion object {
         @Volatile private var instance: VocabDb? = null
@@ -97,6 +97,7 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         if (oldVersion < 12) createTitles(db)
         if (oldVersion < 13) Speakers.createTables(db)
         if (oldVersion < 14) Folders.createTables(db)
+        if (oldVersion < 15) Folders.upgradeKinds(db)
     }
 
     /** Marca/desmarca "já conheço". Ao marcar, tira a palavra da fila de erros. */
@@ -109,6 +110,11 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
     }
 
     fun isKnown(key: String) = key in knownKeys
+
+    /** A chave com que a palavra está guardada (a própria ou uma forma equivalente, ver Jp.aliases). */
+    fun keyOf(w: Jp.Word): String = Jp.keyIn(w, savedKeys) ?: w.key
+    fun isKnown(w: Jp.Word) = keyOf(w) in knownKeys
+    fun setKnown(w: Jp.Word, known: Boolean) = setKnown(keyOf(w), known)
 
     // ---------- fila de erros ----------
 
@@ -362,13 +368,14 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         keysVersion++
     }
 
-    fun isSaved(w: Jp.Word) = w.key in savedKeys
+    fun isSaved(w: Jp.Word) = Jp.keyIn(w, savedKeys) != null
 
     /** Salva a palavra (se nova) e registra a frase de origem. */
     fun save(w: Jp.Word, sentence: String, recording: String, sec: Int): Long {
         val db = writableDatabase
         val now = System.currentTimeMillis()
-        var id = findId(db, w.base, w.posKey)
+        val (kb, kp) = keyOf(w).split("|").let { it[0] to it.getOrElse(1) { "" } }
+        var id = findId(db, kb, kp)
         if (id < 0) {
             id = db.insert("words", null, ContentValues().apply {
                 put("base", w.base); put("reading", w.reading); put("pos", w.pos); put("pos_key", w.posKey)
@@ -385,8 +392,9 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
 
     fun remove(w: Jp.Word) {
         val db = writableDatabase
-        db.delete("occ", "word_id IN (SELECT id FROM words WHERE base=? AND pos_key=?)", arrayOf(w.base, w.posKey))
-        db.delete("words", "base=? AND pos_key=?", arrayOf(w.base, w.posKey))
+        val (kb, kp) = keyOf(w).split("|").let { it[0] to it.getOrElse(1) { "" } }
+        db.delete("occ", "word_id IN (SELECT id FROM words WHERE base=? AND pos_key=?)", arrayOf(kb, kp))
+        db.delete("words", "base=? AND pos_key=?", arrayOf(kb, kp))
         reloadKeys()
     }
 
@@ -406,12 +414,13 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
     fun recordOccurrences(sentence: String, recording: String, sec: Int) {
         if (savedKeys.isEmpty()) return
         val words = try { Jp.words(sentence) } catch (_: Exception) { return }
-        val hits = words.filter { it.key in savedKeys }
+        val hits = words.filter { Jp.keyIn(it, savedKeys) != null }
         if (hits.isEmpty()) return
         val db = writableDatabase
         val now = System.currentTimeMillis()
         for (w in hits) {
-            val id = findId(db, w.base, w.posKey)
+            val (kb, kp) = keyOf(w).split("|").let { it[0] to it.getOrElse(1) { "" } }
+            val id = findId(db, kb, kp)
             if (id < 0) continue
             db.insertWithOnConflict("occ", null, ContentValues().apply {
                 put("word_id", id); put("sentence", sentence); put("surface", w.surface)

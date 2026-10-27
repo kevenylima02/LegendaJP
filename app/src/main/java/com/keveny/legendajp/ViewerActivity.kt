@@ -423,6 +423,14 @@ class ViewerActivity : Activity() {
         return true
     }
 
+    /** "Gerar áudio" fica no submenu ✦ IA quando o motor é o Gemini; fora dele com a voz do celular. */
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        val gemini = Prefs(this).ttsEngine == AudioGen.GEMINI
+        menu.findItem(R.id.action_gen_audio)?.isVisible = !gemini
+        menu.findItem(R.id.action_gen_audio_ai)?.isVisible = gemini
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
@@ -439,7 +447,7 @@ class ViewerActivity : Activity() {
             }
             R.id.action_translate_ai -> translateAll()
             R.id.action_rename -> Recordings.renameDialog(this, name) { showTitle() }
-            R.id.action_gen_audio -> confirmGenerate()
+            R.id.action_gen_audio, R.id.action_gen_audio_ai -> confirmGenerate()
             R.id.action_speakers_ai -> identifySpeakers()
             R.id.action_speakers -> Speakers.editDialog(this, Recordings.baseName(name)) { load() }
             R.id.action_copy -> {

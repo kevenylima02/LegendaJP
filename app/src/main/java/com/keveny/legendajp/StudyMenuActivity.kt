@@ -73,30 +73,46 @@ class StudyMenuActivity : Activity() {
             startActivity(Intent(this, MistakesActivity::class.java))
         }
 
-        // Contagem de exercícios disponíveis por foco
+        this.focusButtons = focusButtons
+    }
+
+    private var focusButtons: Map<StudyGen.Focus, Int> = emptyMap()
+    private var lines: List<StudyGen.Line>? = null
+
+    override fun onResume() {
+        super.onResume()
+        loadHistory()
+        loadCounts()
+    }
+
+    /**
+     * Quanto ainda dá para estudar aqui, com as regras do escolhedor (palavras conhecidas, já estudadas
+     * ou puladas ficam de fora). Recontado ao voltar de uma sessão, então os números vão caindo.
+     */
+    private fun loadCounts() {
+        val folder = Folders.isStudyName(name)
         Thread {
-            val lines = if (saved) StudyGen.linesFromVocab(this) else if (folder) Folders.lines(this, name) else {
+            val ls = lines ?: (if (saved) StudyGen.linesFromVocab(this) else if (folder) Folders.lines(this, name) else {
                 val text = try { Recordings.readText(this, uri!!) } catch (_: Exception) { "" }
                 StudyGen.lines(text, Recordings.baseName(name))
-            }
-            val counts = StudyGen.counts(this, lines, Prefs(this).level, if (saved) VocabDb.savedKeys else null)
+            }).also { lines = it }
+            val av = StudyGen.available(this, ls, if (saved) VocabDb.savedKeys else null)
             runOnUiThread {
+                if (isFinishing) return@runOnUiThread
                 for ((focus, id) in focusButtons) {
-                    val n = counts[focus] ?: 0
+                    val n = if (focus == StudyGen.Focus.GRAMATICA) av.grammar else av.words[focus] ?: 0
                     val b = findViewById<Button>(id)
                     b.text = "${focus.label}  ·  $n"
                     b.isEnabled = n > 0
                     if (saved && focus == StudyGen.Focus.GRAMATICA) b.visibility = View.GONE
                 }
                 val kinds = StudyGen.kinds.entries.joinToString("\n") { (f, ks) -> "${f.label}: " + ks.joinToString(", ") }
-                findViewById<TextView>(R.id.kinds).text = "Tipos de exercício\n$kinds"
+                val what = "Os números são o que ainda dá para estudar aqui: palavras que ainda não foram marcadas como conhecidas, " +
+                    "estudadas nem puladas (Misto, Vocabulário e Kanji) e exercícios de gramática. " +
+                    "Kanji: ${av.words[StudyGen.Focus.KANJI] ?: 0} palavras com ${av.kanji} kanji novos."
+                findViewById<TextView>(R.id.kinds).text = "$what\n\nTipos de exercício\n$kinds"
             }
         }.start()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        loadHistory()
     }
 
     private fun loadHistory() {

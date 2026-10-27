@@ -91,11 +91,24 @@ object StudyGen {
     private val kanaDistractors = listOf("の", "は", "を", "に", "が", "と", "い", "る", "た", "し", "く", "な")
 
     /** Quantos exercícios distintos cada foco consegue gerar. */
-    fun counts(ctx: Context, lines: List<Line>, level: Int, onlyKeys: Set<String>? = null): Map<Focus, Int> {
+    /** O que ainda dá para estudar aqui: palavras por foco (as que o escolhedor vai mostrar), kanji novos e exercícios de gramática. */
+    data class Available(val words: Map<Focus, Int>, val kanji: Int, val grammar: Int)
+
+    /**
+     * Mesmas regras do escolhedor de palavras (WordPickActivity): tipos de exercício desligados, palavras
+     * marcadas Já conheço, já estudadas (cartão respondido; voltam pela Revisão) e puladas há menos de
+     * 24 h ficam de fora. Gramática conta exercícios (não passa pela escolha de palavras).
+     */
+    fun available(ctx: Context, lines: List<Line>, restrict: Set<String>? = null): Available {
         val disabled = Prefs(ctx).disabledKinds
-        val all = generateAll(ctx, lines, kotlin.random.Random(1), onlyKeys, onlyKeys == null)
+        val exclude = VocabDb.get(ctx).skippedKeys() + Srs.studiedKeys(ctx)
+        val items = generateAll(ctx, lines, kotlin.random.Random(1), restrict, grammar = restrict == null)
             .filter { it.kind !in disabled }.distinctBy { it.identity }
-        return Focus.values().associateWith { f -> if (f == Focus.MISTO) all.size else all.count { it.focus == f } }
+        val grammar = items.count { it.focus == Focus.GRAMATICA }
+        val wordItems = items.filter { it.focus != Focus.GRAMATICA }
+        val words = listOf(Focus.MISTO, Focus.VOCAB, Focus.KANJI).associateWith { candidatesOf(wordItems, it, exclude).size }
+        val kanji = candidatesOf(wordItems, Focus.KANJI, exclude).flatMap { c -> c.word.base.filter(::isKanji).toList() }.distinct().size
+        return Available(words, kanji, grammar)
     }
 
     /**
@@ -239,8 +252,15 @@ object StudyGen {
         exclude: Set<String> = emptySet()
     ): List<Candidate> {
         val disabled = Prefs(ctx).disabledKinds
-        val items = generateAll(ctx, lines, kotlin.random.Random(1), restrict, grammar = false)
-            .filter { it.kind !in disabled && it.wordKey != null && it.wordKey !in exclude && (focus == Focus.MISTO || it.focus == focus) }
+        val items = generateAll(ctx, lines, kotlin.random.Random(1), restrict, grammar = false).filter { it.kind !in disabled }
+        return candidatesOf(items, focus, exclude)
+    }
+
+    private fun candidatesOf(all: List<Item>, focus: Focus, exclude: Set<String>): List<Candidate> {
+        val items = all.filter {
+            it.wordKey != null && it.wordKey !in exclude && (focus == Focus.MISTO || it.focus == focus) &&
+                wordOf(it)?.let { w -> Jp.keyIn(w, exclude) } == null
+        }
         return items.groupBy { it.wordKey!! }.entries.mapIndexedNotNull { i, (_, its) ->
             val first = its.first()
             val w = wordOf(first) ?: return@mapIndexedNotNull null
@@ -278,7 +298,7 @@ object StudyGen {
         val out = mutableListOf<Item>()
         val singleWord = onlyKeys != null && onlyKeys.size == 1
         val known = VocabDb.knownKeys
-        fun eligible(w: Jp.Word) = (onlyKeys == null || w.key in onlyKeys) && (singleWord || w.key !in known)
+        fun eligible(w: Jp.Word) = (onlyKeys == null || w.key in onlyKeys) && (singleWord || Jp.keyIn(w, known) == null)
 
         for ((line, ws) in analyzed) {
             val s = line.text
@@ -291,7 +311,7 @@ object StudyGen {
                 if (chunks.size in 4..9) out.add(Item.Order(line, chunks, sentenceLevel))
                 val present = hits.map { it.point.id }.toSet()
                 // Usar a gramática: com uma palavra da frase (verbo/adjetivo) ou um verbo comum
-                val drillWords = ws.filter { it.posKey in setOf("動詞", "形容詞") && (onlyKeys == null || it.key in onlyKeys) && it.key !in known }
+                val drillWords = ws.filter { it.posKey in setOf("動詞", "形容詞") && (onlyKeys == null || it.key in onlyKeys) && Jp.keyIn(it, known) == null }
                 out.addAll(GrammarDrill.items(ctx, line, drillWords, present.toList(), Prefs(ctx).levels, rnd, withAi = Ai.enabled(ctx)))
                 for (hit in hits) {
                     val wrong = Grammar.all.filter { it.id !in present }.shuffled(rnd).take(3)
@@ -309,7 +329,7 @@ object StudyGen {
             // ----- Vocabulário: todas as palavras de conteúdo da frase -----
             val content = ws.filter { it.posKey in setOf("名詞", "動詞", "形容詞") && eligible(it) }
             for (w in content) {
-                if (w.surface.length >= 2 || w.key in saved) {
+                if (w.surface.length >= 2 || Jp.keyIn(w, saved) != null) {
                     val same = allWords.filter { it.key != w.key && it.posKey == w.posKey }.shuffled(rnd).map { it.surface }
                     val fallback = allWords.filter { it.key != w.key }.shuffled(rnd).map { it.surface }
                     val opts = (same + fallback).filter { it != w.surface }.distinct().take(3)

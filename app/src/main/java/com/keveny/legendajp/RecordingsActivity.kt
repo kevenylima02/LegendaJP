@@ -62,7 +62,7 @@ class RecordingsActivity : Activity() {
             AlertDialog.Builder(this).setTitle(row.title ?: Recordings.prettyName(row.item.name))
                 .setItems(arrayOf("Mover para pasta…", "Selecionar vários", "Renomear", "Apagar")) { _, which ->
                     when (which) {
-                        0 -> Folders.moveDialog(this, listOf(row.base)) { load() }
+                        0 -> Folders.moveDialog(this, Folders.REC, listOf(row.base)) { load() }
                         1 -> { startSelecting(); toggle(row) }
                         2 -> Recordings.renameDialog(this, row.item.name) { load() }
                         else -> confirmDelete(row)
@@ -73,7 +73,7 @@ class RecordingsActivity : Activity() {
         }
         findViewById<Button>(R.id.btnMove).setOnClickListener {
             if (selected.isEmpty()) return@setOnClickListener
-            Folders.moveDialog(this, selected.toList()) { stopSelecting(); load() }
+            Folders.moveDialog(this, Folders.REC, selected.toList()) { stopSelecting(); load() }
         }
         findViewById<Button>(R.id.btnCancelSelect).setOnClickListener { stopSelecting() }
     }
@@ -90,7 +90,7 @@ class RecordingsActivity : Activity() {
     // ---------- pastas e seleção ----------
 
     private fun bindFolders() {
-        Folders.bind(this, folders, folder,
+        Folders.bind(this, folders, Folders.REC, folder,
             counts = { id -> allRows.count { Folders.matches(id, it.base, folderMap) } },
             onSelect = { id -> folder = id; Prefs(this).folderRecordings = id; applyFolder() },
             onChanged = { load() })
@@ -131,8 +131,8 @@ class RecordingsActivity : Activity() {
     override fun onCreateOptionsMenu(menu: android.view.Menu): Boolean {
         menu.add(0, 3, 0, "Estudar a pasta inteira")
         menu.add(0, 4, 0, "Selecionar vários")
-        menu.add(0, 1, 0, "Importar texto")
-        menu.add(0, 2, 0, "Formato do texto (modelo)")
+        menu.add(0, 1, 0, "Importar texto…")
+        menu.add(0, 2, 0, "Modelo para importar (formato Michi)")
         return true
     }
 

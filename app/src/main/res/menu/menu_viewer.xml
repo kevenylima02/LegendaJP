@@ -9,29 +9,41 @@
         android:title="@string/share"
         android:icon="@android:drawable/ic_menu_share"
         android:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/action_gen_audio"
-        android:title="Gerar áudio"
-        android:showAsAction="never" />
-    <item
-        android:id="@+id/action_speakers_ai"
-        android:title="✦ Identificar locutores (IA)"
-        android:showAsAction="never" />
+    <!-- Áudio e locutores -->
     <item
         android:id="@+id/action_speakers"
-        android:title="Locutores (nomes)"
+        android:title="Nomes dos locutores"
         android:showAsAction="never" />
     <item
-        android:id="@+id/action_rename"
-        android:title="Renomear"
+        android:id="@+id/action_gen_audio"
+        android:title="Gerar áudio (voz do celular)"
         android:showAsAction="never" />
+    <!-- Tudo que usa a IA -->
     <item
-        android:id="@+id/action_translate_ai"
-        android:title="✦ Traduzir gravação com IA"
-        android:showAsAction="never" />
+        android:id="@+id/action_ai"
+        android:title="✦ Inteligência artificial"
+        android:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/action_translate_ai"
+                android:title="Traduzir a gravação" />
+            <item
+                android:id="@+id/action_speakers_ai"
+                android:title="Identificar locutores pela voz" />
+            <item
+                android:id="@+id/action_gen_audio_ai"
+                android:title="Gerar áudio (Gemini)" />
+        </menu>
+    </item>
+    <!-- Texto -->
     <item
         android:id="@+id/action_copy"
         android:title="@string/menu_copy"
+        android:showAsAction="never" />
+    <!-- Arquivo -->
+    <item
+        android:id="@+id/action_rename"
+        android:title="Renomear"
         android:showAsAction="never" />
     <item
         android:id="@+id/action_delete"

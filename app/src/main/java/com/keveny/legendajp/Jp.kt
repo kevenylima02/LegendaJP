@@ -342,6 +342,32 @@ object Jp {
         return out.sortedBy { it.start }
     }
 
+    // ---------- a mesma palavra em outra forma do dicionário ----------
+
+    private val eToU = mapOf('け' to 'く', 'げ' to 'ぐ', 'せ' to 'す', 'て' to 'つ', 'ね' to 'ぬ', 'め' to 'む', 'れ' to 'る', 'べ' to 'ぶ', 'え' to 'う')
+    private val uToE = eToU.entries.associate { (e, u) -> u to e }
+
+    /**
+     * Chaves equivalentes: o Kuromoji trata o potencial dos verbos godan (行ける, 読める, 話せる…) como
+     * outro verbo; para o destaque, o "já conheço" e os exercícios, 行ける é a mesma palavra que 行く,
+     * e vice-versa. (As conjugações comuns — 行かない, 行きます — já voltam ao 行く pelo próprio Kuromoji.)
+     */
+    fun aliases(w: Word): List<String> {
+        if (w.posKey != "動詞" || w.base.length < 2) return emptyList()
+        val b = w.base
+        val out = ArrayList<String>(2)
+        if (b.endsWith("る")) eToU[b[b.length - 2]]?.let { out.add(b.dropLast(2) + it + "|動詞") }
+        uToE[b.last()]?.let { out.add(b.dropLast(1) + it + "る|動詞") }
+        return out
+    }
+
+    /** A chave com que a palavra está no conjunto (a própria ou uma equivalente), ou null. */
+    fun keyIn(w: Word, set: Set<String>): String? {
+        if (w.key in set) return w.key
+        for (a in aliases(w)) if (a in set) return a
+        return null
+    }
+
     fun decorate(
         sentence: String,
         saved: Set<String>,
@@ -355,8 +381,8 @@ object Jp {
         val list = try { if (all) wordsAll(sentence) else words(sentence) } catch (_: Exception) { return sentence }
         // As expressões vêm depois (e com prioridade) para o toque e a cor valerem no trecho inteiro
         for ((n, w) in (list + expressions(sentence)).withIndex()) {
-            val isKnown = w.key in known
-            val isSaved = w.key in saved || isKnown
+            val isKnown = keyIn(w, known) != null
+            val isSaved = isKnown || keyIn(w, saved) != null
             val color = if (isKnown) knownColor else savedColor
             val flags = Spanned.SPAN_EXCLUSIVE_EXCLUSIVE or (if (n >= list.size) 1 shl Spanned.SPAN_PRIORITY_SHIFT else 0)
             sb.setSpan(object : ClickableSpan() {
@@ -381,7 +407,7 @@ object Jp {
         val sb = SpannableStringBuilder(sentence)
         val list = try { words(sentence) } catch (_: Exception) { return sentence }
         for (w in list) {
-            val c = when (w.key) { in known -> knownColor; in saved -> savedColor; else -> continue }
+            val c = when { keyIn(w, known) != null -> knownColor; keyIn(w, saved) != null -> savedColor; else -> continue }
             sb.setSpan(ForegroundColorSpan(c), w.start, w.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         return sb

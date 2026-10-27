@@ -39,7 +39,7 @@ object TextLevel {
                 if (w.posKey !in content || w.base.all { it.isDigit() }) continue
                 tokens++
                 distinct.add(w.key)
-                when (w.key) { in known -> k++; in studying -> s++ }
+                when { Jp.keyIn(w, known) != null -> k++; Jp.keyIn(w, studying) != null -> s++ }
                 perLevel[Jlpt.wordLevel(w.base)]++
             }
             for (h in (try { Grammar.find(t) } catch (_: Exception) { emptyList() })) points[h.point.id] = h.point.level

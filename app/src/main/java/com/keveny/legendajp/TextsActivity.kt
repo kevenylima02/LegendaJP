@@ -20,7 +20,7 @@ import android.widget.TextView
 import android.widget.Toast
 
 /**
- * Textos para leitura: a lista (em pastas, as mesmas das gravações) e as formas de trazer um texto
+ * Textos para leitura: a lista (em pastas próprias, separadas das de Gravações) e as formas de trazer um texto
  * (colar, foto, galeria, arquivo ou compartilhar de outro app para o Michi). Tocar abre o leitor;
  * toque longo: mover para pasta, selecionar vários, renomear, apagar.
  */
@@ -79,7 +79,10 @@ class TextsActivity : Activity() {
         empty = TextView(this).apply {
             text = "Nenhum texto ainda."; textSize = 15f; setTextColor(getColor(R.color.text_secondary)); setPadding(0, dp(24), 0, 0)
         }
-        list = ListView(this).apply { divider = null }
+        list = ListView(this).apply {
+            divider = null; dividerHeight = dp(10)
+            clipToPadding = false; setPadding(0, dp(2), 0, dp(16))
+        }
         root.addView(empty)
         root.addView(list, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
         moveBtn = Button(this).apply { isAllCaps = false }
@@ -94,7 +97,7 @@ class TextsActivity : Activity() {
         setContentView(root)
         moveBtn.setOnClickListener {
             if (selected.isEmpty()) return@setOnClickListener
-            Folders.moveDialog(this, selected.toList()) { stopSelecting(); load() }
+            Folders.moveDialog(this, Folders.TEXT, selected.toList()) { stopSelecting(); load() }
         }
         list.adapter = adapter
         list.setOnItemClickListener { _, _, pos, _ ->
@@ -108,7 +111,7 @@ class TextsActivity : Activity() {
             AlertDialog.Builder(this).setTitle(r.title ?: Recordings.prettyName(r.item.name))
                 .setItems(arrayOf("Mover para pasta…", "Selecionar vários", "Renomear", "Apagar")) { _, which ->
                     when (which) {
-                        0 -> Folders.moveDialog(this, listOf(r.base)) { load() }
+                        0 -> Folders.moveDialog(this, Folders.TEXT, listOf(r.base)) { load() }
                         1 -> { startSelecting(); toggle(r) }
                         2 -> Recordings.renameDialog(this, r.item.name) { load() }
                         else -> AlertDialog.Builder(this).setMessage("Apagar este texto?").setNegativeButton(android.R.string.cancel, null)
@@ -167,7 +170,7 @@ class TextsActivity : Activity() {
     // ---------- pastas e seleção ----------
 
     private fun bindFolders() {
-        Folders.bind(this, folders, folder,
+        Folders.bind(this, folders, Folders.TEXT, folder,
             counts = { id -> allRows.count { Folders.matches(id, it.base, folderMap) } },
             onSelect = { id -> folder = id; Prefs(this).folderTexts = id; applyFolder() },
             onChanged = { load() })

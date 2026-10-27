@@ -365,7 +365,7 @@ class ReaderActivity : Activity() {
         val knownBtn = small("")
         fun refresh() {
             saveBtn.text = if (db.isSaved(w)) "★ Salva" else "☆ Salvar"
-            knownBtn.text = if (db.isKnown(w.key)) "✓ Conheço" else "Já conheço"
+            knownBtn.text = if (db.isKnown(w)) "✓ Conheço" else "Já conheço"
         }
         refresh()
         saveBtn.setOnClickListener {
@@ -373,7 +373,7 @@ class ReaderActivity : Activity() {
             refresh(); render()
         }
         knownBtn.setOnClickListener {
-            if (db.isKnown(w.key)) db.setKnown(w.key, false) else { if (!db.isSaved(w)) db.save(w, s.text, base, maxOf(0, s.sec)); db.setKnown(w.key, true) }
+            if (db.isKnown(w)) db.setKnown(w, false) else { if (!db.isSaved(w)) db.save(w, s.text, base, maxOf(0, s.sec)); db.setKnown(w, true) }
             refresh(); render()
         }
         small("Mais…").setOnClickListener {
@@ -448,11 +448,11 @@ class ReaderActivity : Activity() {
                 val known = Button(this).apply { textSize = 12f; isAllCaps = false; minHeight = 0; minimumHeight = 0; setPadding(dp(10), dp(4), dp(10), dp(4)) }
                 fun refresh() {
                     save.text = if (db.isSaved(w)) "★" else "☆"
-                    known.text = if (db.isKnown(w.key)) "✓" else "Conheço"
+                    known.text = if (db.isKnown(w)) "✓" else "Conheço"
                 }
                 save.setOnClickListener { if (db.isSaved(w)) db.remove(w) else db.save(w, s.text, base, maxOf(0, s.sec)); refresh(); render() }
                 known.setOnClickListener {
-                    if (db.isKnown(w.key)) db.setKnown(w.key, false) else { if (!db.isSaved(w)) db.save(w, s.text, base, maxOf(0, s.sec)); db.setKnown(w.key, true) }
+                    if (db.isKnown(w)) db.setKnown(w, false) else { if (!db.isSaved(w)) db.save(w, s.text, base, maxOf(0, s.sec)); db.setKnown(w, true) }
                     refresh(); render()
                 }
                 refresh()
@@ -515,14 +515,14 @@ class ReaderActivity : Activity() {
                 }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
                 val save = Button(this).apply { textSize = 12f; isAllCaps = false; minHeight = 0; minimumHeight = 0; setPadding(dp(10), dp(4), dp(10), dp(4)) }
                 val kn = Button(this).apply { textSize = 12f; isAllCaps = false; minHeight = 0; minimumHeight = 0; setPadding(dp(10), dp(4), dp(10), dp(4)) }
-                fun refresh() { save.text = if (db.isSaved(w)) "★" else "☆"; kn.text = if (db.isKnown(w.key)) "✓" else "Conheço" }
+                fun refresh() { save.text = if (db.isSaved(w)) "★" else "☆"; kn.text = if (db.isKnown(w)) "✓" else "Conheço" }
                 fun saveIt() {
                     db.save(w, s.text, base, maxOf(0, s.sec))
                     if (aw.meaning.isNotBlank()) db.putTranslation(w.base, aw.meaning)
                 }
                 save.setOnClickListener { if (db.isSaved(w)) db.remove(w) else saveIt(); refresh(); render() }
                 kn.setOnClickListener {
-                    if (db.isKnown(w.key)) db.setKnown(w.key, false) else { if (!db.isSaved(w)) saveIt(); db.setKnown(w.key, true) }
+                    if (db.isKnown(w)) db.setKnown(w, false) else { if (!db.isSaved(w)) saveIt(); db.setKnown(w, true) }
                     refresh(); render()
                 }
                 refresh()
@@ -670,14 +670,28 @@ class ReaderActivity : Activity() {
 
     // ---------- menu ----------
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean = true
+
+    /**
+     * Montado a cada abertura (o motor de voz e o áudio podem mudar): leitura, página, áudio,
+     * ✦ IA num submenu (tradução e, com o Gemini, o áudio), arquivo.
+     */
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         val prefs = Prefs(this)
+        menu.clear()
         menu.add(0, 1, 0, "Estudar").setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
-        menu.add(0, 2, 0, "Tema da página")
-        menu.add(0, 5, 0, if (prefs.readerTranslations) "Esconder traduções" else "Mostrar traduções")
-        menu.add(0, 6, 0, "✦ Traduzir texto com IA")
-        menu.add(0, 7, 0, if (hasAudio) "Criar áudio de novo" else "Criar áudio do texto")
+        // Leitura
         if (hasAudio) menu.add(0, 8, 0, "Ouvir com legenda")
+        menu.add(0, 5, 0, if (prefs.readerTranslations) "Esconder traduções" else "Mostrar traduções")
+        menu.add(0, 2, 0, "Tema da página")
+        // Áudio e IA
+        val audioLabel = if (hasAudio) "Criar áudio de novo" else "Criar áudio do texto"
+        val gemini = prefs.ttsEngine == AudioGen.GEMINI
+        if (!gemini) menu.add(0, 7, 0, "$audioLabel (voz do celular)")
+        val ai = menu.addSubMenu(0, 20, 0, "✦ Inteligência artificial")
+        ai.add(0, 6, 0, "Traduzir o texto")
+        if (gemini) ai.add(0, 7, 0, "$audioLabel (Gemini)")
+        // Arquivo
         menu.add(0, 9, 0, "Renomear")
         menu.add(0, 10, 0, "Apagar")
         return true
@@ -697,7 +711,7 @@ class ReaderActivity : Activity() {
                     .setSingleChoiceItems(list.map { it.label }.toTypedArray(), cur) { d, i -> prefs.readerTheme = list[i].id; render(); styleToolbar(); d.dismiss() }
                     .setNegativeButton(android.R.string.cancel, null).show()
             }
-            5 -> { prefs.readerTranslations = !prefs.readerTranslations; render(); invalidateOptionsMenu() }
+            5 -> { prefs.readerTranslations = !prefs.readerTranslations; render() }
             6 -> translateAll()
             7 -> createAudio()
             8 -> Recordings.find(this, "$base.txt")?.let {

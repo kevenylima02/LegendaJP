@@ -72,7 +72,7 @@ object Furigana {
             val mastered = Srs.masteredKanjiKeys(ctx)
             val known = VocabDb.knownKeys
             (try { Jp.words(sentence) } catch (_: Exception) { emptyList() })
-                .filter { it.key in known || it.key in mastered }.map { it.start until it.end }
+                .filter { Jp.keyIn(it, known) != null || Jp.keyIn(it, mastered) != null }.map { it.start until it.end }
         } else emptyList()
         var any = false
         for (r in rubies) {

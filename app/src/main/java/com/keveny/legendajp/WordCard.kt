@@ -61,16 +61,16 @@ object WordCard {
             val saved = db.isSaved(w)
             save.text = if (saved) "Remover" else "Salvar"
             save.setBackgroundResource(if (saved) R.drawable.bg_button_stop else R.drawable.bg_button_primary)
-            knownBtn.text = if (db.isKnown(w.key)) "Conheço ✓" else "Já conheço"
+            knownBtn.text = if (db.isKnown(w)) "Conheço ✓" else "Já conheço"
         }
         knownBtn.setTextColor(if (light) 0xFFFFFFFF.toInt() else ctx.getColor(R.color.text))
         knownBtn.setOnClickListener {
-            if (db.isKnown(w.key)) {
-                db.setKnown(w.key, false)
+            if (db.isKnown(w)) {
+                db.setKnown(w, false)
                 Toast.makeText(ctx, "${w.base} volta a aparecer nos exercícios", Toast.LENGTH_SHORT).show()
             } else {
                 if (!db.isSaved(w)) db.save(w, sentence, recording, sec)
-                db.setKnown(w.key, true)
+                db.setKnown(w, true)
                 Toast.makeText(ctx, "${w.base}: já conheço. Não aparece mais nos exercícios", Toast.LENGTH_SHORT).show()
             }
             refresh()

@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:id="@+id/action_share"
-        android:title="@string/share"
-        android:showAsAction="never" />
-    <item
-        android:id="@+id/action_check"
-        android:title="@string/menu_check_japanese"
-        android:showAsAction="never" />
+    <!-- Estudo -->
     <item
         android:id="@+id/action_review"
         android:title="Revisão espaçada"
@@ -16,6 +9,16 @@
         android:id="@+id/action_mistakes"
         android:title="Revisar erros"
         android:showAsAction="never" />
+    <!-- Transcrição -->
+    <item
+        android:id="@+id/action_share"
+        android:title="Compartilhar transcrição"
+        android:showAsAction="never" />
+    <item
+        android:id="@+id/action_check"
+        android:title="@string/menu_check_japanese"
+        android:showAsAction="never" />
+    <!-- App -->
     <item
         android:id="@+id/action_reports"
         android:title="Reportes"
