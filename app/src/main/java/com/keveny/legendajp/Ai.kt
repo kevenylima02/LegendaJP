@@ -107,6 +107,56 @@ object Ai {
         }.start()
     }
 
+    /** Palavra montada pela IA: como apareceu, forma de dicionário, leitura, classe e significado. */
+    data class AiWord(val surface: String, val base: String, val reading: String, val pos: String, val meaning: String)
+
+    /**
+     * Separa um trecho em palavras como um dicionário faria (順番 inteiro, e não 順+番), com leitura,
+     * classe e significado, para salvar o que o Kuromoji não conhece ou corta errado. Guardado em cache.
+     */
+    fun analyzeWords(ctx: Context, text: String, sentence: String, cb: (List<AiWord>?, String?) -> Unit) {
+        val app = ctx.applicationContext
+        Thread {
+            var list: List<AiWord>? = null
+            val err = try {
+                val key = "words|${modelId(app)}|$text|$sentence"
+                val out = VocabDb.get(app).aiGet(key) ?: run {
+                    val prompt = buildString {
+                        append("Frase em japonês: ").append(sentence).append('\n')
+                        if (text != sentence) append("Trecho de interesse: ").append(text).append('\n')
+                        append("Separe o trecho em palavras como um dicionário japonês-português faria: palavras compostas inteiras ")
+                        append("(順番, e não 順 + 番), verbos com a forma de dicionário, partículas e auxiliares também contam. ")
+                        append("Para cada palavra: forma (como aparece), base (forma de dicionário), leitura (só hiragana), ")
+                        append("classe (substantivo, verbo (godan), verbo (ichidan), verbo (suru), adjetivo-i, adjetivo-na, advérbio, partícula, auxiliar, expressão, nome próprio…) ")
+                        append("e significado curto em português do Brasil, no sentido usado na frase. ")
+                        append("Responda somente com JSON: {\"palavras\": [{\"forma\": \"\", \"base\": \"\", \"leitura\": \"\", \"classe\": \"\", \"significado\": \"\"}]}")
+                    }
+                    val res = when (mode(app)) {
+                        NANO -> runNano(prompt, 768)
+                        CLOUD -> runCloud(app, prompt)
+                        else -> throw IllegalStateException("A IA está desligada em Configurações.")
+                    }
+                    VocabDb.get(app).aiPut(key, res)
+                    res
+                }
+                val o = JSONObject(out.substring(out.indexOf('{'), out.lastIndexOf('}') + 1))
+                val arr = o.optJSONArray("palavras") ?: JSONArray()
+                list = (0 until arr.length()).mapNotNull { i ->
+                    val w = arr.optJSONObject(i) ?: return@mapNotNull null
+                    val base = w.optString("base").trim().ifEmpty { w.optString("forma").trim() }
+                    if (base.isEmpty()) null else AiWord(w.optString("forma").trim().ifEmpty { base }, base,
+                        Jp.hiragana(w.optString("leitura").trim().ifEmpty { base }), w.optString("classe").trim().ifEmpty { "palavra" }, w.optString("significado").trim())
+                }
+                null
+            } catch (e: Exception) {
+                Log.e(TAG, "analyzeWords", e)
+                e.message ?: e.javaClass.simpleName
+            }
+            val l = list
+            main.post { cb(l, err) }
+        }.start()
+    }
+
     /** A "traducao" da resposta vira a tradução do Gemini da frase (ao lado da do ML Kit). */
     private fun keepTranslation(ctx: Context, sentence: String, out: String) {
         val a = out.indexOf('{'); val b = out.lastIndexOf('}')

@@ -39,6 +39,7 @@ object Jp {
 
     @Volatile private var tokenizer: Tokenizer? = null
     private val cache = LruCache<String, List<Word>>(300)
+    private val cacheAll = LruCache<String, List<Word>>(300)
 
     val isReady get() = tokenizer != null
 
@@ -107,6 +108,38 @@ object Jp {
         }
         cache.put(sentence, result)
         return result
+    }
+
+    /**
+     * Todas as palavras tocáveis: as de conteúdo (words) mais partículas, auxiliares soltos, sufixos
+     * e números; só a pontuação fica de fora. Para o leitor e a contagem do que você conhece: assim
+     * から, ばかり, ます… também podem ser salvos e marcados como conhecidos.
+     */
+    fun wordsAll(sentence: String): List<Word> {
+        cacheAll.get(sentence)?.let { return it }
+        val content = words(sentence)
+        val tokens = tokenize(sentence)
+        val out = content.toMutableList()
+        for (t in tokens) {
+            if (t.partOfSpeechLevel1 == "記号" || t.surface.isBlank()) continue
+            val s = t.position
+            val e = s + t.surface.length
+            if (content.any { it.start < e && s < it.end }) continue
+            out.add(Word(t.surface, t.surface, baseOf(t), hiragana(if (t.reading == "*") baseOf(t) else t.reading), smallPosLabel(t), t.partOfSpeechLevel1, "", s, e))
+        }
+        out.sortBy { it.start }
+        cacheAll.put(sentence, out)
+        return out
+    }
+
+    private fun smallPosLabel(t: Token): String = when (t.partOfSpeechLevel1) {
+        "助詞" -> "partícula"
+        "助動詞" -> "auxiliar"
+        "フィラー" -> "interjeição"
+        "名詞" -> when (t.partOfSpeechLevel2) { "接尾" -> "sufixo"; "数" -> "número"; "非自立" -> "substantivo dependente"; else -> posLabel(t) }
+        "動詞" -> "verbo auxiliar"
+        "形容詞" -> "adjetivo auxiliar"
+        else -> posLabel(t)
     }
 
     // ---------- classificação ----------
@@ -285,21 +318,28 @@ object Jp {
      * O TextView precisa de movementMethod = LinkMovementMethod.
      */
     /**
-     * Expressões salvas pelo marcador livre do leitor (ex.: 気になる) que aparecem na frase, como
-     * palavras tocáveis. Ficam por cima das palavras do Kuromoji, para o trecho inteiro ganhar a cor.
+     * Palavras próprias (expressões do marcador e palavras montadas pela IA, ex.: 順番 quando o
+     * Kuromoji separa 順+番) que aparecem na frase, como palavras tocáveis. Ficam por cima das
+     * palavras do Kuromoji, para o trecho inteiro ganhar a cor e o toque.
      */
     fun expressions(sentence: String): List<Word> {
-        val map = VocabDb.expressions
+        val map = VocabDb.custom
         if (map.isEmpty()) return emptyList()
         val out = mutableListOf<Word>()
-        for ((e, reading) in map) {
-            var i = sentence.indexOf(e)
+        // Só onde o trecho começa e termina em fronteira de token (は não pode pintar o は de はじめて)
+        val all = try { wordsAll(sentence) } catch (_: Exception) { return emptyList() }
+        val starts = all.map { it.start }.toHashSet()
+        val ends = all.map { it.end }.toHashSet()
+        for ((text, c) in map) {
+            var i = sentence.indexOf(text)
             while (i >= 0) {
-                out.add(Word(e, e, e, reading, "expressão", VocabDb.EXPR, "", i, i + e.length))
-                i = sentence.indexOf(e, i + e.length)
+                val e = i + text.length
+                if (i in starts && e in ends && out.none { it.start < e && i < it.end && it.surface.length >= text.length })
+                    out.add(Word(text, text, c.base, c.reading, c.pos, c.posKey, "", i, e))
+                i = sentence.indexOf(text, e)
             }
         }
-        return out
+        return out.sortedBy { it.start }
     }
 
     fun decorate(
@@ -308,10 +348,11 @@ object Jp {
         savedColor: Int,
         known: Set<String> = emptySet(),
         knownColor: Int = 0,
+        all: Boolean = false,
         onTap: (Word) -> Unit
     ): CharSequence {
         val sb = SpannableStringBuilder(sentence)
-        val list = try { words(sentence) } catch (_: Exception) { return sentence }
+        val list = try { if (all) wordsAll(sentence) else words(sentence) } catch (_: Exception) { return sentence }
         // As expressões vêm depois (e com prioridade) para o toque e a cor valerem no trecho inteiro
         for ((n, w) in (list + expressions(sentence)).withIndex()) {
             val isKnown = w.key in known

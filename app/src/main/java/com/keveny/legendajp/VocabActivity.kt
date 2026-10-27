@@ -45,7 +45,7 @@ class VocabActivity : Activity() {
         Triple("known", "Conheço") { it.known },
         Triple("new", "Novas") { !it.known && it.kanjiScore == 0 && it.meaningScore == 0 && "${it.base}|${it.posKey}" !in studied },
         Triple("kanji", "Com kanji") { it.base.any(StudyGen::isKanji) },
-        Triple("expr", "Expressões") { it.posKey == VocabDb.EXPR },
+        Triple("expr", "Expressões e IA") { it.posKey == VocabDb.EXPR || it.posKey == VocabDb.AI },
     )
 
     private val sorts = listOf(

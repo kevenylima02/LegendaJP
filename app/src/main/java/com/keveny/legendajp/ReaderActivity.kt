@@ -83,7 +83,13 @@ class ReaderActivity : Activity() {
     /** Onde cada frase está desenhada (parágrafo e trecho), para destacar e posicionar o balão. */
     private val placed = HashMap<Texts.Sentence, Pair<TextView, IntRange>>()
 
-    private val theme: Theme get() = themes.firstOrNull { it.id == Prefs(this).readerTheme } ?: themes[0]
+    /** Tema "app" = as cores do aplicativo (claro ou escuro), que é o padrão. */
+    private val appTheme: Theme get() = Theme("app", "Cores do app", getColor(R.color.background), getColor(R.color.text), getColor(R.color.text_secondary),
+        getColor(R.color.saved_word), getColor(R.color.known_word), 0x66F5C542, getColor(R.color.card), getColor(R.color.outline))
+
+    private val allThemes: List<Theme> get() = listOf(appTheme) + themes
+
+    private val theme: Theme get() = allThemes.firstOrNull { it.id == Prefs(this).readerTheme } ?: appTheme
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -155,8 +161,13 @@ class ReaderActivity : Activity() {
         }
         button("minus", "A−", "Letra menor") { val p = Prefs(this); p.readerSize = (p.readerSize - 2).coerceAtLeast(14); render() }
         button("plus", "A+", "Letra maior") { val p = Prefs(this); p.readerSize = (p.readerSize + 2).coerceAtMost(34); render() }
-        progressLabel = TextView(this).apply { text = "0%"; textSize = 12f; setPadding(dp(8), 0, dp(6), 0) }
+        progressLabel = TextView(this).apply {
+            text = ""; textSize = 12f; setPadding(dp(8), 0, dp(6), 0)
+            setOnClickListener { Toast.makeText(this@ReaderActivity, "Quanto do texto você já rolou", Toast.LENGTH_SHORT).show() }
+        }
         toolbar.addView(progressLabel)
+        // A barra engole o toque: sem isso o toque passa para o texto que está embaixo dela
+        toolbar.isClickable = true
         root.addView(toolbar, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
             gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
             bottomMargin = dp(14)
@@ -191,16 +202,20 @@ class ReaderActivity : Activity() {
         progressLabel.setTextColor(th.secondary)
     }
 
+    /** Posição no texto; some quando o texto cabe na tela. */
     private fun updateProgress() {
         val max = content.height - scroll.height
-        val pct = if (max <= 0) 100 else (scroll.scrollY * 100 / max).coerceIn(0, 100)
-        progressLabel.text = "$pct%"
+        if (max <= dp(40)) { progressLabel.text = ""; progressLabel.visibility = View.GONE; return }
+        progressLabel.visibility = View.VISIBLE
+        progressLabel.text = "${(scroll.scrollY * 100 / max).coerceIn(0, 100)}%"
     }
 
     private var lastLevel: TextLevel.Result? = null
 
     /** Desenha tudo de novo (tema, furigana, tamanho, cores e traduções). */
-    private fun render(level: TextLevel.Result? = lastLevel) {
+    private fun render(given: TextLevel.Result? = null) {
+        // O "conheço X%" acompanha o que você marca (as frases já estão analisadas, é rápido)
+        val level = given ?: (try { TextLevel.analyze(paragraphs.flatten().map { it.text }) } catch (_: Exception) { lastLevel })
         lastLevel = level
         content.removeAllViews()
         placed.clear()
@@ -229,7 +244,7 @@ class ReaderActivity : Activity() {
             val tv = TextView(this)
             for (s in para) {
                 val off = sb.length
-                sb.append(Jp.decorate(s.text, VocabDb.studyKeys, th.saved, VocabDb.knownKeys, th.known) { w -> onWordTap(tv, w, s) })
+                sb.append(Jp.decorate(s.text, VocabDb.studyKeys, th.saved, VocabDb.knownKeys, th.known, all = true) { w -> onWordTap(tv, w, s) })
                 if (furigana) Furigana.decorate(this, sb, off, s.text)
                 ranges.add(off until sb.length to s)
             }
@@ -338,12 +353,13 @@ class ReaderActivity : Activity() {
         box.addView(tr)
         val meaning = Tr.cached(this, w.base)
         if (meaning != null) tr.text = meaning else Tr.translate(this, w.base) { t -> if (!isFinishing) tr.text = t ?: "(sem tradução)" }
-        val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        // Botões em fluxo (quebram de linha), para nenhum ficar cortado
+        val row = FlowLayout(this)
         fun small(label: String): Button = Button(this).apply {
             text = label; textSize = 12f; isAllCaps = false
             setTextColor(th.text); background = GradientDrawable().apply { cornerRadius = dp(12).toFloat(); setColor(th.bg); setStroke(dp(1), th.outline) }
             setPadding(dp(12), dp(4), dp(12), dp(4)); minHeight = 0; minimumHeight = 0
-            row.addView(this, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginEnd = dp(6) })
+            row.addView(this)
         }
         val saveBtn = small("")
         val knownBtn = small("")
@@ -364,8 +380,10 @@ class ReaderActivity : Activity() {
             popup?.dismiss()
             WordCard.show(this, w, s.text, base, maxOf(0, s.sec), onPlay = if (hasAudio && s.sec >= 0) ({ playSentence(s) }) else null, onChanged = { render() })
         }
-        box.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4) })
-        val p = PopupWindow(box, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true).apply {
+        small("✦ IA").setOnClickListener { popup?.dismiss(); aiWords(s.text, s) }
+        box.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4) })
+        val width = minOf(resources.displayMetrics.widthPixels - dp(32), dp(360))
+        val p = PopupWindow(box, width, ViewGroup.LayoutParams.WRAP_CONTENT, true).apply {
             isOutsideTouchable = true
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         }
@@ -406,7 +424,12 @@ class ReaderActivity : Activity() {
                 }
             }
         }
-        box.addView(aiBtn, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4) })
+        val aiRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; addView(aiBtn) }
+        aiRow.addView(Button(this).apply {
+            text = "✦ Palavras com IA"; isAllCaps = false; textSize = 13f
+            setOnClickListener { aiWords(sel, s) }
+        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(8) })
+        box.addView(aiRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4) })
 
         // Palavras do trecho
         val words = try { Jp.words(sel) } catch (_: Exception) { emptyList() }
@@ -460,6 +483,60 @@ class ReaderActivity : Activity() {
         }
         b.setNeutralButton("🔊 Ouvir") { _, _ -> speakText(sel) }
         b.show()
+    }
+
+    // ---------- IA: as palavras certas de um trecho ----------
+
+    /**
+     * Pede ao Gemini as palavras do trecho (inteiras, com leitura, classe e significado) e deixa salvar
+     * cada uma: a que o Kuromoji já conhece é salva como palavra normal; as outras viram palavras
+     * próprias (classe "ia") com o significado guardado, destacadas e tocáveis onde aparecerem.
+     */
+    private fun aiWords(sel: String, s: Texts.Sentence) {
+        if (!Ai.enabled(this)) { Toast.makeText(this, "Ative a IA em Configurações", Toast.LENGTH_LONG).show(); return }
+        val (dlg, label) = progressDialog("✦ Separando as palavras")
+        label.text = sel
+        Ai.analyzeWords(this, sel, s.text) { list, err ->
+            if (dlg.isShowing) dlg.dismiss()
+            if (isFinishing) return@analyzeWords
+            if (list == null || list.isEmpty()) { Toast.makeText(this, "Não consegui: ${err ?: "sem palavras"}", Toast.LENGTH_LONG).show(); return@analyzeWords }
+            val db = VocabDb.get(this)
+            val known = try { Jp.wordsAll(s.text) } catch (_: Exception) { emptyList() }
+            val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(22), dp(12), dp(22), dp(8)) }
+            box.addView(TextView(this).apply { text = sel; textSize = 18f; setTextColor(getColor(R.color.text)); setPadding(0, 0, 0, dp(8)) })
+            for (aw in list) {
+                // Palavra que o dicionário já conhece: salva como palavra normal (sem duplicar)
+                val w = known.firstOrNull { it.base == aw.base } ?: Jp.Word(aw.surface, aw.surface, aw.base, aw.reading, aw.pos, VocabDb.AI, "", 0, 0)
+                val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(4), 0, dp(4)) }
+                row.addView(TextView(this).apply {
+                    textSize = 15f; setTextColor(getColor(R.color.text))
+                    this.text = (if (aw.reading != aw.base) "${aw.base}（${aw.reading}）" else aw.base) + " · ${aw.pos}\n" + aw.meaning +
+                        (if (w.posKey != VocabDb.AI) "" else "  ✦")
+                }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                val save = Button(this).apply { textSize = 12f; isAllCaps = false; minHeight = 0; minimumHeight = 0; setPadding(dp(10), dp(4), dp(10), dp(4)) }
+                val kn = Button(this).apply { textSize = 12f; isAllCaps = false; minHeight = 0; minimumHeight = 0; setPadding(dp(10), dp(4), dp(10), dp(4)) }
+                fun refresh() { save.text = if (db.isSaved(w)) "★" else "☆"; kn.text = if (db.isKnown(w.key)) "✓" else "Conheço" }
+                fun saveIt() {
+                    db.save(w, s.text, base, maxOf(0, s.sec))
+                    if (aw.meaning.isNotBlank()) db.putTranslation(w.base, aw.meaning)
+                }
+                save.setOnClickListener { if (db.isSaved(w)) db.remove(w) else saveIt(); refresh(); render() }
+                kn.setOnClickListener {
+                    if (db.isKnown(w.key)) db.setKnown(w.key, false) else { if (!db.isSaved(w)) saveIt(); db.setKnown(w.key, true) }
+                    refresh(); render()
+                }
+                refresh()
+                row.addView(save, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(6) })
+                row.addView(kn, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(6) })
+                box.addView(row)
+            }
+            box.addView(TextView(this).apply {
+                text = "✦ = palavra que o dicionário do app não tinha: fica guardada com o significado da IA e destacada nos textos."
+                textSize = 12f; setTextColor(getColor(R.color.text_secondary)); setPadding(0, dp(10), 0, 0)
+            })
+            AlertDialog.Builder(this).setTitle("✦ Palavras do trecho").setView(ScrollView(this).apply { addView(box) })
+                .setNegativeButton("Fechar", null).show()
+        }
     }
 
     /** O trecho como palavra do vocabulário (classe "expressão", leitura pelo Kuromoji). */
@@ -614,9 +691,10 @@ class ReaderActivity : Activity() {
                 startActivity(Intent(this, StudyMenuActivity::class.java).putExtra(StudyActivity.EXTRA_URI, it.uri).putExtra(StudyActivity.EXTRA_NAME, it.name))
             }
             2 -> {
-                val cur = themes.indexOfFirst { it.id == prefs.readerTheme }.coerceAtLeast(0)
+                val list = allThemes
+                val cur = list.indexOfFirst { it.id == prefs.readerTheme }.coerceAtLeast(0)
                 AlertDialog.Builder(this).setTitle("Tema da página")
-                    .setSingleChoiceItems(themes.map { it.label }.toTypedArray(), cur) { d, i -> prefs.readerTheme = themes[i].id; render(); styleToolbar(); d.dismiss() }
+                    .setSingleChoiceItems(list.map { it.label }.toTypedArray(), cur) { d, i -> prefs.readerTheme = list[i].id; render(); styleToolbar(); d.dismiss() }
                     .setNegativeButton(android.R.string.cancel, null).show()
             }
             5 -> { prefs.readerTranslations = !prefs.readerTranslations; render(); invalidateOptionsMenu() }

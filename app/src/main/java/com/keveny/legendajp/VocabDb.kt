@@ -30,9 +30,13 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
 
         /** Classe das expressões salvas pelo marcador livre do leitor (trecho de vários tokens). */
         const val EXPR = "表現"
+        /** Classe das palavras montadas pela IA (quando o dicionário não conhece ou separa errado). */
+        const val AI = "ia"
 
-        /** Expressões salvas: texto → leitura. Destacadas e tocáveis onde aparecem (Jp.expressions). */
-        @Volatile var expressions: Map<String, String> = emptyMap()
+        data class Custom(val base: String, val reading: String, val pos: String, val posKey: String)
+
+        /** Palavras próprias: texto (forma de dicionário ou como apareceu) → palavra. Jp.expressions. */
+        @Volatile var custom: Map<String, Custom> = emptyMap()
             private set
     }
 
@@ -332,18 +336,28 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
     fun reloadKeys() {
         val keys = HashSet<String>()
         val known = HashSet<String>()
-        val expr = HashMap<String, String>()
-        readableDatabase.rawQuery("SELECT base, pos_key, known, reading FROM words", null).use { c ->
+        readableDatabase.rawQuery("SELECT base, pos_key, known FROM words", null).use { c ->
             while (c.moveToNext()) {
                 val k = c.getString(0) + "|" + c.getString(1)
                 keys.add(k)
                 if (c.getInt(2) == 1) known.add(k)
-                if (c.getString(1) == EXPR) expr[c.getString(0)] = c.getString(3)
+            }
+        }
+        val cust = HashMap<String, Custom>()
+        readableDatabase.rawQuery(
+            "SELECT w.base, w.reading, w.pos, w.pos_key, o.surface FROM words w LEFT JOIN occ o ON o.word_id = w.id WHERE w.pos_key IN (?, ?)",
+            arrayOf(EXPR, AI)
+        ).use { c ->
+            while (c.moveToNext()) {
+                val cw = Custom(c.getString(0), c.getString(1), c.getString(2), c.getString(3))
+                cust[cw.base] = cw
+                val surf = if (c.isNull(4)) "" else c.getString(4)
+                if (surf.isNotBlank()) cust.putIfAbsent(surf, cw)
             }
         }
         savedKeys = keys
         knownKeys = known
-        expressions = expr
+        custom = cust
         studyKeys = keys - known
         keysVersion++
     }

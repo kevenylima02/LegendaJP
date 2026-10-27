@@ -137,7 +137,7 @@ class Prefs(ctx: Context) {
 
     /** Leitor: tema da página (ReaderActivity.themes), ferramenta ativa e onde parou em cada texto. */
     var readerTheme: String
-        get() = sp.getString("readerTheme", "paper") ?: "paper"
+        get() = sp.getString("readerTheme", "app") ?: "app"
         set(v) = sp.edit().putString("readerTheme", v).apply()
 
     var readerTool: String

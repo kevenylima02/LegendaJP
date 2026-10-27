@@ -58,8 +58,13 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   exercício de kanji nunca ganha leitura antes da resposta. Na legenda flutuante é opcional (desligado).
 - **Textos** (botão na tela principal): colar, compartilhar de outro app (Compartilhar → Michi), arquivo .txt,
   foto ou imagem da galeria (ML Kit lê no celular; "✦ Ler com IA" usa o Gemini, melhor para texto vertical e
-  mangá). O leitor tem cara de página (temas Papel, Sépia e Noite em ⋮ → Tema da página), progresso e volta
-  de onde parou. A barra embaixo muda o que o toque faz: ✋ só rola; ✨ varinha abre um balão com leitura,
+  mangá). O leitor usa as cores do app (ou temas Papel, Sépia e Noite em ⋮ → Tema da página), mostra a
+  posição no texto quando ele não cabe na tela e volta de onde parou. Partículas, auxiliares e sufixos
+  (は, から, ます…) também são tocáveis, salváveis e contam no "conheço X%". **✦ IA** (na varinha e no
+  marcador): o Gemini separa as palavras do trecho como um dicionário faria (順番 inteiro, e não 順+番), com
+  leitura, classe e significado; cada uma pode ser salva ou marcada como conhecida — a que o dicionário já
+  tem vira palavra normal, as outras ficam guardadas como palavras próprias (classe "ia") com o significado
+  da IA, destacadas e tocáveis onde aparecerem. A barra embaixo muda o que o toque faz: ✋ só rola; ✨ varinha abre um balão com leitura,
   classe, significado, ☆ Salvar e Já conheço; 🖍 marcador livre: arrasta o dedo sobre um trecho e abre o
   bloco com tradução (ML Kit e ✦ IA), as palavras do trecho (salvar/conheço), gramática, Ouvir e **Salvar
   como expressão** (o trecho vira uma entrada do vocabulário e fica destacado e tocável onde aparecer — útil

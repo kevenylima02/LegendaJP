@@ -35,7 +35,7 @@ object TextLevel {
         val perLevel = IntArray(6)
         val points = HashMap<String, String>() // id → nível
         for (t in texts) {
-            for (w in (try { Jp.words(t) } catch (_: Exception) { emptyList() })) {
+            for (w in (try { Jp.wordsAll(t) + Jp.expressions(t) } catch (_: Exception) { emptyList() })) {
                 if (w.posKey !in content || w.base.all { it.isDigit() }) continue
                 tokens++
                 distinct.add(w.key)
