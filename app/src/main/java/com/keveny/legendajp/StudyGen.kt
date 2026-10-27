@@ -368,12 +368,16 @@ object StudyGen {
                     }
                 }
                 if (hasKanji && w.reading != w.base) {
-                    val others = allWords.filter { it.key != w.key && it.reading != it.base && it.base.any(::isKanji) }.shuffled(rnd).take(3)
-                    if (others.size == 3) {
+                    // Alternativas com o mesmo okurigana, para o final da palavra não entregar a resposta
+                    val wrongReadings = ReadingOptions.readings(ctx, w, allWords, rnd)
+                    if (wrongReadings.size == 3) {
                         out.add(Item.Choice(Focus.KANJI, "Palavra em kanji → leitura", line, "Como se lê 「${w.base}」?", w.reading,
-                            (others.map { it.reading } + w.reading).distinct().shuffled(rnd), "${w.base}: ${w.pos}", w))
+                            (wrongReadings + w.reading).shuffled(rnd), "${w.base}: ${w.pos}", w))
+                    }
+                    val wrongWords = ReadingOptions.words(ctx, w, allWords, kanjiPool, rnd)
+                    if (wrongWords.size == 3) {
                         out.add(Item.Choice(Focus.KANJI, "Leitura → palavra em kanji", line, "Qual palavra se lê 「${w.reading}」?", w.base,
-                            (others.map { it.base } + w.base).distinct().shuffled(rnd), "${w.base}: ${w.pos}", w))
+                            (wrongWords + w.base).shuffled(rnd), "${w.base}: ${w.pos}", w))
                     }
                 }
             }

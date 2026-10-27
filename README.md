@@ -31,6 +31,9 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   exercícios disponíveis; sessão de até 12 itens (ordenar a frase, lacuna gramatical, identificar o padrão,
   lacuna com áudio, tradução↔palavra, montar a palavra com kanji, leitura↔palavra em kanji). O áudio toca só o
   trecho da frase. Cada sessão fica no histórico da gravação, item a item, com a resposta dada e a certa.
+  Nos exercícios de leitura as alternativas erradas têm o mesmo okurigana da palavra (歩く: あるく / あゆく /
+  あるぐ / かく; e 歩く / 書く / 泣く / 暫く), geradas de outras leituras do kanji no KANJIDIC2, confusões
+  de som (dakuten, vogal longa, っ, ん, ゃゅょ) e kanji com o mesmo okurigana, para o final não entregar a resposta.
 - **Sessão de estudo**: botão Anterior para rever itens já respondidos (só leitura); ao terminar, os errados
   voltam até acertar (escrita à mão em 3 passos: traçar sobre o kanji em cinza, sem modelo com botão Lembrar,
   sem ajuda); Refazer repete os mesmos itens; sair no meio pede confirmação; só entra no histórico o que foi

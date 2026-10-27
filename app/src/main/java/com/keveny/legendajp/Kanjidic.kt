@@ -50,6 +50,33 @@ object Kanjidic {
 
     fun get(ctx: Context, c: Char): Info? = all(ctx)[c]
 
+    @Volatile private var okuriganaIndex: Map<String, List<Info>>? = null
+    @Volatile private var onIndex: Map<String, List<Info>>? = null
+
+    private fun common(ctx: Context) = all(ctx).values.filter { it.grade in 1..8 }
+
+    /** Kanji (séries 1–8) com uma leitura kun que termina nesse okurigana: "く" → 書, 聞, 泣… */
+    fun byOkurigana(ctx: Context, suffix: String): List<Info> {
+        val idx = okuriganaIndex ?: common(ctx).flatMap { i ->
+            i.kun.map { it.replace("-", "") }.filter { '.' in it }.map { it.substringAfter('.') }.distinct().map { it to i }
+        }.groupBy({ it.first }, { it.second }).also { okuriganaIndex = it }
+        return idx[suffix] ?: emptyList()
+    }
+
+    /** Kanji cujo okurigana começa igual mas não é esse: "しみ" → os de ".しい" (悲, 嬉…). */
+    fun byOkuriganaLike(ctx: Context, suffix: String): List<Info> {
+        byOkurigana(ctx, suffix)
+        val idx = okuriganaIndex ?: return emptyList()
+        return idx.filter { (k, _) -> k != suffix && k.first() == suffix.first() }.values.flatten().distinctBy { it.char }
+    }
+
+    /** Kanji (séries 1–8) com essa leitura on, em hiragana: "こう" → 校, 高, 交… */
+    fun byOn(ctx: Context, on: String): List<Info> {
+        val idx = onIndex ?: common(ctx).flatMap { i -> i.on.map { Jp.hiragana(it) }.distinct().map { it to i } }
+            .groupBy({ it.first }, { it.second }).also { onIndex = it }
+        return idx[on] ?: emptyList()
+    }
+
     /** Kanji com dados, para alternativas de distração. */
     fun sample(ctx: Context, exclude: Set<Char>, n: Int, rnd: kotlin.random.Random): List<Info> =
         all(ctx).values.filter { it.char !in exclude && it.meanings.isNotEmpty() && it.grade in 1..8 }
