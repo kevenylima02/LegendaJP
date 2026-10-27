@@ -26,6 +26,8 @@ class TextEditActivity : Activity() {
         const val EXTRA_TITLE = "title"
         const val EXTRA_IMAGE = "image"
         const val EXTRA_DELETE_IMAGE = "deleteImage"
+        /** Pasta (Folders) em que o texto novo entra, quando criado de dentro de uma pasta. */
+        const val EXTRA_FOLDER = "folder"
     }
 
     private lateinit var titleIn: EditText
@@ -103,6 +105,8 @@ class TextEditActivity : Activity() {
             val name = try { Texts.save(this, t, paras) } catch (e: Exception) {
                 runOnUiThread { Toast.makeText(this, "Não consegui salvar: ${e.message}", Toast.LENGTH_LONG).show() }; null
             }
+            val folder = intent.getLongExtra(EXTRA_FOLDER, Folders.NONE)
+            if (name != null && folder > 0) Folders.move(this, listOf(Recordings.baseName(name)), folder)
             runOnUiThread {
                 if (name == null) return@runOnUiThread
                 startActivity(Intent(this, ReaderActivity::class.java).putExtra(ReaderActivity.EXTRA_NAME, name))

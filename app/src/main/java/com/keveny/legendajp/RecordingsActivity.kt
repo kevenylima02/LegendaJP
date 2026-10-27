@@ -9,17 +9,32 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
+import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.TextView
 
-/** Lista as transcrições salvas em Download/LegendaJP. */
+/**
+ * Lista as transcrições salvas em Download/LegendaJP, organizadas em pastas (Folders): fichas
+ * Tudo / Sem pasta / pastas em cima; toque longo num item para mover, selecionar vários, renomear
+ * ou apagar.
+ */
 class RecordingsActivity : Activity() {
 
-    private data class Row(val item: Recordings.Item, val lines: Int, val preview: String, val hasWav: Boolean, val title: String?)
+    private data class Row(val item: Recordings.Item, val lines: Int, val preview: String, val hasWav: Boolean, val title: String?) {
+        val base get() = Recordings.baseName(item.name)
+    }
 
     private lateinit var list: ListView
     private lateinit var empty: TextView
+    private lateinit var folders: LinearLayout
+    private lateinit var selectBar: LinearLayout
+    private var allRows: List<Row> = emptyList()
     private var rows: List<Row> = emptyList()
+    private var folderMap: Map<String, Long> = emptyMap()
+    private var folder = Folders.ALL
+    private var selecting = false
+    private val selected = HashSet<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,9 +43,13 @@ class RecordingsActivity : Activity() {
         title = getString(R.string.recordings)
         list = findViewById(R.id.list)
         empty = findViewById(R.id.empty)
+        folders = findViewById(R.id.folders)
+        selectBar = findViewById(R.id.selectBar)
+        folder = Prefs(this).folderRecordings
         list.adapter = adapter
         list.setOnItemClickListener { _, _, pos, _ ->
             val r = rows[pos]
+            if (selecting) { toggle(r); return@setOnItemClickListener }
             startActivity(
                 Intent(this, ViewerActivity::class.java)
                     .putExtra(ViewerActivity.EXTRA_URI, r.item.uri)
@@ -39,13 +58,24 @@ class RecordingsActivity : Activity() {
         }
         list.setOnItemLongClickListener { _, _, pos, _ ->
             val row = rows[pos]
+            if (selecting) { toggle(row); return@setOnItemLongClickListener true }
             AlertDialog.Builder(this).setTitle(row.title ?: Recordings.prettyName(row.item.name))
-                .setItems(arrayOf("Renomear", "Apagar")) { _, which ->
-                    if (which == 0) Recordings.renameDialog(this, row.item.name) { load() } else confirmDelete(row)
+                .setItems(arrayOf("Mover para pasta…", "Selecionar vários", "Renomear", "Apagar")) { _, which ->
+                    when (which) {
+                        0 -> Folders.moveDialog(this, listOf(row.base)) { load() }
+                        1 -> { startSelecting(); toggle(row) }
+                        2 -> Recordings.renameDialog(this, row.item.name) { load() }
+                        else -> confirmDelete(row)
+                    }
                 }
                 .show()
             true
         }
+        findViewById<Button>(R.id.btnMove).setOnClickListener {
+            if (selected.isEmpty()) return@setOnClickListener
+            Folders.moveDialog(this, selected.toList()) { stopSelecting(); load() }
+        }
+        findViewById<Button>(R.id.btnCancelSelect).setOnClickListener { stopSelecting() }
     }
 
     override fun onResume() {
@@ -53,7 +83,54 @@ class RecordingsActivity : Activity() {
         load()
     }
 
+    override fun onBackPressed() {
+        if (selecting) stopSelecting() else super.onBackPressed()
+    }
+
+    // ---------- pastas e seleção ----------
+
+    private fun bindFolders() {
+        Folders.bind(this, folders, folder,
+            counts = { id -> allRows.count { Folders.matches(id, it.base, folderMap) } },
+            onSelect = { id -> folder = id; Prefs(this).folderRecordings = id; applyFolder() },
+            onChanged = { load() })
+    }
+
+    private fun applyFolder() {
+        rows = allRows.filter { Folders.matches(folder, it.base, folderMap) }
+        adapter.notifyDataSetChanged()
+        empty.visibility = if (rows.isEmpty()) View.VISIBLE else View.GONE
+        empty.text = if (allRows.isEmpty()) getString(R.string.no_recordings) else "Nenhuma gravação nesta pasta.\nToque longo numa gravação para mover."
+        bindFolders()
+    }
+
+    private fun startSelecting() {
+        selecting = true
+        selected.clear()
+        selectBar.visibility = View.VISIBLE
+        updateSelectBar()
+    }
+
+    private fun stopSelecting() {
+        selecting = false
+        selected.clear()
+        selectBar.visibility = View.GONE
+        adapter.notifyDataSetChanged()
+    }
+
+    private fun toggle(r: Row) {
+        if (!selected.remove(r.base)) selected.add(r.base)
+        updateSelectBar()
+        adapter.notifyDataSetChanged()
+    }
+
+    private fun updateSelectBar() {
+        findViewById<Button>(R.id.btnMove).text = if (selected.isEmpty()) "Toque nos itens para marcar" else "Mover ${selected.size} para pasta…"
+    }
+
     override fun onCreateOptionsMenu(menu: android.view.Menu): Boolean {
+        menu.add(0, 3, 0, "Estudar a pasta inteira")
+        menu.add(0, 4, 0, "Selecionar vários")
         menu.add(0, 1, 0, "Importar texto")
         menu.add(0, 2, 0, "Formato do texto (modelo)")
         return true
@@ -64,6 +141,9 @@ class RecordingsActivity : Activity() {
             android.R.id.home -> finish()
             1 -> importDialog()
             2 -> showTemplate()
+            3 -> if (folder > 0) startActivity(Folders.studyIntent(this, folder))
+                 else android.widget.Toast.makeText(this, "Escolha uma pasta sua em cima (não Tudo / Sem pasta)", android.widget.Toast.LENGTH_LONG).show()
+            4 -> startSelecting()
             else -> return super.onOptionsItemSelected(item)
         }
         return true
@@ -123,6 +203,8 @@ class RecordingsActivity : Activity() {
             val res = try { ImportText.save(this, parsed) } catch (e: Exception) { null.also { _ -> runOnUiThread {
                 android.widget.Toast.makeText(this, "Não consegui importar: ${e.message}", android.widget.Toast.LENGTH_LONG).show() } } }
             val item = res?.let { Recordings.find(this, it) }
+            // O que é importado dentro de uma pasta já entra nela
+            if (item != null && folder > 0) Folders.move(this, listOf(Recordings.baseName(item.name)), folder)
             runOnUiThread {
                 if (item == null) return@runOnUiThread
                 load()
@@ -173,10 +255,11 @@ class RecordingsActivity : Activity() {
                 val preview = lines.take(2).joinToString(" ") { Recordings.parseLine(it).second }
                 Row(item, lines.size, preview, Recordings.baseName(item.name) in wavs, Recordings.title(this, item.name))
             }
+            val fm = Folders.map(this)
             runOnUiThread {
-                rows = result
-                adapter.notifyDataSetChanged()
-                empty.visibility = if (rows.isEmpty()) View.VISIBLE else View.GONE
+                allRows = result
+                folderMap = fm
+                applyFolder()
             }
         }.start()
     }
@@ -201,12 +284,15 @@ class RecordingsActivity : Activity() {
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             val v = convertView ?: LayoutInflater.from(parent.context).inflate(R.layout.item_recording, parent, false)
             val r = rows[position]
-            v.findViewById<TextView>(R.id.title).text = r.title ?: Recordings.prettyName(r.item.name)
+            val on = selecting && r.base in selected
+            v.findViewById<TextView>(R.id.title).text = (if (on) "☑ " else if (selecting) "☐ " else "") + (r.title ?: Recordings.prettyName(r.item.name))
             val parts = mutableListOf("${r.lines} frases", Recordings.prettySize(r.item.size))
             if (r.title != null) parts.add(0, Recordings.prettyName(r.item.name))
             if (r.hasWav) parts.add("com áudio")
+            if (folder == Folders.ALL) folderMap[r.base]?.let { id -> Folders.name(this@RecordingsActivity, id)?.let { parts.add("📁 $it") } }
             v.findViewById<TextView>(R.id.subtitle).text = parts.joinToString(" · ")
             v.findViewById<TextView>(R.id.preview).text = r.preview
+            v.alpha = if (selecting && !on) 0.6f else 1f
             return v
         }
     }

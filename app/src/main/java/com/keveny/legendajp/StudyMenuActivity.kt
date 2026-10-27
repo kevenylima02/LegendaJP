@@ -33,9 +33,10 @@ class StudyMenuActivity : Activity() {
         actionBar?.setDisplayHomeAsUpEnabled(true)
         saved = intent.getBooleanExtra(StudyActivity.EXTRA_SAVED, false)
         uri = intent.getParcelableExtra(StudyActivity.EXTRA_URI, Uri::class.java)
-        if (!saved && uri == null) { finish(); return }
         name = if (saved) StudyActivity.SAVED_RECORDING else (intent.getStringExtra(StudyActivity.EXTRA_NAME) ?: "")
-        title = if (saved) "Estudar · Vocabulário salvo" else "Estudar · " + Recordings.display(this, name)
+        val folder = Folders.isStudyName(name)
+        if (!saved && !folder && uri == null) { finish(); return }
+        title = if (saved) "Estudar · Vocabulário salvo" else if (folder) "Estudar · " + Folders.studyTitle(this, name) else "Estudar · " + Recordings.display(this, name)
         list = findViewById(R.id.history)
         list.adapter = adapter
         list.setOnItemClickListener { _, _, pos, _ ->
@@ -74,7 +75,7 @@ class StudyMenuActivity : Activity() {
 
         // Contagem de exercícios disponíveis por foco
         Thread {
-            val lines = if (saved) StudyGen.linesFromVocab(this) else {
+            val lines = if (saved) StudyGen.linesFromVocab(this) else if (folder) Folders.lines(this, name) else {
                 val text = try { Recordings.readText(this, uri!!) } catch (_: Exception) { "" }
                 StudyGen.lines(text, Recordings.baseName(name))
             }

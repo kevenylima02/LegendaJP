@@ -237,7 +237,7 @@ class StudyActivity : Activity() {
                     .filter { it.wordKey == null || it.wordKey !in VocabDb.knownKeys }
                     .take(MISTAKES_PER_SESSION)
             } else {
-                val lines = if (saved) StudyGen.linesFromVocab(this) else {
+                val lines = if (saved) StudyGen.linesFromVocab(this) else if (Folders.isStudyName(recording)) Folders.lines(this, recording) else {
                     val text = try { Recordings.readText(this, uri!!) } catch (_: Exception) { "" }
                     StudyGen.lines(text, recording)
                 }

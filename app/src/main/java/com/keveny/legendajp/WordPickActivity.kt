@@ -104,7 +104,7 @@ class WordPickActivity : Activity() {
         updateBottom()
 
         Thread {
-            val lines = if (saved) StudyGen.linesFromVocab(this) else {
+            val lines = if (saved) StudyGen.linesFromVocab(this) else if (Folders.isStudyName(recording)) Folders.lines(this, recording) else {
                 val text = try { Recordings.readText(this, uri!!) } catch (_: Exception) { "" }
                 StudyGen.lines(text, recording)
             }

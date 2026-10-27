@@ -147,6 +147,24 @@ class Prefs(ctx: Context) {
     fun readerPos(base: String): Int = sp.getInt("readerPos:$base", 0)
     fun setReaderPos(base: String, y: Int) = sp.edit().putInt("readerPos:$base", y).apply()
 
+    /** Vocabulário: filtro (VocabActivity.filters) e ordenação (sorts) escolhidos. */
+    var vocabFilter: String
+        get() = sp.getString("vocabFilter", "all") ?: "all"
+        set(v) = sp.edit().putString("vocabFilter", v).apply()
+
+    var vocabSort: String
+        get() = sp.getString("vocabSort", "recent") ?: "recent"
+        set(v) = sp.edit().putString("vocabSort", v).apply()
+
+    /** Pasta aberta nas telas Gravações e Textos (Folders.ALL = Tudo). */
+    var folderRecordings: Long
+        get() = sp.getLong("folderRecordings", Folders.ALL)
+        set(v) = sp.edit().putLong("folderRecordings", v).apply()
+
+    var folderTexts: Long
+        get() = sp.getLong("folderTexts", Folders.ALL)
+        set(v) = sp.edit().putLong("folderTexts", v).apply()
+
     var readerTranslations: Boolean
         get() = sp.getBoolean("readerTranslations", false)
         set(v) = sp.edit().putBoolean("readerTranslations", v).apply()

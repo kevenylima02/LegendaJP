@@ -8,26 +8,39 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.Button
+import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 
 /**
- * Textos para leitura: a lista e as formas de trazer um texto (colar, foto, galeria, arquivo ou
- * compartilhar de outro app para o Michi). Tocar abre o leitor.
+ * Textos para leitura: a lista (em pastas, as mesmas das gravações) e as formas de trazer um texto
+ * (colar, foto, galeria, arquivo ou compartilhar de outro app para o Michi). Tocar abre o leitor;
+ * toque longo: mover para pasta, selecionar vários, renomear, apagar.
  */
 class TextsActivity : Activity() {
 
-    private data class Row(val item: Recordings.Item, val sentences: Int, val preview: String, val title: String?)
+    private data class Row(val item: Recordings.Item, val sentences: Int, val preview: String, val title: String?) {
+        val base get() = Recordings.baseName(item.name)
+    }
 
     private lateinit var list: ListView
     private lateinit var empty: TextView
+    private lateinit var folders: LinearLayout
+    private lateinit var selectBar: LinearLayout
+    private lateinit var moveBtn: Button
+    private var allRows: List<Row> = emptyList()
     private var rows: List<Row> = emptyList()
+    private var folderMap: Map<String, Long> = emptyMap()
+    private var folder = Folders.ALL
+    private var selecting = false
+    private val selected = HashSet<String>()
     private var photoUri: Uri? = null
 
     private val reqPhoto = 11
@@ -38,13 +51,15 @@ class TextsActivity : Activity() {
         super.onCreate(savedInstanceState)
         actionBar?.setDisplayHomeAsUpEnabled(true)
         title = "Textos"
+        folder = Prefs(this).folderTexts
         val d = resources.displayMetrics.density
-        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding((16 * d).toInt(), (4 * d).toInt(), (16 * d).toInt(), (16 * d).toInt()) }
+        fun dp(v: Int) = (v * d).toInt()
+        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(4), dp(16), 0) }
         val actions = FlowLayout(this)
         fun action(label: String, onClick: () -> Unit) = actions.addView(Button(this).apply {
             text = label; isAllCaps = false; textSize = 14f
             setBackgroundResource(R.drawable.bg_button_outline); setTextColor(getColor(R.color.text))
-            minHeight = 0; minimumHeight = 0; setPadding((14 * d).toInt(), (8 * d).toInt(), (14 * d).toInt(), (8 * d).toInt())
+            minHeight = 0; minimumHeight = 0; setPadding(dp(14), dp(8), dp(14), dp(8))
             stateListAnimator = null
             setOnClickListener { onClick() }
         })
@@ -57,30 +72,52 @@ class TextsActivity : Activity() {
         root.addView(actions)
         root.addView(TextView(this).apply {
             text = "Também dá para selecionar um texto em outro app (navegador, notícias…) e usar Compartilhar → Michi."
-            textSize = 12f; setTextColor(getColor(R.color.text_secondary)); setPadding(0, (6 * d).toInt(), 0, (8 * d).toInt())
+            textSize = 12f; setTextColor(getColor(R.color.text_secondary)); setPadding(0, dp(6), 0, dp(8))
         })
+        folders = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        root.addView(HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false; addView(folders); setPadding(0, 0, 0, dp(8)) })
         empty = TextView(this).apply {
-            text = "Nenhum texto ainda."; textSize = 15f; setTextColor(getColor(R.color.text_secondary)); setPadding(0, (24 * d).toInt(), 0, 0)
+            text = "Nenhum texto ainda."; textSize = 15f; setTextColor(getColor(R.color.text_secondary)); setPadding(0, dp(24), 0, 0)
         }
         list = ListView(this).apply { divider = null }
         root.addView(empty)
         root.addView(list, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
+        moveBtn = Button(this).apply { isAllCaps = false }
+        val cancelBtn = Button(this).apply { text = "Cancelar"; isAllCaps = false; setOnClickListener { stopSelecting() } }
+        selectBar = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL; setPadding(0, dp(8), 0, dp(8)); visibility = View.GONE
+            setBackgroundColor(getColor(R.color.card))
+            addView(moveBtn, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(8) })
+            addView(cancelBtn)
+        }
+        root.addView(selectBar)
         setContentView(root)
+        moveBtn.setOnClickListener {
+            if (selected.isEmpty()) return@setOnClickListener
+            Folders.moveDialog(this, selected.toList()) { stopSelecting(); load() }
+        }
         list.adapter = adapter
         list.setOnItemClickListener { _, _, pos, _ ->
-            startActivity(Intent(this, ReaderActivity::class.java).putExtra(ReaderActivity.EXTRA_NAME, rows[pos].item.name))
+            val r = rows[pos]
+            if (selecting) { toggle(r); return@setOnItemClickListener }
+            startActivity(Intent(this, ReaderActivity::class.java).putExtra(ReaderActivity.EXTRA_NAME, r.item.name))
         }
         list.setOnItemLongClickListener { _, _, pos, _ ->
             val r = rows[pos]
+            if (selecting) { toggle(r); return@setOnItemLongClickListener true }
             AlertDialog.Builder(this).setTitle(r.title ?: Recordings.prettyName(r.item.name))
-                .setItems(arrayOf("Renomear", "Apagar")) { _, which ->
-                    if (which == 0) Recordings.renameDialog(this, r.item.name) { load() }
-                    else AlertDialog.Builder(this).setMessage("Apagar este texto?").setNegativeButton(android.R.string.cancel, null)
-                        .setPositiveButton("Apagar") { _, _ ->
-                            Recordings.delete(this, r.item.uri)
-                            Recordings.find(this, Recordings.baseName(r.item.name) + ".wav")?.let { Recordings.delete(this, it.uri) }
-                            load()
-                        }.show()
+                .setItems(arrayOf("Mover para pasta…", "Selecionar vários", "Renomear", "Apagar")) { _, which ->
+                    when (which) {
+                        0 -> Folders.moveDialog(this, listOf(r.base)) { load() }
+                        1 -> { startSelecting(); toggle(r) }
+                        2 -> Recordings.renameDialog(this, r.item.name) { load() }
+                        else -> AlertDialog.Builder(this).setMessage("Apagar este texto?").setNegativeButton(android.R.string.cancel, null)
+                            .setPositiveButton("Apagar") { _, _ ->
+                                Recordings.delete(this, r.item.uri)
+                                Recordings.find(this, Recordings.baseName(r.item.name) + ".wav")?.let { Recordings.delete(this, it.uri) }
+                                load()
+                            }.show()
+                    }
                 }.show()
             true
         }
@@ -90,6 +127,27 @@ class TextsActivity : Activity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleShare(intent)
+    }
+
+    override fun onBackPressed() {
+        if (selecting) stopSelecting() else super.onBackPressed()
+    }
+
+    override fun onCreateOptionsMenu(menu: android.view.Menu): Boolean {
+        menu.add(0, 1, 0, "Estudar a pasta inteira")
+        menu.add(0, 2, 0, "Selecionar vários")
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> finish()
+            1 -> if (folder > 0) startActivity(Folders.studyIntent(this, folder))
+                 else Toast.makeText(this, "Escolha uma pasta sua em cima (não Tudo / Sem pasta)", Toast.LENGTH_LONG).show()
+            2 -> startSelecting()
+            else -> return super.onOptionsItemSelected(item)
+        }
+        return true
     }
 
     /** Texto compartilhado de outro app. */
@@ -106,6 +164,47 @@ class TextsActivity : Activity() {
         load()
     }
 
+    // ---------- pastas e seleção ----------
+
+    private fun bindFolders() {
+        Folders.bind(this, folders, folder,
+            counts = { id -> allRows.count { Folders.matches(id, it.base, folderMap) } },
+            onSelect = { id -> folder = id; Prefs(this).folderTexts = id; applyFolder() },
+            onChanged = { load() })
+    }
+
+    private fun applyFolder() {
+        rows = allRows.filter { Folders.matches(folder, it.base, folderMap) }
+        adapter.notifyDataSetChanged()
+        empty.visibility = if (rows.isEmpty()) View.VISIBLE else View.GONE
+        empty.text = if (allRows.isEmpty()) "Nenhum texto ainda." else "Nenhum texto nesta pasta.\nToque longo num texto para mover."
+        bindFolders()
+    }
+
+    private fun startSelecting() {
+        selecting = true
+        selected.clear()
+        selectBar.visibility = View.VISIBLE
+        updateSelectBar()
+    }
+
+    private fun stopSelecting() {
+        selecting = false
+        selected.clear()
+        selectBar.visibility = View.GONE
+        adapter.notifyDataSetChanged()
+    }
+
+    private fun toggle(r: Row) {
+        if (!selected.remove(r.base)) selected.add(r.base)
+        updateSelectBar()
+        adapter.notifyDataSetChanged()
+    }
+
+    private fun updateSelectBar() {
+        moveBtn.text = if (selected.isEmpty()) "Toque nos itens para marcar" else "Mover ${selected.size} para pasta…"
+    }
+
     private fun load() {
         Thread {
             val items = Recordings.list(this, ".txt").filter { Texts.isText(it.name) }
@@ -114,10 +213,11 @@ class TextsActivity : Activity() {
                 val all = paras.flatten()
                 Row(item, all.size, all.take(2).joinToString("") { it.text }, Recordings.title(this, item.name))
             }
+            val fm = Folders.map(this)
             runOnUiThread {
-                rows = r
-                adapter.notifyDataSetChanged()
-                empty.visibility = if (r.isEmpty()) View.VISIBLE else View.GONE
+                allRows = r
+                folderMap = fm
+                applyFolder()
             }
         }.start()
     }
@@ -128,6 +228,8 @@ class TextsActivity : Activity() {
             putExtra(TextEditActivity.EXTRA_TITLE, title)
             if (image != null) putExtra(TextEditActivity.EXTRA_IMAGE, image.toString())
             putExtra(TextEditActivity.EXTRA_DELETE_IMAGE, deleteImage)
+            // Um texto criado dentro de uma pasta já entra nela
+            if (folder > 0) putExtra(TextEditActivity.EXTRA_FOLDER, folder)
         })
     }
 
@@ -174,11 +276,15 @@ class TextsActivity : Activity() {
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             val v = convertView ?: LayoutInflater.from(parent.context).inflate(R.layout.item_recording, parent, false)
             val r = rows[position]
-            v.findViewById<TextView>(R.id.title).text = r.title ?: Recordings.prettyName(r.item.name)
-            v.findViewById<TextView>(R.id.subtitle).text = listOfNotNull(
-                if (r.title != null) Recordings.prettyName(r.item.name) else null, "${r.sentences} frases"
-            ).joinToString(" · ")
+            val on = selecting && r.base in selected
+            v.findViewById<TextView>(R.id.title).text = (if (on) "☑ " else if (selecting) "☐ " else "") + (r.title ?: Recordings.prettyName(r.item.name))
+            val parts = mutableListOf<String>()
+            if (r.title != null) parts.add(Recordings.prettyName(r.item.name))
+            parts.add("${r.sentences} frases")
+            if (folder == Folders.ALL) folderMap[r.base]?.let { id -> Folders.name(this@TextsActivity, id)?.let { parts.add("📁 $it") } }
+            v.findViewById<TextView>(R.id.subtitle).text = parts.joinToString(" · ")
             v.findViewById<TextView>(R.id.preview).text = r.preview
+            v.alpha = if (selecting && !on) 0.6f else 1f
             return v
         }
     }

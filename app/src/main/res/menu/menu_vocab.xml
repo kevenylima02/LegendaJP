@@ -6,8 +6,7 @@
         android:showAsAction="always|withText" />
     <item
         android:id="@+id/action_sort"
-        android:title="Ordenar por leitura"
-        android:checkable="true"
+        android:title="Ordenar…"
         android:showAsAction="never" />
     <item
         android:id="@+id/action_export"

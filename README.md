@@ -67,6 +67,14 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   destacando-a. Também ふ (furigana), A− e A+. Toque longo na frase: tradução, gramática e áudio. Menu:
   Estudar, traduções embaixo dos parágrafos, ✦ Traduzir, Criar áudio. Salvos como texto_AAAAMMDD_HHMMSS.txt
   (#p entre parágrafos).
+- **Pastas** (Gravações e Textos): fichas Tudo / Sem pasta / suas pastas em cima da lista, com a contagem; as
+  mesmas pastas valem para as duas telas (cada uma mostra só os itens dela). Toque longo num item: Mover para
+  pasta, Selecionar vários (marca e move de uma vez), Renomear, Apagar. Toque longo numa pasta: Estudar a
+  pasta inteira (as frases de todos os itens juntas), Renomear, Apagar (os itens voltam para Sem pasta). Um
+  texto criado ou importado dentro de uma pasta já entra nela. Só no banco: os arquivos não mudam de lugar.
+- **Vocabulário**: filtros Todas / Estudando / Conheço / Novas (sem exercício ainda) / Com kanji / Expressões,
+  cada um com a contagem; ordenar por mais recentes, leitura, mais ou menos dominadas, mais frequentes; a
+  linha de resumo mostra quantas estão em estudo e quantas você já conhece.
 - **Importar texto** (Gravações → ⋮): colar ou escolher .txt/.srt. Formato Michi (modelo em ⋮ → Formato do texto):
   `# michi: 1`, `# titulo: …`, `# locutores: A=Nome (feminino), B=Nome (masculino)`, e uma frase por linha
   `A: 日本語のフレーズ。 | tradução`. Vira uma gravação sem áudio, com título, locutores e traduções.
