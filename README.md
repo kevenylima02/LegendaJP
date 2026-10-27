@@ -67,8 +67,14 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
 - **Gerar áudio** (visualizador → ⋮): voz do celular (TTS do Android, grátis e offline) ou Gemini TTS
   (gemini-3.8-flash-lite-tts, blocos de até 12 frases com até 2 vozes, dividido nas pausas; espera o limite
   de 3 pedidos por minuto do plano grátis). Escolha em Configurações. Cada frase começa num segundo exato.
-- **Locutores**: "✦ Identificar locutores (IA)" manda o áudio (partes de 6 min) ao Gemini e marca quem fala
-  cada frase; nomes e tipo de voz em "Locutores (nomes)". A etiqueta colorida aparece em cada frase.
+  A voz do celular usa só vozes instaladas; se uma voz falha numa frase, o locutor passa para outra voz
+  (mesmo gênero, depois qualquer uma, depois a padrão) e a frase é tentada de novo; o erro mostra a voz e o
+  motivo. Cada frase gerada fica guardada; se parar no meio, dá para completar com o outro motor
+  ("Completar com o Gemini" / "Completar com a voz do celular").
+- **Locutores**: ao terminar uma gravação com áudio (com o Gemini na nuvem; chave em Configurações → IA) o
+  app identifica quem fala pela voz e chama de Personagem 1, 2, 3…; "✦ Identificar locutores (IA)" faz o
+  mesmo a pedido (partes de 6 min). Nomes e tipo de voz em "Locutores (nomes)". A etiqueta colorida aparece
+  em cada frase.
 - **Revisão espaçada** (botão Revisar na tela principal e menu ⋮): FSRS 4.5 (o algoritmo do Anki), retenção de 90%.
   Cartões de significado e de kanji para cada palavra salva (o "Estudar" da escolha de palavras salva a palavra)
   e de gramática para os padrões que aparecem nos exercícios. Toda primeira resposta conta (acertou = Bom,

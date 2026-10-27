@@ -736,6 +736,14 @@ class CaptureService : Service() {
         TranscriptStore.level = 0
         TranscriptStore.partial = ""
         TranscriptStore.notifyChanged()
+        if (hasText && wavInfo.isNotEmpty() && TranscriptStore.lines.size >= 2 && Prefs(this).autoSpeakers && Ai.mode(this) == Ai.CLOUD) {
+            // Quem fala cada frase (Personagem 1, 2, 3…), em segundo plano; o visualizador mostra ao abrir
+            val app = applicationContext
+            Ai.identifySpeakers(app, baseName, progress = { _, _ -> }, done = { n, err ->
+                if (err != null) Log.w(TAG, "locutores: $err")
+                else android.widget.Toast.makeText(app, if (n <= 1) "✦ Uma pessoa fala na gravação" else "✦ $n personagens identificados na gravação", android.widget.Toast.LENGTH_LONG).show()
+            })
+        }
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }

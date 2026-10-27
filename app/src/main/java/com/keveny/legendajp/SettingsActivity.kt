@@ -123,6 +123,9 @@ class SettingsActivity : Activity() {
         val prefer = findViewById<Switch>(R.id.swPreferGemini)
         prefer.isChecked = prefs.trPreferGemini
         prefer.setOnCheckedChangeListener { _, on -> prefs.trPreferGemini = on }
+        val autoSp = findViewById<Switch>(R.id.swAutoSpeakers)
+        autoSp.isChecked = prefs.autoSpeakers
+        autoSp.setOnCheckedChangeListener { _, on -> prefs.autoSpeakers = on }
         val testBtn = findViewById<Button>(R.id.btnAiTest)
         testBtn.setOnClickListener {
             saveAiFields()

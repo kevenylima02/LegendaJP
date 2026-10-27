@@ -276,6 +276,15 @@
             android:textColor="@color/text"
             android:textSize="14sp" />
 
+        <Switch
+            android:id="@+id/swAutoSpeakers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Ao terminar uma gravação, identificar quem fala pela voz (Personagem 1, 2, 3…; só com o Gemini na nuvem)"
+            android:textColor="@color/text"
+            android:textSize="14sp" />
+
         <Button
             android:id="@+id/btnAiTest"
             style="@style/Button.Outline"

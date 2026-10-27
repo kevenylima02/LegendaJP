@@ -173,9 +173,26 @@ object AudioGen {
         return tts
     }
 
-    /** Vozes japonesas offline do motor. */
+    /** Vozes japonesas offline do motor, só as instaladas (a Samsung lista vozes que ainda não baixou). */
     fun japaneseVoices(tts: TextToSpeech): List<Voice> =
-        tts.voices?.filter { it.locale.language == "ja" && !it.isNetworkConnectionRequired }?.sortedBy { it.name } ?: emptyList()
+        (try { tts.voices } catch (_: Exception) { null })
+            ?.filter { it.locale.language == "ja" && !it.isNetworkConnectionRequired && !notInstalled(it) }
+            ?.sortedBy { it.name } ?: emptyList()
+
+    fun notInstalled(v: Voice) = v.features?.contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED) == true
+
+    /** Nome do erro do TextToSpeech para mostrar. */
+    private fun ttsError(code: Int) = when (code) {
+        TextToSpeech.ERROR_SYNTHESIS -> "falha na síntese"
+        TextToSpeech.ERROR_SERVICE -> "o motor de voz falhou"
+        TextToSpeech.ERROR_OUTPUT -> "não conseguiu gravar o arquivo"
+        TextToSpeech.ERROR_NETWORK -> "precisa de internet"
+        TextToSpeech.ERROR_NETWORK_TIMEOUT -> "internet demorou"
+        TextToSpeech.ERROR_INVALID_REQUEST -> "pedido inválido"
+        TextToSpeech.ERROR_NOT_INSTALLED_YET -> "voz ainda não instalada"
+        Int.MIN_VALUE -> "sem resposta em 60 s"
+        else -> "erro $code"
+    }
 
     /**
      * A voz é feminina? Primeiro o que você marcou em Configurações → Vozes do celular; senão pelo nome
@@ -217,29 +234,63 @@ object AudioGen {
                 v to pitch
             }
             val latches = ConcurrentHashMap<String, CountDownLatch>()
-            val failed = ConcurrentHashMap.newKeySet<String>()
+            val failed = ConcurrentHashMap<String, Int>()
             tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                 override fun onStart(utteranceId: String) {}
                 override fun onDone(utteranceId: String) { latches[utteranceId]?.countDown() }
-                @Deprecated("API antiga") override fun onError(utteranceId: String) { failed.add(utteranceId); latches[utteranceId]?.countDown() }
-                override fun onError(utteranceId: String, errorCode: Int) { failed.add(utteranceId); latches[utteranceId]?.countDown() }
+                @Deprecated("API antiga") override fun onError(utteranceId: String) { failed[utteranceId] = TextToSpeech.ERROR; latches[utteranceId]?.countDown() }
+                override fun onError(utteranceId: String, errorCode: Int) { failed[utteranceId] = errorCode; latches[utteranceId]?.countDown() }
             })
+            // Se uma voz falha numa frase, o locutor passa para a próxima voz (mesmo gênero, depois
+            // qualquer uma, depois a voz padrão do motor) e a frase é tentada de novo
+            val current = HashMap(choice)
+            fun alternatives(id: String): List<Pair<Voice?, Float>> {
+                val (v, pitch) = choice.getValue(id)
+                val want = female(id)
+                val rest = voices.filter { it != v }.sortedBy { if (isFemale(ctx, it) == want) 0 else if (isFemale(ctx, it) == null) 1 else 2 }
+                return rest.map { it to (if (isFemale(ctx, it) == want) 1.0f else pitch) } + listOf(null to pitch)
+            }
+            val pending = HashMap<String, ArrayDeque<Pair<Voice?, Float>>>()
+            var attempt = 0
             for ((i, text) in texts.withIndex()) {
-                if (stopRequested) break
                 if (segs[i] != null) continue
-                progress("Gerando a voz (celular)…", segs.count { it != null }, texts.size)
-                val (voice, pitch) = choice.getValue(speakerOf(i))
-                if (voice != null) tts.voice = voice
-                tts.setPitch(pitch)
-                val f = File(ctx.cacheDir, "tts_$i.wav")
-                val id = "michi_$i"
-                val latch = CountDownLatch(1)
-                latches[id] = latch
-                tts.synthesizeToFile(text, Bundle(), f, id)
-                latch.await(60, TimeUnit.SECONDS)
-                if (id in failed || !f.exists()) throw IllegalStateException("O celular não conseguiu gerar a frase ${i + 1}")
-                store(i, readWav(f.readBytes()))
-                f.delete()
+                val errors = mutableListOf<String>()
+                while (true) {
+                    if (stopRequested) return
+                    progress("Gerando a voz (celular)…", segs.count { it != null }, texts.size)
+                    val id = speakerOf(i)
+                    val (voice, pitch) = current.getValue(id)
+                    try { if (voice != null) tts.voice = voice else tts.voice = tts.defaultVoice } catch (_: Exception) {}
+                    tts.setPitch(pitch)
+                    val f = File(ctx.cacheDir, "tts_$i.wav")
+                    f.delete()
+                    val uid = "michi_${i}_${attempt++}"
+                    val latch = CountDownLatch(1)
+                    latches[uid] = latch
+                    val queued = tts.synthesizeToFile(text, Bundle(), f, uid)
+                    val finished = queued == TextToSpeech.SUCCESS && latch.await(60, TimeUnit.SECONDS)
+                    val code = when {
+                        queued != TextToSpeech.SUCCESS -> queued
+                        !finished -> Int.MIN_VALUE
+                        failed.containsKey(uid) -> failed.getValue(uid)
+                        !f.exists() || f.length() <= 44 -> TextToSpeech.ERROR_OUTPUT
+                        else -> null
+                    }
+                    latches.remove(uid)
+                    if (code == null) {
+                        store(i, readWav(f.readBytes()))
+                        f.delete()
+                        break
+                    }
+                    val vName = voice?.name ?: "voz padrão"
+                    errors.add("$vName: ${ttsError(code)}")
+                    Log.w(TAG, "frase ${i + 1} falhou com $vName (erro $code)")
+                    val alts = pending.getOrPut(id) { ArrayDeque(alternatives(id)) }
+                    val next = alts.removeFirstOrNull()
+                        ?: throw IllegalStateException("O celular não conseguiu gerar a frase ${i + 1} com nenhuma voz (${errors.joinToString("; ")})")
+                    current[id] = next
+                    progress("Tentando outra voz para a frase ${i + 1}…", segs.count { it != null }, texts.size)
+                }
             }
         } finally {
             tts.shutdown()

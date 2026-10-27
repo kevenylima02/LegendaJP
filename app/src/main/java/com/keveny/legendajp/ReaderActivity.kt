@@ -283,18 +283,20 @@ class ReaderActivity : Activity() {
             })
     }
 
-    private fun createAudio() {
+    private fun createAudio(engine: String = Prefs(this).ttsEngine, allowOther: Boolean = false) {
         val (dlg, label) = progressDialog("Criando o áudio")
-        AudioGen.generate(this, "$base.txt", Prefs(this).ttsEngine, false,
+        AudioGen.generate(this, "$base.txt", engine, allowOther,
             progress = { msg, d, t -> label.text = "$msg\n$d de $t frases" },
             done = { err, ok, total ->
                 if (dlg.isShowing) dlg.dismiss()
                 if (err == null) { Toast.makeText(this, "Áudio criado", Toast.LENGTH_LONG).show(); player?.release(); player = null; load(); return@generate }
-                val b = AlertDialog.Builder(this).setTitle("O áudio não terminou").setMessage(err).setNegativeButton("Fechar", null)
-                if (total > 0 && ok < total) b.setPositiveButton("Completar com a voz do celular") { _, _ ->
-                    AudioGen.generate(this, "$base.txt", AudioGen.PHONE, true, { _, _, _ -> }, { e, _, _ ->
-                        Toast.makeText(this, e ?: "Áudio criado", Toast.LENGTH_LONG).show(); if (e == null) load()
-                    })
+                // Parou no meio: o que foi gerado fica guardado; dá para completar com o outro motor
+                val b = AlertDialog.Builder(this).setTitle("O áudio não terminou").setMessage(
+                    err + if (ok in 1 until total) "\n\nCriar de novo continua de onde parou." else ""
+                ).setNegativeButton("Fechar", null)
+                if (total > 0 && ok < total) {
+                    if (engine == AudioGen.GEMINI) b.setPositiveButton("Completar com a voz do celular") { _, _ -> createAudio(AudioGen.PHONE, allowOther = true) }
+                    else if (Ai.mode(this) == Ai.CLOUD) b.setPositiveButton("Completar com o Gemini") { _, _ -> createAudio(AudioGen.GEMINI, allowOther = true) }
                 }
                 b.show()
             })

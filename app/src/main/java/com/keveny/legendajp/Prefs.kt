@@ -94,6 +94,11 @@ class Prefs(ctx: Context) {
         get() = sp.getBoolean("trPreferGemini", true)
         set(v) = sp.edit().putBoolean("trPreferGemini", v).apply()
 
+    /** Ao terminar uma gravação com áudio, o Gemini identifica quem fala (Personagem 1, 2, 3…). */
+    var autoSpeakers: Boolean
+        get() = sp.getBoolean("autoSpeakers", true)
+        set(v) = sp.edit().putBoolean("autoSpeakers", v).apply()
+
     /** Gerar áudio de texto importado: AudioGen.PHONE (TTS do celular) ou AudioGen.GEMINI. */
     var ttsEngine: String
         get() = sp.getString("ttsEngine", AudioGen.PHONE) ?: AudioGen.PHONE

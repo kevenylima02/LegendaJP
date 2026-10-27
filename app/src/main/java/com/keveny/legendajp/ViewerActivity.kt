@@ -293,7 +293,10 @@ class ViewerActivity : Activity() {
                 val b = AlertDialog.Builder(this).setTitle("O áudio não terminou").setMessage(
                     err + if (ok in 1 until total) "\n\nGerar de novo continua de onde parou." else ""
                 ).setNegativeButton("Fechar", null)
-                if (total > 0 && ok < total) b.setPositiveButton("Completar com a voz do celular") { _, _ -> generateAudio(AudioGen.PHONE, allowOther = true) }
+                if (total > 0 && ok < total) {
+                    if (engine == AudioGen.GEMINI) b.setPositiveButton("Completar com a voz do celular") { _, _ -> generateAudio(AudioGen.PHONE, allowOther = true) }
+                    else if (Ai.mode(this) == Ai.CLOUD) b.setPositiveButton("Completar com o Gemini") { _, _ -> generateAudio(AudioGen.GEMINI, allowOther = true) }
+                }
                 b.show()
             })
     }

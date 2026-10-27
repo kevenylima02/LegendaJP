@@ -236,7 +236,8 @@ object Ai {
                 val infos = order.map { id ->
                     val nid = rename.getValue(id)
                     val d = descr[id] ?: ""
-                    Speakers.Info(nid, old[nid]?.name ?: nid, when { "femin" in d.lowercase() -> true; "mascul" in d.lowercase() -> false; else -> null })
+                    Speakers.Info(nid, old[nid]?.name?.takeIf { it != nid } ?: "Personagem ${nid[0] - 'A' + 1}",
+                        when { "femin" in d.lowercase() -> true; "mascul" in d.lowercase() -> false; else -> null })
                 }
                 Speakers.save(app, recording, finalLines, infos)
                 count = infos.size

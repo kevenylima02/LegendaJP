@@ -29,7 +29,8 @@ Regras:
 1. A primeira linha é: # michi: 1
 2. Depois, opcionalmente: # titulo: <título curto em português>
 3. Se houver mais de uma pessoa falando: # locutores: A=<nome> (feminino|masculino), B=<nome> (feminino|masculino)
-   Use letras A, B, C… como identificadores.
+   Use letras A, B, C… como identificadores. Informe sempre se cada pessoa é feminino ou masculino
+   (define a voz usada ao gerar o áudio); se não souber, deduza pelo nome ou pelo contexto.
 4. Depois, uma frase em japonês por linha (no máximo uma ou duas orações; quebre frases longas).
 5. Em cada linha: opcionalmente o locutor no começo ("A: "), a frase em japonês, e opcionalmente " | " e a tradução natural em português do Brasil.
 6. Se souber o tempo em que a frase é dita no áudio, comece a linha com [mm:ss].
