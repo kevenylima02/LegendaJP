@@ -48,6 +48,11 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   "Copiar todos" leva os outros para ajuste no código. Tudo fica no celular.
 - **Dificuldade do áudio** no visualizador: % de palavras que você conhece (verde), está estudando (lavanda)
   e novas, nível JLPT estimado do texto e padrões de gramática por nível.
+- **Textos** (botão na tela principal): colar, compartilhar de outro app (Compartilhar → Michi), arquivo .txt,
+  foto ou imagem da galeria (ML Kit lê no celular; "✦ Ler com IA" usa o Gemini, melhor para texto vertical e
+  mangá). O leitor tem palavras tocáveis, cores, **furigana por cima dos kanji (liga/desliga)**, tamanho da letra,
+  traduções embaixo dos parágrafos, toque longo na frase (tradução, gramática, áudio), Estudar, ✦ Traduzir e
+  Criar áudio (um narrador). Salvos como texto_AAAAMMDD_HHMMSS.txt (#p entre parágrafos).
 - **Importar texto** (Gravações → ⋮): colar ou escolher .txt/.srt. Formato Michi (modelo em ⋮ → Formato do texto):
   `# michi: 1`, `# titulo: …`, `# locutores: A=Nome (feminino), B=Nome (masculino)`, e uma frase por linha
   `A: 日本語のフレーズ。 | tradução`. Vira uma gravação sem áudio, com título, locutores e traduções.

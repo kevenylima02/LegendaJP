@@ -167,7 +167,7 @@ class RecordingsActivity : Activity() {
     private fun load() {
         Thread {
             val wavs = Recordings.list(this, ".wav").map { Recordings.baseName(it.name) }.toSet()
-            val result = Recordings.list(this, ".txt").map { item ->
+            val result = Recordings.list(this, ".txt").filter { !Texts.isText(it.name) }.map { item ->
                 val text = try { Recordings.readText(this, item.uri) } catch (_: Exception) { "" }
                 val lines = text.lines().filter { it.isNotBlank() && !it.startsWith("#") }
                 val preview = lines.take(2).joinToString(" ") { Recordings.parseLine(it).second }

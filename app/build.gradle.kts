@@ -21,8 +21,8 @@ android {
         applicationId = "com.keveny.legendajp"
         minSdk = 33          // EXTRA_AUDIO_SOURCE e sessões segmentadas exigem Android 13+
         targetSdk = 34
-        versionCode = 26
-        versionName = "0.26"
+        versionCode = 27
+        versionName = "0.27"
         buildConfigField("String", "GEMINI_KEY", "\"$geminiKey\"")
     }
 
@@ -77,5 +77,7 @@ dependencies {
     implementation("com.google.mlkit:digital-ink-recognition:19.0.0")
     // Gemini Nano no aparelho (AICore), para as explicações com IA
     implementation("com.google.mlkit:genai-prompt:1.0.0-beta4")
+    // Ler texto japonês de fotos (no celular; o Google Play baixa o modelo uma vez)
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition-japanese:16.0.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 }

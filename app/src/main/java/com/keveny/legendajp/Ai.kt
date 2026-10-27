@@ -250,6 +250,42 @@ object Ai {
         }.start()
     }
 
+    /** Texto japonês de uma foto (ordem de leitura, sem furigana). O callback roda na thread principal. */
+    fun readImage(ctx: Context, uri: android.net.Uri, cb: (String?, String?) -> Unit) {
+        val app = ctx.applicationContext
+        Thread {
+            var text: String? = null
+            var err: String? = null
+            try {
+                // Reduz para ~1600 px no lado maior (JPEG)
+                val opts = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                app.contentResolver.openInputStream(uri)?.use { android.graphics.BitmapFactory.decodeStream(it, null, opts) }
+                var sample = 1
+                while (maxOf(opts.outWidth, opts.outHeight) / sample > 1600) sample *= 2
+                val bmp = app.contentResolver.openInputStream(uri)?.use {
+                    android.graphics.BitmapFactory.decodeStream(it, null, android.graphics.BitmapFactory.Options().apply { inSampleSize = sample })
+                } ?: throw IllegalStateException("Não consegui abrir a imagem")
+                val bytes = java.io.ByteArrayOutputStream().also { bmp.compress(android.graphics.Bitmap.CompressFormat.JPEG, 85, it) }.toByteArray()
+                val prompt = "Transcreva todo o texto em japonês desta imagem, na ordem de leitura (texto vertical: colunas da direita para a esquerda; " +
+                    "mangá: balões na ordem japonesa). Ignore furigana (a leitura pequena ao lado dos kanji), números de página e ruído. " +
+                    "Uma frase por linha; parágrafos ou balões separados por uma linha vazia. Responda só com o texto, sem comentários."
+                val body = JSONObject()
+                    .put("contents", JSONArray().put(JSONObject().put("parts", JSONArray()
+                        .put(JSONObject().put("inlineData", JSONObject().put("mimeType", "image/jpeg")
+                            .put("data", android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP))))
+                        .put(JSONObject().put("text", prompt)))))
+                    .put("generationConfig", JSONObject().put("temperature", 0.1))
+                text = runCloudBody(app, body).trim().ifEmpty { null }
+                if (text == null) err = "resposta vazia"
+            } catch (e: Exception) {
+                Log.e(TAG, "readImage", e)
+                err = e.message ?: e.javaClass.simpleName
+            }
+            val t = text; val e2 = err
+            main.post { cb(t, e2) }
+        }.start()
+    }
+
     /** Título curto em português para a gravação, a partir da transcrição (e das traduções que houver). */
     fun suggestTitle(ctx: Context, recording: String, cb: (String?, String?) -> Unit) {
         val app = ctx.applicationContext

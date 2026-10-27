@@ -137,7 +137,17 @@ object AudioGen {
         Recordings.find(ctx, "$base.wav")?.let { Recordings.delete(ctx, it.uri) }
         val wavUri = Recordings.create(ctx, "$base.wav", "audio/wav") ?: throw IllegalStateException("Não consegui criar o WAV")
         ctx.contentResolver.openOutputStream(wavUri)!!.use { it.write(wavHeader(pcm.size.toLong())); it.write(pcm) }
-        val body = texts.indices.joinToString("\n") { "[${CaptureService.formatTime(secs[it])}] ${texts[it]}" } + "\n"
+        // Reescreve na mesma ordem, mantendo as linhas com # (ex.: #p entre parágrafos dos textos)
+        var k = 0
+        val body = Recordings.readText(ctx, item.uri).lines().mapNotNull { raw ->
+            val t = raw.trim()
+            when {
+                t.startsWith("#") -> t
+                t.isEmpty() || Recordings.parseLine(t).second.trim().isEmpty() -> null
+                k < texts.size -> { val i = k++; "[${CaptureService.formatTime(secs[i])}] ${texts[i]}" }
+                else -> null
+            }
+        }.joinToString("\n") + "\n"
         ctx.contentResolver.openOutputStream(item.uri, "wt")!!.use { it.write(body.toByteArray(Charsets.UTF_8)) }
         VocabDb.get(ctx).deleteTiming(base)
         return texts.size

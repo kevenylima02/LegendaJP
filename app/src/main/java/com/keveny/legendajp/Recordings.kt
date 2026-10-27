@@ -62,7 +62,7 @@ object Recordings {
     fun prettyName(name: String): String {
         if (name.startsWith("__vocabulario__")) return "Vocabulário salvo"
         if (name.startsWith("__erros__")) return "Revisão de erros"
-        val m = Regex("legenda_(\\d{4})(\\d{2})(\\d{2})_(\\d{2})(\\d{2})(\\d{2})").find(name) ?: return name
+        val m = Regex("(?:legenda|texto)_(\\d{4})(\\d{2})(\\d{2})_(\\d{2})(\\d{2})(\\d{2})").find(name) ?: return name
         val (y, mo, d, h, mi, _) = m.destructured
         return "$d/$mo/$y $h:$mi"
     }

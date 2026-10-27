@@ -55,6 +55,36 @@
             android:exported="false"
             android:parentActivityName=".StudyMenuActivity" />
 
+        <!-- Modelo de leitura de japonês (OCR) baixado pelo Google Play ao instalar -->
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="ocr_japanese" />
+
+        <activity
+            android:name=".TextsActivity"
+            android:exported="true"
+            android:label="Michi"
+            android:launchMode="singleTop"
+            android:parentActivityName=".MainActivity">
+            <!-- Compartilhar texto de outro app → Michi -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".TextEditActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"
+            android:parentActivityName=".TextsActivity" />
+
+        <activity
+            android:name=".ReaderActivity"
+            android:exported="false"
+            android:parentActivityName=".TextsActivity" />
+
         <activity
             android:name=".ReportsActivity"
             android:exported="false"

@@ -111,6 +111,19 @@ class Prefs(ctx: Context) {
         }.toMap()
         set(v) = sp.edit().putStringSet("voiceGenders", v.map { "${it.key}=${if (it.value) "f" else "m"}" }.toSet()).apply()
 
+    /** Leitor de textos: furigana por cima dos kanji, tamanho da letra (sp) e traduções embaixo dos parágrafos. */
+    var furigana: Boolean
+        get() = sp.getBoolean("furigana", true)
+        set(v) = sp.edit().putBoolean("furigana", v).apply()
+
+    var readerSize: Int
+        get() = sp.getInt("readerSize", 20)
+        set(v) = sp.edit().putInt("readerSize", v).apply()
+
+    var readerTranslations: Boolean
+        get() = sp.getBoolean("readerTranslations", false)
+        set(v) = sp.edit().putBoolean("readerTranslations", v).apply()
+
     var geminiModel: String
         get() = sp.getString("geminiModel", Ai.DEFAULT_MODEL) ?: Ai.DEFAULT_MODEL
         set(v) = sp.edit().putString("geminiModel", v.trim()).apply()

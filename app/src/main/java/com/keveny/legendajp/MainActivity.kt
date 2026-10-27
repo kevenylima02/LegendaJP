@@ -105,6 +105,9 @@ class MainActivity : Activity() {
         }
         transcript.movementMethod = LinkMovementMethod.getInstance()
         transcript.highlightColor = Color.TRANSPARENT
+        findViewById<Button>(R.id.btnTexts).setOnClickListener {
+            startActivity(Intent(this, TextsActivity::class.java))
+        }
         findViewById<Button>(R.id.btnReview).setOnClickListener {
             startActivity(Intent(this, ReviewActivity::class.java))
         }
