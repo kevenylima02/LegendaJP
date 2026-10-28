@@ -14,34 +14,45 @@ import android.view.Gravity
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.BaseAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
+import android.widget.ListView
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.File
 
 /**
  * Dicionário de gramática: todos os padrões do catálogo, com busca, filtro por nível e "nas minhas
- * frases". Cada ficha tem explicação, como se forma (grupos 1, 2 e 3), exemplo, as suas frases onde o
- * padrão apareceu, estado na revisão, ✦ explicação pela IA e "Estudar este padrão". No alto,
- * ✦ material de estudo do nível escrito pela IA (guardado para ler depois, sem internet).
+ * frases". Cada ficha tem explicação, como se forma (grupos 1, 2 e 3), exemplo, uma frase sua onde o
+ * padrão apareceu, estado na revisão, ✦ explicação pela IA e "Estudar" (sessão só com as frases desse
+ * padrão). No alto, ✦ material de estudo do nível escrito pela IA (guardado para ler depois, sem internet).
+ *
+ * Leveza: a lista é um ListView (só as fichas visíveis existem) e a busca dos padrões nas suas frases
+ * fica guardada por arquivo (files/grammar_index), refeita só para arquivos novos ou alterados.
  */
 class GrammarDictActivity : Activity() {
 
-    companion object { const val EXTRA_ID = "point" }
+    companion object {
+        const val EXTRA_ID = "point"
+        /** Quantas frases por padrão ficam guardadas para a ficha e para a sessão de estudo. */
+        private const val KEEP = 30
+    }
 
-    private class Mine(val lines: List<Pair<StudyGen.Line, Grammar.Hit>>)
+    private class Mine(var count: Int, val lines: MutableList<Pair<StudyGen.Line, Grammar.Hit>>)
 
     private var level: String? = null          // null = todos
     private var onlyMine = false
     private var query = ""
     private var mine: Map<String, Mine> = emptyMap()
     private var scanned = false
-    private val cards = HashMap<String, View>()
-    private lateinit var listBox: LinearLayout
-    private lateinit var scroll: ScrollView
+    private var items: List<Grammar.Point> = emptyList()
+    private lateinit var list: ListView
     private lateinit var header: TextView
     private val chips = HashMap<String, Button>()
 
@@ -51,7 +62,7 @@ class GrammarDictActivity : Activity() {
         super.onCreate(savedInstanceState)
         actionBar?.setDisplayHomeAsUpEnabled(true)
         title = "Dicionário de gramática"
-        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(8), dp(16), dp(8)) }
+        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(8), dp(16), 0) }
         val search = EditText(this).apply {
             hint = "Buscar padrão ou significado"; setSingleLine(); textSize = 15f
             setBackgroundResource(R.drawable.bg_card); setPadding(dp(14), dp(10), dp(14), dp(10))
@@ -85,9 +96,12 @@ class GrammarDictActivity : Activity() {
                 setOnClickListener { guide() }
             }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8) })
         }
-        listBox = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(0, dp(8), 0, dp(16)) }
-        scroll = ScrollView(this).apply { isVerticalScrollBarEnabled = false; addView(listBox) }
-        root.addView(scroll, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
+        list = ListView(this).apply {
+            adapter = this@GrammarDictActivity.adapter
+            divider = null; dividerHeight = dp(10); clipToPadding = false; setPadding(0, dp(8), 0, dp(16))
+            isVerticalScrollBarEnabled = false; cacheColorHint = 0; selector = android.graphics.drawable.ColorDrawable(0)
+        }
+        root.addView(list, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
         setContentView(root)
         render()
         scan()
@@ -98,23 +112,61 @@ class GrammarDictActivity : Activity() {
         return super.onOptionsItemSelected(item)
     }
 
-    /** Procura cada padrão em todas as frases (gravações e textos), em segundo plano. */
+    // ---------- padrões nas suas frases (com índice por arquivo) ----------
+
+    private fun indexDir() = File(filesDir, "grammar_index").apply { mkdirs() }
+
+    /**
+     * Procura cada padrão em todas as frases (gravações e textos), em segundo plano. O resultado de
+     * cada arquivo fica em files/grammar_index/<nome>.json (chave: tamanho do texto), para a próxima
+     * abertura não refazer o Kuromoji em tudo.
+     */
     private fun scan() {
         Thread {
-            val lines = try { Folders.lines(this, Folders.STUDY_PREFIX + Folders.ALL) } catch (_: Exception) { emptyList() }
-            val byPoint = LinkedHashMap<String, MutableList<Pair<StudyGen.Line, Grammar.Hit>>>()
-            for (l in lines) {
-                if (l.text.length < 4) continue
-                for (h in (try { Grammar.find(l.text) } catch (_: Exception) { emptyList() })) byPoint.getOrPut(h.point.id) { mutableListOf() }.add(l to h)
+            val byPoint = HashMap<String, Mine>()
+            val dir = indexDir()
+            val seen = HashSet<String>()
+            for (item in (try { Recordings.list(this, ".txt") } catch (_: Exception) { emptyList() })) {
+                val base = Recordings.baseName(item.name)
+                val text = try { Recordings.readText(this, item.uri) } catch (_: Exception) { continue }
+                val lines = StudyGen.lines(text, base)
+                val f = File(dir, base.replace(Regex("[^A-Za-z0-9_.-]"), "_") + ".json")
+                seen.add(f.name)
+                var hits: JSONArray? = null
+                if (f.exists()) try {
+                    val o = JSONObject(f.readText())
+                    if (o.optInt("len", -1) == text.length) hits = o.optJSONArray("hits")
+                } catch (_: Exception) {}
+                if (hits == null) {
+                    hits = JSONArray()
+                    for ((i, l) in lines.withIndex()) {
+                        if (l.text.length < 4) continue
+                        for (h in (try { Grammar.find(l.text) } catch (_: Exception) { emptyList() }))
+                            hits.put(JSONArray().put(i).put(h.point.id).put(h.start).put(h.end))
+                    }
+                    try { f.writeText(JSONObject().put("len", text.length).put("hits", hits).toString()) } catch (_: Exception) {}
+                }
+                for (k in 0 until hits.length()) {
+                    val a = hits.optJSONArray(k) ?: continue
+                    val l = lines.getOrNull(a.optInt(0)) ?: continue
+                    val p = Grammar.point(a.optString(1)) ?: continue
+                    val m = byPoint.getOrPut(p.id) { Mine(0, mutableListOf()) }
+                    m.count++
+                    if (m.lines.size < KEEP) m.lines.add(l to Grammar.Hit(p, a.optInt(2), a.optInt(3)))
+                }
             }
+            // Índices de arquivos apagados
+            dir.listFiles()?.forEach { if (it.name !in seen) it.delete() }
             runOnUiThread {
                 if (isFinishing) return@runOnUiThread
-                mine = byPoint.mapValues { Mine(it.value) }
+                mine = byPoint
                 scanned = true
                 render()
             }
         }.start()
     }
+
+    // ---------- lista ----------
 
     private fun levelOf(p: Grammar.Point) = p.level.removePrefix("N").toIntOrNull() ?: 5
 
@@ -126,7 +178,7 @@ class GrammarDictActivity : Activity() {
                 (q.isEmpty() || p.name.lowercase().contains(q) || p.explanation.lowercase().contains(q) || p.id.contains(q) ||
                     (GrammarDrill.spec(p.id)?.meaning?.lowercase()?.contains(q) ?: false))
         }
-        return if (onlyMine) all.sortedByDescending { mine[it.id]?.lines?.size ?: 0 } else all.sortedByDescending { levelOf(it) }
+        return if (onlyMine) all.sortedByDescending { mine[it.id]?.count ?: 0 } else all.sortedByDescending { levelOf(it) }
     }
 
     private fun render() {
@@ -135,26 +187,24 @@ class GrammarDictActivity : Activity() {
             b.setBackgroundResource(if (on) R.drawable.bg_button_primary else R.drawable.bg_button_outline)
             b.setTextColor(if (on) 0xFFFFFFFF.toInt() else getColor(R.color.text))
         }
-        val list = visible()
+        items = visible()
         val byLevel = Grammar.all.groupingBy { it.level }.eachCount()
-        header.text = "${list.size} de ${Grammar.all.size} padrões · " + listOf("N5", "N4", "N3").joinToString(" · ") { "$it ${byLevel[it] ?: 0}" } +
+        header.text = "${items.size} de ${Grammar.all.size} padrões · " + listOf("N5", "N4", "N3").joinToString(" · ") { "$it ${byLevel[it] ?: 0}" } +
             (if (scanned) " · ${mine.size} aparecem nas suas frases" else " · procurando nas suas frases…")
-        listBox.removeAllViews()
-        cards.clear()
-        if (list.isEmpty()) {
-            listBox.addView(TextView(this).apply { text = "Nenhum padrão com esse filtro."; textSize = 15f; setTextColor(getColor(R.color.text_secondary)) })
-            return
-        }
-        for (p in list) {
-            val v = card(p)
-            cards[p.id] = v
-            listBox.addView(v, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(10) })
-        }
+        adapter.notifyDataSetChanged()
         val want = intent.getStringExtra(EXTRA_ID)
-        if (want != null && scanned && cards.containsKey(want)) {  // só depois da busca nas frases: as fichas mudam de altura
+        if (want != null && scanned) {   // só depois da busca nas frases: as fichas mudam de altura
             intent.removeExtra(EXTRA_ID)
-            scroll.post { cards[want]?.let { scroll.smoothScrollTo(0, it.top) } }
+            val i = items.indexOfFirst { it.id == want }
+            if (i >= 0) list.post { list.setSelection(i) }
         }
+    }
+
+    private val adapter = object : BaseAdapter() {
+        override fun getCount() = items.size
+        override fun getItem(position: Int) = items[position]
+        override fun getItemId(position: Int) = position.toLong()
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View = card(items[position])
     }
 
     private fun card(p: Grammar.Point): View {
@@ -171,7 +221,7 @@ class GrammarDictActivity : Activity() {
         box.addView(TextView(this).apply { text = p.explanation; textSize = 14f; setTextColor(getColor(R.color.text)); setPadding(0, dp(4), 0, 0) })
         val bucket = Srs.get(this, Srs.GRAMMAR, p.id)?.let { Srs.bucket(it) }
         val meta = mutableListOf<String>()
-        meta.add(if (m != null) "nas suas frases: ${m.lines.size}" else if (scanned) "ainda não apareceu nas suas frases" else "…")
+        meta.add(if (m != null) "nas suas frases: ${m.count}" else if (scanned) "ainda não apareceu nas suas frases" else "…")
         meta.add(if (bucket != null) "revisão: $bucket" else "ainda sem cartão")
         meta.add(if (spec != null) "com exercícios de uso" else "só reconhecer")
         box.addView(TextView(this).apply { text = meta.joinToString(" · "); textSize = 12f; setTextColor(getColor(R.color.text_secondary)); setPadding(0, dp(4), 0, 0) })
@@ -191,11 +241,6 @@ class GrammarDictActivity : Activity() {
             val (line, hit) = m.lines.first()
             box.addView(TextView(this).apply {
                 text = boldSpan(line.text, hit.start, hit.end); textSize = 15f; setTextColor(getColor(R.color.text)); setPadding(0, dp(6), 0, 0)
-                setOnClickListener { showAll(p, m) }
-            })
-            if (m.lines.size > 1) box.addView(TextView(this).apply {
-                text = "ver as ${m.lines.size} frases"; textSize = 12f; setTextColor(getColor(R.color.accent)); setPadding(0, dp(2), 0, 0)
-                setOnClickListener { showAll(p, m) }
             })
         }
         val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, dp(8), 0, 0) }
@@ -216,21 +261,13 @@ class GrammarDictActivity : Activity() {
         return s
     }
 
-    private fun showAll(p: Grammar.Point, m: Mine) {
-        val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(20), dp(8), dp(20), dp(8)) }
-        for ((l, h) in m.lines) box.addView(TextView(this).apply {
-            text = boldSpan(l.text, h.start, h.end); textSize = 16f; setTextColor(getColor(R.color.text)); setPadding(0, dp(6), 0, dp(6))
-        })
-        AlertDialog.Builder(this).setTitle("${p.name} · ${m.lines.size} frases").setView(ScrollView(this).apply { addView(box) })
-            .setPositiveButton("Fechar", null).show()
-    }
-
-    /** Sessão só com este padrão: as suas frases onde ele aparece (todas as pastas) mais os exercícios de uso para cada grupo. */
+    /** Sessão só com este padrão: as suas frases onde ele aparece (até [KEEP]) mais os exercícios de uso para cada grupo. */
     private fun study(p: Grammar.Point, m: Mine?) {
         if (m == null && GrammarDrill.spec(p.id) == null) {
             Toast.makeText(this, "Esse padrão ainda não apareceu nas suas frases e não tem exercícios de uso: por enquanto só dá para ler.", Toast.LENGTH_LONG).show()
             return
         }
+        StudyGen.pendingLines = m?.lines?.map { it.first } ?: emptyList()
         startActivity(Intent(this, StudyActivity::class.java)
             .putExtra(StudyActivity.EXTRA_NAME, Folders.STUDY_PREFIX + Folders.ALL)
             .putExtra(StudyActivity.EXTRA_FOCUS, StudyGen.Focus.GRAMATICA.name)

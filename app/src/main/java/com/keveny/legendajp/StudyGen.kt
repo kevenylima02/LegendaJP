@@ -10,6 +10,9 @@ object StudyGen {
     /** Uma frase com início e fim (em segundos) no áudio; sec < 0 quando não há áudio. recording = gravação de origem. */
     data class Line(val sec: Int, val text: String, val endSec: Int, val recording: String? = null)
 
+    /** Frases entregues prontas para a próxima sessão (dicionário de gramática: só as frases do padrão, em vez de varrer tudo). */
+    @Volatile var pendingLines: List<Line>? = null
+
     /**
      * @param level nível JLPT do conteúdo (5 = N5 … 3 = N3 ou acima); itens do nível do usuário ou acima têm prioridade.
      * @param wordKey palavra do vocabulário a que o item se refere (para a pontuação), se houver.

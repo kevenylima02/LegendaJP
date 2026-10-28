@@ -77,6 +77,11 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   pasta, Selecionar vários (marca e move de uma vez), Renomear, Apagar. Toque longo numa pasta: Estudar a
   pasta inteira (as frases de todos os itens juntas), Renomear, Apagar (os itens voltam para Sem pasta). Um
   texto criado ou importado dentro de uma pasta já entra nela. Só no banco: os arquivos não mudam de lugar.
+- **Dicionário mais leve (build-40)**: a lista é reciclada (só as fichas na tela existem), a busca dos padrões nas
+  suas frases fica guardada por arquivo (files/grammar_index, refeita só para arquivo novo ou alterado), saiu o
+  "ver as N frases", e "Estudar" na ficha monta a sessão só com as frases daquele padrão (até 30) em vez de
+  varrer todas as gravações e textos. "✦ Palavras (IA)": números, letras e símbolos não viram palavra nem ficam
+  colados na seguinte (3室 → 室), e cada palavra mostra o texto em cima e os botões embaixo.
 - **Dicionário de gramática** (menu ⋮, Estudar e Configurações): todos os padrões do catálogo com busca, filtros
   N5/N4/N3 e "Nas minhas frases"; cada ficha tem explicação, como se forma (grupos 1, 2 e 3), exemplo, as suas
   frases onde o padrão apareceu, estado na revisão, "Estudar" (sessão só com aquele padrão) e ✦ explicação pela IA.

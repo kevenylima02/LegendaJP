@@ -36,12 +36,13 @@ object AiWords {
                 if (!Jp.isLexical(aw.base)) continue // números, letras, símbolos: não são palavras para salvar
                 // Palavra que o dicionário já conhece: salva como palavra normal (sem duplicar)
                 val w = known.firstOrNull { it.base == aw.base } ?: Jp.Word(aw.surface, aw.surface, aw.base, aw.reading, aw.pos, VocabDb.AI, "", 0, 0)
-                val row = LinearLayout(act).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(4), 0, dp(4)) }
-                row.addView(TextView(act).apply {
+                val item = LinearLayout(act).apply { orientation = LinearLayout.VERTICAL; setPadding(0, dp(6), 0, dp(6)) }
+                item.addView(TextView(act).apply {
                     textSize = 15f; setTextColor(act.getColor(R.color.text))
                     this.text = (if (aw.reading != aw.base) "${aw.base}（${aw.reading}）" else aw.base) + " · ${aw.pos}\n" + aw.meaning +
                         (if (w.posKey != VocabDb.AI) "" else "  ✦")
-                }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                })
+                val row = LinearLayout(act).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.END or Gravity.CENTER_VERTICAL; setPadding(0, dp(4), 0, 0) }
                 fun small() = Button(act).apply { textSize = 12f; isAllCaps = false; minHeight = 0; minimumHeight = 0; setPadding(dp(10), dp(4), dp(10), dp(4)) }
                 val save = small()
                 val kn = small()
@@ -65,7 +66,8 @@ object AiWords {
                 row.addView(save, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(6) })
                 row.addView(kn, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(6) })
                 if (kanji != null) row.addView(kanji, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(6) })
-                box.addView(row)
+                item.addView(row)
+                box.addView(item)
             }
             box.addView(TextView(act).apply {
                 text = "✦ = palavra que o dicionário do app não tinha: fica guardada com o significado da IA e destacada nos textos."

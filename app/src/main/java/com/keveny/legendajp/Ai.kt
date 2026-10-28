@@ -127,6 +127,7 @@ object Ai {
                         if (text != sentence) append("Trecho de interesse: ").append(text).append('\n')
                         append("Separe o trecho em palavras como um dicionário japonês-português faria: palavras compostas inteiras ")
                         append("(順番, e não 順 + 番), verbos com a forma de dicionário, partículas e auxiliares também contam. ")
+                        append("Números, letras latinas e símbolos não são palavras: não os inclua e não os cole na palavra seguinte (3室 → só 室, 10時 → só 時). ")
                         append("Para cada palavra: forma (como aparece), base (forma de dicionário), leitura (só hiragana), ")
                         append("classe (substantivo, verbo (godan), verbo (ichidan), verbo (suru), adjetivo-i, adjetivo-na, advérbio, partícula, auxiliar, expressão, nome próprio…) ")
                         append("e significado curto em português do Brasil, no sentido usado na frase. ")
@@ -144,9 +145,16 @@ object Ai {
                 val arr = o.optJSONArray("palavras") ?: JSONArray()
                 list = (0 until arr.length()).mapNotNull { i ->
                     val w = arr.optJSONObject(i) ?: return@mapNotNull null
-                    val base = w.optString("base").trim().ifEmpty { w.optString("forma").trim() }
-                    if (base.isEmpty()) null else AiWord(w.optString("forma").trim().ifEmpty { base }, base,
-                        Jp.hiragana(w.optString("leitura").trim().ifEmpty { base }), w.optString("classe").trim().ifEmpty { "palavra" }, w.optString("significado").trim())
+                    // Tira números, letras e símbolos colados (3室 → 室); se sobrou nada, não é palavra
+                    fun lex(s: String) = s.trim().trimStart { !Jp.isLexicalChar(it) }.trimEnd { !Jp.isLexicalChar(it) }
+                    val raw = w.optString("base").trim().ifEmpty { w.optString("forma").trim() }
+                    val base = lex(raw)
+                    val reading0 = Jp.hiragana(w.optString("leitura").trim().ifEmpty { base })
+                    val reading = if (base == raw) reading0 else try {
+                        Jp.hiragana(Jp.tokenize(base).joinToString("") { t -> if (t.reading == "*" || t.reading.isNullOrEmpty()) t.surface else t.reading })
+                    } catch (_: Exception) { base }
+                    if (base.isEmpty()) null else AiWord(lex(w.optString("forma")).ifEmpty { base }, base,
+                        reading, w.optString("classe").trim().ifEmpty { "palavra" }, w.optString("significado").trim())
                 }
                 null
             } catch (e: Exception) {

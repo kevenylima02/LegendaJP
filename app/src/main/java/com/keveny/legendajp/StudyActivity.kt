@@ -241,7 +241,8 @@ class StudyActivity : Activity() {
                     .filter { !StudyGen.hiddenByKnown(it) }
                     .take(MISTAKES_PER_SESSION)
             } else {
-                val lines = if (saved) StudyGen.linesFromVocab(this) else if (Folders.isStudyName(recording)) Folders.lines(this, recording) else {
+                val given = StudyGen.pendingLines?.also { StudyGen.pendingLines = null }
+                val lines = if (given != null) given else if (saved) StudyGen.linesFromVocab(this) else if (Folders.isStudyName(recording)) Folders.lines(this, recording) else {
                     val text = try { Recordings.readText(this, uri!!) } catch (_: Exception) { "" }
                     StudyGen.lines(text, recording)
                 }
