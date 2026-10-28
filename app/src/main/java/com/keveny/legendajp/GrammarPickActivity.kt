@@ -146,6 +146,18 @@ class GrammarPickActivity : Activity() {
         meta.add(if (r.bucket != null) "revisão: ${r.bucket}" else "ainda sem cartão")
         meta.add(if (r.spec != null) "com exercícios de uso" else "só reconhecer")
         box.addView(TextView(this).apply { text = meta.joinToString(" · "); textSize = 12f; setTextColor(getColor(R.color.text_secondary)); setPadding(0, dp(4), 0, 0) })
+        if (r.spec != null) {
+            // Como se forma (grupos 1, 2 e 3): fechado por padrão, toque abre
+            val formation = r.spec.formation()
+            val tv = TextView(this).apply { textSize = 13f; setTextColor(getColor(R.color.accent)); setPadding(0, dp(6), 0, 0); text = "▸ Como se forma (grupos 1, 2 e 3)" }
+            var open = false
+            tv.setOnClickListener {
+                open = !open
+                tv.text = if (open) "▾ Como se forma\n" + formation else "▸ Como se forma (grupos 1, 2 e 3)"
+                tv.setTextColor(getColor(if (open) R.color.text else R.color.accent))
+            }
+            box.addView(tv)
+        }
         val (line, hit) = r.lines.first()
         box.addView(TextView(this).apply {
             text = boldSpan(line.text, hit.start, hit.end); textSize = 16f; setTextColor(getColor(R.color.text)); setPadding(0, dp(8), 0, 0)
@@ -184,6 +196,10 @@ class GrammarPickActivity : Activity() {
         val (line, hit) = r.lines.first()
         val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(16), dp(16), dp(16)) }
         box.addView(TextView(this).apply { text = boldSpan(line.text, hit.start, hit.end); textSize = 17f; setTextColor(getColor(R.color.text)) })
+        box.addView(TextView(this).apply {
+            text = r.point.explanation + (r.spec?.let { "\n\nComo se forma:\n" + it.formation() } ?: "")
+            textSize = 14f; setTextColor(getColor(R.color.text)); setPadding(0, dp(8), 0, dp(8))
+        })
         val panelBox = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         box.addView(panelBox)
         val rec = line.recording ?: Recordings.baseName(name)

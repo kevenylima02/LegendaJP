@@ -507,7 +507,10 @@ object Ai {
             Task.GRAMMAR -> sb.append(
                 (if (r.target.isNotBlank()) "Explique o padrão gramatical 「${r.target}」" + (if (r.note.isNotBlank()) " (trecho: ${r.note})" else "") + " como usado nesta frase. "
                 else "Explique o ponto gramatical principal desta frase. ") +
-                    "Chaves do JSON: \"padrao\" (nome do padrão), \"significado\" (1 linha), \"como_formar\" (regra de formação, 1 linha), " +
+                    "Chaves do JSON: \"padrao\" (nome do padrão), \"significado\" (1 linha), " +
+                    "\"como_formar\" (a regra de formação completa, pode ter várias linhas: se liga a verbos, a regra para o grupo 1 (godan), " +
+                    "o grupo 2 (ichidan) e o grupo 3 (する e 来る), cada um com um exemplo em hiragana; se liga a adjetivos-い, adjetivos-な ou " +
+                    "substantivos, como cada um se liga; e as exceções importantes), " +
                     "\"nesta_frase\" (o que ele faz nesta frase, 1 linha), \"exemplo_ja\" (frase nova e simples), " +
                     "\"exemplo_pt\" (tradução do exemplo), \"nivel\" (N5 a N1)."
             )

@@ -33,6 +33,14 @@ object GrammarDrill {
             if (adj.isNotEmpty()) parts.add("adjetivo: " + adj.joinToString(" ou ") { (f, s) -> f.label + if (s.isNotEmpty()) " + $s" else "" })
             return "$p: " + parts.joinToString("; ") + "."
         }
+
+        /** Como se forma, grupo por grupo (1 godan, 2 ichidan, 3 する／来る) e para adjetivos-い. */
+        fun formation(): String {
+            val parts = mutableListOf<String>()
+            for (f in verb.map { it.first }.distinct()) parts.add(Conj.rule(f))
+            for (f in adj.map { it.first }.distinct()) parts.add(Conj.ruleAdj(f))
+            return parts.joinToString("\n")
+        }
     }
 
     private fun v(vararg x: Pair<V, String>) = x.toList()
@@ -99,11 +107,13 @@ object GrammarDrill {
     private val fallbackVerbs = listOf("食べる", "飲む", "行く", "見る", "読む", "書く", "話す", "待つ", "遊ぶ", "買う", "寝る", "起きる")
 
     /** Banco para cobrir todos os grupos: godan por terminação (く ぐ す つ ぶ む る う), ichidan, する, 来る; e adjetivos-い. */
+    private class Bank(val base: String, val reading: String, val pt: String)
     private val verbBank = listOf(
-        "書く" to "escrever", "泳ぐ" to "nadar", "話す" to "falar", "待つ" to "esperar", "遊ぶ" to "brincar", "読む" to "ler",
-        "帰る" to "voltar para casa", "買う" to "comprar", "食べる" to "comer", "見る" to "ver", "する" to "fazer", "来る" to "vir",
+        Bank("書く", "かく", "escrever"), Bank("泳ぐ", "およぐ", "nadar"), Bank("話す", "はなす", "falar"), Bank("待つ", "まつ", "esperar"),
+        Bank("遊ぶ", "あそぶ", "brincar"), Bank("読む", "よむ", "ler"), Bank("帰る", "かえる", "voltar para casa"), Bank("買う", "かう", "comprar"),
+        Bank("食べる", "たべる", "comer"), Bank("見る", "みる", "ver"), Bank("する", "する", "fazer"), Bank("来る", "くる", "vir"),
     )
-    private val adjBank = listOf("高い" to "alto / caro", "新しい" to "novo", "楽しい" to "divertido")
+    private val adjBank = listOf(Bank("高い", "たかい", "alto / caro"), Bank("新しい", "あたらしい", "novo"), Bank("楽しい", "たのしい", "divertido"))
 
     /**
      * Exercícios de uso dos padrões escolhidos com todos os grupos de verbo (e adjetivos-い, quando o padrão
@@ -120,10 +130,9 @@ object GrammarDrill {
             val bank = (if (s.verb.isNotEmpty()) verbBank.map { it to "動詞" } else emptyList()) +
                 (if (s.adj.isNotEmpty()) adjBank.map { it to "形容詞" } else emptyList())
             val targets = mutableListOf<Target>()
-            for ((pair, posKey) in bank) {
-                val (base, pt) = pair
-                if (Tr.cached(ctx, base) == null) db.putTranslation(base, pt)
-                val w = Jp.Word(base, base, base, base, if (posKey == "動詞") "verbo" else "adjetivo", posKey, "", -1, -1)
+            for ((b, posKey) in bank) {
+                if (Tr.cached(ctx, b.base) == null) db.putTranslation(b.base, b.pt)
+                val w = Jp.Word(b.base, b.base, b.base, b.reading, if (posKey == "動詞") "verbo" else "adjetivo", posKey, "", -1, -1)
                 val t = target(w) ?: continue
                 if (!t.fits(s) || t.results(s).isEmpty()) continue
                 targets.add(t)
@@ -140,30 +149,86 @@ object GrammarDrill {
 
     private fun levelOf(s: Spec) = s.point?.level?.removePrefix("N")?.toIntOrNull() ?: 5
 
-    /** Uma palavra que dá para conjugar: verbo ou adjetivo-い, com as formas. */
-    private class Target(val word: Jp.Word, val verb: Map<V, String>?, val adj: Map<A, String>?) {
+    /**
+     * Uma palavra que dá para conjugar: verbo (com o grupo) ou adjetivo-い. As formas são da leitura em
+     * hiragana (かく → かかない), para o kanji não entregar a resposta e para o erro de leitura (くない) contar.
+     */
+    private class Target(val word: Jp.Word, val kind: Conj.Kind?, val verb: Map<V, String>?, val adj: Map<A, String>?) {
         fun results(s: Spec): List<String> {
-            // いい/良い + そう = よさそう/良さそう (irregular)
+            // いい/良い + そう = よさそう (irregular)
             if (adj != null && s.id == "sou-looks" && word.base in setOf("いい", "良い")) return listOf(adj.getValue(A.STEM) + "さそう")
             return if (verb != null) s.verb.mapNotNull { (f, suf) -> verb[f]?.plus(suf) } else s.adj.mapNotNull { (f, suf) -> adj?.get(f)?.plus(suf) }
         }
         fun fits(s: Spec) = if (verb != null) s.verb.isNotEmpty() else s.adj.isNotEmpty()
+
+        /** Erros típicos para a forma pedida pelo padrão (+ o sufixo), em hiragana. */
+        fun errors(s: Spec): List<String> {
+            if (verb != null) {
+                val k = kind ?: return emptyList()
+                return s.verb.flatMap { (f, suf) -> Conj.learnerErrors(word.reading, k, f).map { it + suf } }
+            }
+            return s.adj.flatMap { (f, suf) -> Conj.learnerErrorsAdj(word.reading, f).map { it + suf } }
+        }
+
+        /** Como se forma, para a explicação: o grupo da palavra e a regra da forma em cada grupo. */
+        fun explain(s: Spec): String {
+            val k = kind
+            val head = if (verb != null && k != null) "${word.base} é do ${Conj.group(k)}." else if (adj != null) "${word.base} é adjetivo-い." else ""
+            val rules = if (verb != null) s.verb.map { it.first }.distinct().joinToString("\n") { Conj.rule(it) }
+                else s.adj.map { it.first }.distinct().joinToString("\n") { Conj.ruleAdj(it) }
+            return listOf(head, rules).filter { it.isNotBlank() }.joinToString("\n")
+        }
     }
 
+    private fun isKana(s: String) = s.isNotEmpty() && s.all { it in '぀'..'ヿ' || it == 'ー' }
+
     private fun target(w: Jp.Word): Target? = when (w.posKey) {
-        "動詞" -> Conj.verb(w.base)?.let { Target(w, it, null) }
-        "形容詞" -> Conj.adj(w.base)?.let { Target(w, null, it) }
+        "動詞" -> {
+            val k = Conj.kindOf(w.base)
+            if (k == null) null else {
+                val reading = if (isKana(w.reading)) w.reading else w.base
+                Target(w, k, Conj.verb(reading, k), null)
+            }
+        }
+        "形容詞" -> if (Conj.adj(w.base) == null) null else {
+            val reading = if (isKana(w.reading)) w.reading else w.base
+            Target(w, null, null, Conj.adjForms(reading))
+        }
         else -> null
     }
 
     private fun fallback(rnd: kotlin.random.Random): Target? {
-        val base = fallbackVerbs.random(rnd)
-        val w = Jp.Word(base, base, base, base, "verbo", "動詞", "", -1, -1)
-        return Conj.verb(base)?.let { Target(w, it, null) }
+        val b = verbBank.random(rnd)
+        val w = Jp.Word(b.base, b.base, b.base, b.reading, "verbo", "動詞", "", -1, -1)
+        return target(w)
     }
 
-    private fun meaningOf(ctx: android.content.Context, t: Target): String =
-        Tr.cached(ctx, t.word.base)?.lowercase()?.let { "${t.word.base} ($it)" } ?: t.word.base
+    /** "書く（かく · escrever）": a palavra com leitura e tradução, para o enunciado. */
+    private fun meaningOf(ctx: android.content.Context, t: Target): String {
+        val r = if (t.word.reading != t.word.base && isKana(t.word.reading)) t.word.reading else null
+        val tr = Tr.cached(ctx, t.word.base)?.lowercase()
+        val inside = listOfNotNull(r, tr).joinToString(" · ")
+        return if (inside.isEmpty()) t.word.base else "${t.word.base}（$inside）"
+    }
+
+    /** Alternativas erradas escolhidas: quais são erros típicos (formas que não existem) e quais são outras formas reais da palavra. */
+    private class Wrong(val options: List<String>, val errors: List<String>, val others: List<String>) {
+        /** Bloco para o retorno: os erros inventados ficam separados das formas reais. */
+        fun note(): String {
+            val parts = mutableListOf<String>()
+            if (errors.isNotEmpty()) parts.add("Erros comuns de estudante (formas que não existem): " + errors.joinToString("、"))
+            if (others.isNotEmpty()) parts.add("Outras formas reais da palavra, que não cabem aqui: " + others.joinToString("、"))
+            return parts.joinToString("\n")
+        }
+    }
+
+    /** 3 alternativas erradas: primeiro os erros típicos (embaralhados), depois outras formas da palavra. */
+    private fun pickWrong(primary: List<String>, secondary: List<String>, right: List<String>, rnd: kotlin.random.Random): Wrong {
+        val p = primary.filter { it !in right }.distinct().shuffled(rnd)
+        val s = secondary.filter { it !in right && it !in p }.distinct().shuffled(rnd)
+        val chosen = (p.take(2) + s + p.drop(2)).distinct().take(3)
+        return Wrong(chosen, chosen.filter { it in p }, chosen.filter { it !in p })
+    }
 
     /**
      * Exercícios de uso para uma frase. preferIds: padrões que aparecem na frase (vêm primeiro).
@@ -205,46 +270,46 @@ object GrammarDrill {
         return forms
     }
 
-    /** Qual forma combina: o padrão fixo, escolha a forma da palavra que encaixa. */
+    /** Qual forma combina: o padrão fixo, escolha a forma da palavra que encaixa (opções em hiragana: erros típicos + outras formas). */
     private fun form(ctx: android.content.Context, line: Line, t: Target, s: Spec, rnd: kotlin.random.Random): Item? {
         val right = t.results(s)
         val suf = if (t.verb != null) s.verb.first().second else s.adj.first().second
         val validForms = if (t.verb != null) s.verb.map { it.first.name }.toSet() else s.adj.map { it.first.name }.toSet()
         val wrongForms = wrongVerbForms(s, suf)
-        val wrong = (if (t.verb != null) t.verb.filterKeys { it in wrongForms && it.name !in validForms }.values else t.adj!!.filterKeys { it.name !in validForms }.values)
-            .map { it + suf }.filter { it !in right }.distinct().shuffled(rnd).take(3)
-        if (wrong.size < 3) return null
+        val others = (if (t.verb != null) t.verb.filterKeys { it in wrongForms && it.name !in validForms }.values else t.adj!!.filterKeys { it.name !in validForms }.values)
+            .map { it + suf }
+        val wrong = pickWrong(t.errors(s), others, right, rnd)
+        if (wrong.options.size < 3) return null
         val answer = right.first()
         val name = s.point?.name ?: return null
         return Item.Drill(
             "Qual forma combina", line, s.id,
             "Qual forma de ${meaningOf(ctx, t)} combina com 「$name」 (${s.meaning})?",
-            answer, (wrong + answer).shuffled(rnd),
-            s.rule() + if (right.size > 1) " Também valem: " + right.drop(1).joinToString("、") + "." else "",
+            answer, (wrong.options + answer).shuffled(rnd),
+            s.rule() + (if (right.size > 1) " Também valem: " + right.drop(1).joinToString("、") + "." else "") + "\n" + wrong.note() + "\n" + t.explain(s),
             t.word, levelOf(s)
         )
     }
 
-    /** Transforme com o padrão: alternativas com os erros comuns (forma て errada, forma trocada). */
+    /** Transforme com o padrão: alternativas com os erros típicos de aprendiz (em hiragana) e outras formas. */
     private fun transform(ctx: android.content.Context, line: Line, t: Target, s: Spec, rnd: kotlin.random.Random): Item? {
         val right = t.results(s)
         val answer = right.first()
-        val wrong = mutableListOf<String>()
+        val others = mutableListOf<String>()
         if (t.verb != null) {
             val (f, suf) = s.verb.first()
-            if (f == V.TE || f == V.TA) wrong.addAll(Conj.wrongTe(t.word.base, past = f == V.TA).map { it + suf })
-            wrong.addAll(wrongVerbForms(s, suf).filter { it != f && it != V.VOL && it != V.BA }.mapNotNull { t.verb[it]?.plus(suf) })
+            others.addAll(wrongVerbForms(s, suf).filter { it != f && it != V.VOL && it != V.BA }.mapNotNull { t.verb[it]?.plus(suf) })
         } else {
             val (f, suf) = s.adj.first()
-            wrong.addAll(A.values().filter { it != f }.mapNotNull { t.adj!![it]?.plus(suf) })
+            others.addAll(A.values().filter { it != f }.mapNotNull { t.adj!![it]?.plus(suf) })
         }
-        val opts = wrong.filter { it !in right }.distinct().shuffled(rnd).take(3)
-        if (opts.size < 3) return null
+        val wrong = pickWrong(t.errors(s), others, right, rnd)
+        if (wrong.options.size < 3) return null
         val name = s.point?.name ?: return null
         return Item.Drill(
             "Transforme com o padrão", line, s.id,
             "Use 「$name」 (${s.meaning}) com ${meaningOf(ctx, t)}:",
-            answer, (opts + answer).shuffled(rnd), s.rule(), t.word, levelOf(s)
+            answer, (wrong.options + answer).shuffled(rnd), s.rule() + "\n" + wrong.note() + "\n" + t.explain(s), t.word, levelOf(s)
         )
     }
 
@@ -254,7 +319,7 @@ object GrammarDrill {
         val others = usable.filter { it.id != s.id && it.meaning != s.meaning }.shuffled(rnd)
             .map { it to t.results(it).first() }.filter { it.second != answer }.distinctBy { it.second }.take(3)
         if (others.size < 3) return null
-        val note = (others + (s to answer)).joinToString("\n") { (sp, form) -> "$form = ${sp.meaning}" }
+        val note = (others + (s to answer)).joinToString("\n") { (sp, form) -> "$form = ${sp.meaning}" } + "\n" + t.explain(s)
         return Item.Drill(
             "Português → padrão", line, s.id,
             "Com ${meaningOf(ctx, t)}, qual forma significa «${s.meaning}»?",

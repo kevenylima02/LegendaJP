@@ -77,6 +77,14 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   pasta, Selecionar vários (marca e move de uma vez), Renomear, Apagar. Toque longo numa pasta: Estudar a
   pasta inteira (as frases de todos os itens juntas), Renomear, Apagar (os itens voltam para Sem pasta). Um
   texto criado ou importado dentro de uma pasta já entra nela. Só no banco: os arquivos não mudam de lugar.
+- **Drills de gramática mais difíceis**: as opções de "Qual forma combina", "Transforme com o padrão" e
+  "Português → padrão" vêm em hiragana (o kanji não entrega a resposta e o erro de leitura conta: こない ≠
+  くない) e as erradas são erros típicos de estudante — tratar o grupo 1 como 2 e vice-versa (たべらない, かくない),
+  linha errada do kana, e os clássicos de する／来る (すない, くない, きない) — mais outras formas reais da palavra.
+  No retorno, os erros inventados aparecem num bloco à parte ("Erros comuns de estudante"), separados das formas
+  reais, e a explicação diz o grupo da palavra (1 godan, 2 ichidan, 3 する／来る) e a regra de formação da forma em
+  cada grupo, com exemplos em hiragana. O escolhedor de gramática tem "Como se forma (grupos 1, 2 e 3)" em cada
+  ficha e na explicação pela IA, que agora pede a regra completa por grupo ao Gemini.
 - **Ruby do autor**: texto com furigana no estilo Aozora (｜漢字《かんじ》 ou 漢字《かんじ》) ou HTML
   (<ruby>漢字<rt>かんじ</rt></ruby>) mantém a leitura dada pelo autor no leitor, por cima da do Kuromoji
   (segue a configuração de furigana); notas ［＃…］ do Aozora são removidas. No arquivo, a leitura vai numa

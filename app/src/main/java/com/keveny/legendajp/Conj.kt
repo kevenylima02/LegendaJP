@@ -54,6 +54,11 @@ object Conj {
     /** Todas as formas do verbo, ou null se não der para conjugar com segurança. */
     fun verb(base: String): Map<V, String>? {
         val k = kindOf(base) ?: return null
+        return verb(base, k)
+    }
+
+    /** Formas de um verbo cujo grupo já se sabe (serve para a leitura em hiragana: かく + GODAN). */
+    fun verb(base: String, k: Kind): Map<V, String> {
         val m = HashMap<V, String>()
         when (k) {
             Kind.ICHIDAN -> {
@@ -94,11 +99,136 @@ object Conj {
         if (base.length < 2 || base.last() != 'い') return null
         val t = try { Jp.tokenize(base) } catch (_: Exception) { return null }
         if (t.size != 1 || t[0].partOfSpeechLevel1 != "形容詞") return null
+        return adjForms(base)
+    }
+
+    /** Formas do adjetivo-い sem conferir a classe (para a leitura em hiragana). */
+    fun adjForms(base: String): Map<A, String> {
         val s = when (base) { "いい" -> "よ"; "良い" -> "良"; else -> base.dropLast(1) }
         return mapOf(
             A.DICT to base, A.STEM to s, A.KU to s + "く", A.KATTA to s + "かった",
             A.KUTE to s + "くて", A.KEREBA to s + "ければ"
         )
+    }
+
+    // =====================================================================
+    // Grupos, regras de formação (em português) e erros típicos de aprendiz
+    // =====================================================================
+
+    fun group(k: Kind): String = when (k) {
+        Kind.GODAN -> "grupo 1 (godan, 五段)"
+        Kind.ICHIDAN -> "grupo 2 (ichidan, 一段)"
+        Kind.SURU -> "grupo 3 (irregular: する)"
+        Kind.KURU -> "grupo 3 (irregular: 来る)"
+    }
+
+    /** Como se faz a forma em cada grupo, com exemplos em hiragana. */
+    fun rule(f: V): String = when (f) {
+        V.DICT -> "Forma de dicionário: a palavra como está, em todos os grupos."
+        V.STEM, V.MASU -> "Radical da forma ます — grupo 1: a última sílaba vai para a linha い (かく→かき、およぐ→およぎ、はなす→はなし、まつ→まち、あそぶ→あそび、よむ→よみ、かえる→かえり、かう→かい); " +
+            "grupo 2: tira o る (たべる→たべ、みる→み); grupo 3: する→し、くる→き. Daí + ます."
+        V.TE -> "Forma て — grupo 1: く→いて (かく→かいて), ぐ→いで (およぐ→およいで), す→して (はなす→はなして), つ・る・う→って (まつ→まって、かえる→かえって、かう→かって), " +
+            "ぬ・ぶ・む→んで (あそぶ→あそんで、よむ→よんで); exceção いく→いって; grupo 2: tira o る + て (たべる→たべて); grupo 3: する→して、くる→きて."
+        V.TA -> "Forma た — igual à forma て, trocando て por た e で por だ: grupo 1: かく→かいた、およぐ→およいだ、はなす→はなした、まつ→まった、よむ→よんだ (いく→いった); " +
+            "grupo 2: たべる→たべた; grupo 3: する→した、くる→きた."
+        V.NAI, V.NA -> "Forma ない — grupo 1: a última sílaba vai para a linha あ + ない (かく→かかない、およぐ→およがない、はなす→はなさない、まつ→またない、よむ→よまない、かえる→かえらない); " +
+            "verbos em う usam わ (かう→かわない); ある→ない; grupo 2: tira o る + ない (たべる→たべない); grupo 3: する→しない、くる→こない."
+        V.VOL -> "Forma volitiva — grupo 1: a última sílaba vai para a linha お + う (かく→かこう、よむ→よもう、かう→かおう); grupo 2: tira o る + よう (たべる→たべよう); grupo 3: する→しよう、くる→こよう."
+        V.BA -> "Forma ば — grupo 1: a última sílaba vai para a linha え + ば (かく→かけば、よむ→よめば、かう→かえば); grupo 2: tira o る + れば (たべる→たべれば); grupo 3: する→すれば、くる→くれば."
+        V.PASS -> "Passivo — grupo 1: linha あ + れる (かく→かかれる、かう→かわれる); grupo 2: tira o る + られる (たべる→たべられる); grupo 3: する→される、くる→こられる."
+        V.CAUS -> "Causativo — grupo 1: linha あ + せる (かく→かかせる、かう→かわせる); grupo 2: tira o る + させる (たべる→たべさせる); grupo 3: する→させる、くる→こさせる."
+    }
+
+    fun ruleAdj(f: A): String = when (f) {
+        A.DICT -> "Adjetivo-い inteiro, como está (たかい)."
+        A.STEM -> "Adjetivo sem o い (たかい→たか; いい→よ)."
+        A.KU -> "Forma く: tira o い + く (たかい→たかく; いい→よく)."
+        A.KATTA -> "Forma かった: tira o い + かった (たかい→たかかった; いい→よかった)."
+        A.KUTE -> "Forma くて: tira o い + くて (たかい→たかくて; いい→よくて)."
+        A.KEREBA -> "Forma ければ: tira o い + ければ (たかい→たかければ; いい→よければ)."
+    }
+
+    /**
+     * Erros típicos de quem está aprendendo, para alternativas erradas (em hiragana): tratar o grupo 1
+     * como 2 e vice-versa, linha errada do kana, e os erros clássicos de する e 来る (くない, きない…).
+     */
+    fun learnerErrors(reading: String, k: Kind, f: V): List<String> {
+        if (reading.isEmpty()) return emptyList()
+        val out = mutableListOf<String>()
+        when (k) {
+            Kind.GODAN -> {
+                val s = reading.dropLast(1); val c = reading.last()
+                val a = aRow[c] ?: return emptyList(); val i = iRow.getValue(c); val e = eRow.getValue(c); val o = oRow.getValue(c)
+                val asIchidan = c == 'る'
+                when (f) {
+                    V.STEM, V.MASU -> { out.add(s + a + "ます"); out.add(s + c + "ます"); if (asIchidan) out.add(s + "ます") }
+                    V.TE -> { out.addAll(wrongTe(reading, false)); if (asIchidan) out.add(s + "て"); out.add(s + i + "て") }
+                    V.TA -> { out.addAll(wrongTe(reading, true)); if (asIchidan) out.add(s + "た"); out.add(s + i + "た") }
+                    V.NAI -> { out.add(s + i + "ない"); out.add(s + c + "ない"); if (asIchidan) out.add(s + "ない"); out.add(s + e + "ない") }
+                    V.NA -> { out.add(s + i + "な"); out.add(s + c + "な"); if (asIchidan) out.add(s + "な") }
+                    V.VOL -> { out.add(s + i + "よう"); if (asIchidan) out.add(s + "よう"); out.add(s + c + "う"); out.add(s + a + "う") }
+                    V.BA -> { out.add(s + a + "ば"); out.add(s + i + "ば"); if (asIchidan) out.add(s + "れば"); out.add(s + c + "ば") }
+                    V.PASS -> { out.add(s + e + "れる"); if (asIchidan) out.add(s + "られる"); out.add(s + i + "られる"); out.add(s + c + "れる") }
+                    V.CAUS -> { out.add(s + e + "せる"); if (asIchidan) out.add(s + "させる"); out.add(s + i + "させる"); out.add(s + o + "せる") }
+                    V.DICT -> {}
+                }
+            }
+            Kind.ICHIDAN -> {
+                val s = reading.dropLast(1)
+                when (f) {
+                    V.STEM, V.MASU -> { out.add(s + "ります"); out.add(s + "るます") }
+                    V.TE -> { out.add(s + "って"); out.add(s + "んで"); out.add(s + "いて") }
+                    V.TA -> { out.add(s + "った"); out.add(s + "んだ"); out.add(s + "いた") }
+                    V.NAI -> { out.add(s + "らない"); out.add(s + "るない"); out.add(s + "れない") }
+                    V.NA -> { out.add(s + "らな"); out.add(s + "るな") }
+                    V.VOL -> { out.add(s + "ろう"); out.add(s + "るよう"); out.add(s + "よ") }
+                    V.BA -> { out.add(s + "らば"); out.add(s + "ば"); out.add(s + "るば") }
+                    V.PASS -> { out.add(s + "れる"); out.add(s + "らる"); out.add(s + "られれる") }
+                    V.CAUS -> { out.add(s + "らせる"); out.add(s + "させれる"); out.add(s + "せる") }
+                    V.DICT -> {}
+                }
+            }
+            Kind.SURU -> {
+                val p = reading.removeSuffix("する")
+                when (f) {
+                    V.STEM, V.MASU -> { out.add(p + "すます"); out.add(p + "せます"); out.add(p + "すります") }
+                    V.TE -> { out.add(p + "すて"); out.add(p + "しって"); out.add(p + "せて") }
+                    V.TA -> { out.add(p + "すた"); out.add(p + "しった"); out.add(p + "せた") }
+                    V.NAI -> { out.add(p + "すない"); out.add(p + "さない"); out.add(p + "しらない") }
+                    V.NA -> { out.add(p + "すな"); out.add(p + "さな") }
+                    V.VOL -> { out.add(p + "すよう"); out.add(p + "しよ"); out.add(p + "そう") }
+                    V.BA -> { out.add(p + "しれば"); out.add(p + "せば"); out.add(p + "すば") }
+                    V.PASS -> { out.add(p + "しられる"); out.add(p + "すられる"); out.add(p + "せられる") }
+                    V.CAUS -> { out.add(p + "しさせる"); out.add(p + "すせる"); out.add(p + "させれる") }
+                    V.DICT -> {}
+                }
+            }
+            Kind.KURU -> when (f) {
+                V.STEM, V.MASU -> { out.add("くます"); out.add("こます"); out.add("くります") }
+                V.TE -> { out.add("くて"); out.add("こて"); out.add("くって") }
+                V.TA -> { out.add("くた"); out.add("こた"); out.add("くった") }
+                V.NAI -> { out.add("くない"); out.add("きない"); out.add("こらない") }
+                V.NA -> { out.add("くな"); out.add("きな") }
+                V.VOL -> { out.add("くよう"); out.add("きよう"); out.add("こう") }
+                V.BA -> { out.add("きれば"); out.add("こば"); out.add("これば") }
+                V.PASS -> { out.add("くられる"); out.add("きられる"); out.add("これる") }
+                V.CAUS -> { out.add("くさせる"); out.add("きさせる"); out.add("こさす") }
+                V.DICT -> {}
+            }
+        }
+        return out.distinct()
+    }
+
+    fun learnerErrorsAdj(reading: String, f: A): List<String> {
+        if (reading.length < 2) return emptyList()
+        val s = reading.dropLast(1)
+        return when (f) {
+            A.DICT, A.STEM -> emptyList()
+            A.KU -> listOf(reading + "く", s + "に", s + "で")
+            A.KATTA -> listOf(reading + "かった", s + "だった", s + "かた", reading + "でした")
+            A.KUTE -> listOf(reading + "くて", s + "で", s + "いて")
+            A.KEREBA -> listOf(reading + "ければ", s + "ば", s + "れば", s + "なら")
+        }.distinct()
     }
 
     /** Erros comuns na forma て/た de um godan (as outras terminações), para alternativas erradas. */
