@@ -550,57 +550,7 @@ class ReaderActivity : Activity() {
      * próprias (classe "ia") com o significado guardado, destacadas e tocáveis onde aparecerem.
      */
     private fun aiWords(sel: String, s: Texts.Sentence) {
-        if (!Ai.enabled(this)) { Toast.makeText(this, "Ative a IA em Configurações", Toast.LENGTH_LONG).show(); return }
-        val (dlg, label) = progressDialog("✦ Separando as palavras")
-        label.text = sel
-        Ai.analyzeWords(this, sel, s.text) { list, err ->
-            if (dlg.isShowing) dlg.dismiss()
-            if (isFinishing) return@analyzeWords
-            if (list == null || list.isEmpty()) { Toast.makeText(this, "Não consegui: ${err ?: "sem palavras"}", Toast.LENGTH_LONG).show(); return@analyzeWords }
-            val db = VocabDb.get(this)
-            val known = try { Jp.wordsAll(s.text) } catch (_: Exception) { emptyList() }
-            val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(22), dp(12), dp(22), dp(8)) }
-            box.addView(TextView(this).apply { text = sel; textSize = 18f; setTextColor(getColor(R.color.text)); setPadding(0, 0, 0, dp(8)) })
-            for (aw in list) {
-                // Palavra que o dicionário já conhece: salva como palavra normal (sem duplicar)
-                val w = known.firstOrNull { it.base == aw.base } ?: Jp.Word(aw.surface, aw.surface, aw.base, aw.reading, aw.pos, VocabDb.AI, "", 0, 0)
-                val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(4), 0, dp(4)) }
-                row.addView(TextView(this).apply {
-                    textSize = 15f; setTextColor(getColor(R.color.text))
-                    this.text = (if (aw.reading != aw.base) "${aw.base}（${aw.reading}）" else aw.base) + " · ${aw.pos}\n" + aw.meaning +
-                        (if (w.posKey != VocabDb.AI) "" else "  ✦")
-                }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-                val save = Button(this).apply { textSize = 12f; isAllCaps = false; minHeight = 0; minimumHeight = 0; setPadding(dp(10), dp(4), dp(10), dp(4)) }
-                val kn = Button(this).apply { textSize = 12f; isAllCaps = false; minHeight = 0; minimumHeight = 0; setPadding(dp(10), dp(4), dp(10), dp(4)) }
-                val kanji = if (w.base.any(StudyGen::isKanji)) Button(this).apply { textSize = 12f; isAllCaps = false; minHeight = 0; minimumHeight = 0; setPadding(dp(10), dp(4), dp(10), dp(4)) } else null
-                fun refresh() { save.text = if (db.isSaved(w)) "★" else "☆"; kn.text = if (db.isKnown(w)) "✓" else "Conheço"; kanji?.text = if (db.isKnownKanji(w)) "✍✓" else "✍" }
-                fun saveIt() {
-                    db.save(w, s.text, base, maxOf(0, s.sec))
-                    if (aw.meaning.isNotBlank()) db.putTranslation(w.base, aw.meaning)
-                }
-                kanji?.setOnClickListener {
-                    if (db.isKnownKanji(w)) db.setKnownKanji(w, false) else { if (!db.isSaved(w)) saveIt(); db.setKnownKanji(w, true) }
-                    refresh()
-                    Toast.makeText(this, if (db.isKnownKanji(w)) "${w.base}: sei escrever (fora dos exercícios de kanji)" else "${w.base} volta aos exercícios de kanji", Toast.LENGTH_SHORT).show()
-                }
-                save.setOnClickListener { if (db.isSaved(w)) db.remove(w) else saveIt(); refresh(); render() }
-                kn.setOnClickListener {
-                    if (db.isKnown(w)) db.setKnown(w, false) else { if (!db.isSaved(w)) saveIt(); db.setKnown(w, true) }
-                    refresh(); render()
-                }
-                refresh()
-                row.addView(save, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(6) })
-                row.addView(kn, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(6) })
-                if (kanji != null) row.addView(kanji, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(6) })
-                box.addView(row)
-            }
-            box.addView(TextView(this).apply {
-                text = "✦ = palavra que o dicionário do app não tinha: fica guardada com o significado da IA e destacada nos textos."
-                textSize = 12f; setTextColor(getColor(R.color.text_secondary)); setPadding(0, dp(10), 0, 0)
-            })
-            AlertDialog.Builder(this).setTitle("✦ Palavras do trecho").setView(ScrollView(this).apply { addView(box) })
-                .setNegativeButton("Fechar", null).show()
-        }
+        AiWords.show(this, sel, s.text, base, maxOf(0, s.sec)) { render() }
     }
 
     /** O trecho como palavra do vocabulário (classe "expressão", leitura pelo Kuromoji). */
@@ -654,6 +604,7 @@ class ReaderActivity : Activity() {
         }
         val b = AlertDialog.Builder(this).setView(ScrollView(this).apply { addView(box) }).setNegativeButton("Fechar", null)
         b.setPositiveButton("▶ Ouvir", null)
+        b.setNeutralButton("Dicionário") { _, _ -> startActivity(Intent(this, GrammarDictActivity::class.java).putExtra(GrammarDictActivity.EXTRA_ID, hits.firstOrNull()?.point?.id)) }
         val dlg = b.show()
         dlg.getButton(AlertDialog.BUTTON_POSITIVE)?.setOnClickListener { speak(s) }
     }

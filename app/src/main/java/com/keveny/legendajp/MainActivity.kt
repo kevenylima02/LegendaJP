@@ -153,6 +153,7 @@ class MainActivity : Activity() {
             R.id.action_settings -> startActivity(Intent(this, SettingsActivity::class.java))
             R.id.action_mistakes -> startActivity(Intent(this, MistakesActivity::class.java))
             R.id.action_review -> startActivity(Intent(this, ReviewActivity::class.java))
+            R.id.action_grammar_dict -> startActivity(Intent(this, GrammarDictActivity::class.java))
             R.id.action_reports -> startActivity(Intent(this, ReportsActivity::class.java))
             else -> return super.onOptionsItemSelected(item)
         }

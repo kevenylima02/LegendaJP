@@ -50,7 +50,7 @@ class SettingsActivity : Activity() {
             prefs.studyWords = when (id) { R.id.w5 -> 5; R.id.w15 -> 15; R.id.w20 -> 20; else -> 10 }
         }
         findViewById<Button>(R.id.btnLevelInfo).setOnClickListener {
-            startActivity(Intent(this, LevelActivity::class.java))
+            startActivity(Intent(this, GrammarDictActivity::class.java))
         }
 
         val overlay = findViewById<Switch>(R.id.swOverlay)

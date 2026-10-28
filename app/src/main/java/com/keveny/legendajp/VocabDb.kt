@@ -411,6 +411,7 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
 
     /** Salva a palavra (se nova) e registra a frase de origem. */
     fun save(w: Jp.Word, sentence: String, recording: String, sec: Int): Long {
+        if (!Jp.isLexical(w.base)) return -1L // número, letra ou símbolo: não é palavra
         val db = writableDatabase
         val now = System.currentTimeMillis()
         val (kb, kp) = keyOf(w).split("|").let { it[0] to it.getOrElse(1) { "" } }

@@ -126,6 +126,11 @@
             android:parentActivityName=".SettingsActivity" />
 
         <activity
+            android:name=".GrammarDictActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
             android:name=".VocabActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />

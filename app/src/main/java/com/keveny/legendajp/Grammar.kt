@@ -20,7 +20,8 @@ object Grammar {
 
     data class Hit(val point: Point, val start: Int, val end: Int)
 
-    private class Rule(val point: Point, val steps: List<P>)
+    /** [before]: um token que precisa aparecer antes do trecho (まだ…ていない, あまり…ない); o destaque começa nele. */
+    private class Rule(val point: Point, val steps: List<P>, val before: P? = null)
 
     // ---------- predicados ----------
 
@@ -32,6 +33,7 @@ object Grammar {
     private fun cf(vararg v: String): P = { t -> t.conjugationForm in v }
     private fun and(vararg ps: P): P = { t -> ps.all { it(t) } }
     private fun or(vararg ps: P): P = { t -> ps.any { it(t) } }
+    private fun not(p: P): P = { t -> !p(t) }
     private val verb: P = p1("動詞")
     private val verbMain: P = and(p1("動詞"), p2("自立"))
     private val adjI: P = p1("形容詞")
@@ -41,10 +43,14 @@ object Grammar {
     private val mizen: P = and(verb, cf("未然形", "未然ウ接続", "未然ヌ接続", "未然レル接続")) // 変わら / 食べ
     private val te: P = and(p1("助詞"), s("て", "で"))
     private val ta: P = and(aux, b("た"))
-    private val taSurf: P = and(aux, s("た", "だ"))
+    private val taSurf: P = and(aux, s("た", "だ"), not(b("たい")))   // 行きたがる: o た é de たい
     private val nai: P = and(aux, b("ない", "ぬ", "ん"))
     private val masu: P = and(aux, b("ます"))
     private val plain: P = and(or(verb, adjI, aux), cf("基本形"))
+    private val adv: P = p1("副詞")
+    private val masen: List<P> = listOf(and(masu, cf("未然形")), and(aux, s("ん")))
+    /** Advérbios que pedem negativo. */
+    private val negAdv: P = and(adv, s("あまり", "あんまり", "全然", "ぜんぜん", "なかなか", "めったに", "少しも", "ちっとも", "決して", "けっして", "まったく", "全く"))
 
     // ---------- catálogo ----------
 
@@ -91,7 +97,7 @@ object Grammar {
         Rule(pt("te-iku", "～ていく", "N4", "Ação ou mudança que se afasta do falante, ou que continua para o futuro.", "これからも勉強していく。"),
             listOf(renyou, te, b("いく", "行く"))),
         Rule(pt("te-ageru", "～てあげる／くれる／もらう", "N4", "Fazer um favor (あげる), receber um favor de alguém (くれる) ou obter que alguém faça (もらう).", "友達が手伝ってくれた。"),
-            listOf(renyou, te, b("あげる", "くれる", "もらう", "くださる", "いただく", "やる"))),
+            listOf(renyou, te, and(b("あげる", "くれる", "もらう", "くださる", "いただく", "やる"), not(s("ください"))))),
         Rule(pt("tai", "～たい", "N5", "Desejo do falante: \"quero…\". 食べる → 食べたい.", "日本に行きたい。"),
             listOf(renyou, and(aux, b("たい")))),
         Rule(pt("tai-desu", "～たいです", "N5", "Desejo em forma polida.", "寿司が食べたいです。"),
@@ -107,11 +113,15 @@ object Grammar {
         Rule(pt("ba", "～ば (condicional)", "N4", "Condição: \"se…\". 行く → 行けば, 高い → 高ければ.", "安ければ買う。"),
             listOf(or(and(verb, cf("仮定形")), and(adjI, cf("仮定形")), and(aux, cf("仮定形"))), and(p1("助詞"), s("ば")))),
         Rule(pt("tara", "～たら (condicional)", "N4", "Condição ou \"quando/depois que\": 食べたら, 着いたら.", "雨が降ったら行かない。"),
+            listOf(or(renyou, and(aux, cf("連用タ接続")), and(adjI, cf("連用タ接続"))), and(aux, b("た", "だ"), cf("仮定形")))),
+        Rule(pt("tara", "～たら (condicional)", "N4", "Condição ou \"quando/depois que\": 食べたら, 着いたら.", "雨が降ったら行かない。"),
             listOf(or(renyou, and(aux, cf("連用タ接続")), and(adjI, cf("連用タ接続"))), taSurf, and(p1("助詞"), s("ら")))),
         Rule(pt("nara", "～なら", "N4", "\"Se é o caso de…\", condição baseada no que o outro disse.", "日本語なら少し分かる。"),
             listOf(and(aux, b("だ"), s("なら")))),
-        Rule(pt("nakereba", "～なければならない／いけない", "N4", "Obrigação: \"tenho que…\".", "明日早く起きなければならない。"),
-            listOf(mizen, and(nai, cf("仮定形")), and(p1("助詞"), s("ば")), b("なる", "いける"), nai)),
+        Rule(pt("nakereba", "～なければならない／いけない", "N4", "Obrigação: \"tenho que…\". Também ～なくてはならない／いけない. Formas curtas: ～なきゃ, ～なくちゃ, ～ないと.", "明日早く起きなければならない。"),
+            listOf(mizen, and(nai, cf("仮定形")), and(p1("助詞"), s("ば")), b("なる", "いける"))),
+        Rule(pt("nakereba", "～なければならない／いけない", "N4", "Obrigação: \"tenho que…\". Também ～なくてはならない／いけない. Formas curtas: ～なきゃ, ～なくちゃ, ～ないと.", "明日早く起きなければならない。"),
+            listOf(mizen, and(nai, s("なく")), te, and(p1("助詞"), s("は")), b("なる", "いける"))),
         Rule(pt("nakute-mo-ii", "～なくてもいい", "N4", "Não é necessário: \"não precisa…\".", "急がなくてもいい。"),
             listOf(mizen, and(nai, s("なく")), and(p1("助詞"), s("て")), and(p1("助詞"), s("も")), or(b("いい", "よい", "良い"), s("いい")))),
         Rule(pt("naide", "～ないで", "N4", "\"Sem fazer…\" ou pedido negativo com ください.", "朝ご飯を食べないで来た。"),
@@ -226,6 +236,72 @@ object Grammar {
             listOf(and(adjI, cf("連用タ接続")), taSurf)),
         Rule(pt("adj-ku-naru", "～くなる／～になる", "N4", "Mudança de estado: \"ficar…\". 寒くなる, 静かになる.", "だんだん暖かくなる。"),
             listOf(or(and(adjI, cf("連用テ接続")), and(p1("助詞"), s("に"))), b("なる"))),
+
+        // ---------- formas curtas, advérbio + negativo e outros N5/N4 (build-39) ----------
+        Rule(pt("mada-te-inai", "まだ～ていない", "N4", "\"Ainda não…\": まだ + forma て + いない (ou いません; falado: てない). Resposta a 「もう～ましたか」: 「いいえ、まだ～ていません」.", "宿題はまだ終わっていない。"),
+            listOf(renyou, te, and(verb, b("いる")), nai), before = and(adv, s("まだ"))),
+        Rule(pt("mada-te-inai", "まだ～ていない", "N4", "\"Ainda não…\": まだ + forma て + いない (ou いません; falado: てない). Resposta a 「もう～ましたか」: 「いいえ、まだ～ていません」.", "宿題はまだ終わっていない。"),
+            listOf(renyou, te, and(verb, b("いる"))) + masen, before = and(adv, s("まだ"))),
+        Rule(pt("mada-te-inai", "まだ～ていない", "N4", "\"Ainda não…\": まだ + forma て + いない (ou いません; falado: てない). Resposta a 「もう～ましたか」: 「いいえ、まだ～ていません」.", "宿題はまだ終わっていない。"),
+            listOf(renyou, and(verb, b("てる", "でる")), nai), before = and(adv, s("まだ"))),
+        Rule(pt("mou-ta", "もう～た", "N5", "\"Já…\": もう + passado. 「もう食べた？」—「うん、もう食べた」. O par é まだ～ていない (ainda não).", "もう宿題をした。"),
+            listOf(and(renyou, cf("連用タ接続", "連用デ接続", "連用形")), taSurf), before = and(adv, s("もう"))),
+        Rule(pt("mou-ta", "もう～た", "N5", "\"Já…\": もう + passado. 「もう食べた？」—「うん、もう食べた」. O par é まだ～ていない (ainda não).", "もう宿題をした。"),
+            listOf(renyou, and(masu, cf("連用形")), ta), before = and(adv, s("もう"))),
+        Rule(pt("nakya", "～なきゃ／なくちゃ／ないと (obrigação, curto)", "N4", "Formas curtas e informais de ～なければならない: なきゃ (de なければ), なくちゃ (de なくては) e ないと. O いけない do fim costuma ficar subentendido: 「もう行かなきゃ」 = tenho que ir.", "明日早く起きなきゃ。"),
+            listOf(mizen, and(aux, b("ない"), cf("仮定縮約２")))),
+        Rule(pt("nakya", "～なきゃ／なくちゃ／ないと (obrigação, curto)", "N4", "Formas curtas e informais de ～なければならない: なきゃ (de なければ), なくちゃ (de なくては) e ないと. O いけない do fim costuma ficar subentendido: 「もう行かなきゃ」 = tenho que ir.", "明日早く起きなきゃ。"),
+            listOf(mizen, and(nai, s("なく")), and(p1("助詞"), s("ちゃ")))),
+        Rule(pt("nakya", "～なきゃ／なくちゃ／ないと (obrigação, curto)", "N4", "Formas curtas e informais de ～なければならない: なきゃ (de なければ), なくちゃ (de なくては) e ないと. O いけない do fim costuma ficar subentendido: 「もう行かなきゃ」 = tenho que ir.", "明日早く起きなきゃ。"),
+            listOf(mizen, and(nai, cf("基本形")), and(p1("助詞"), p2("接続助詞"), s("と")), or(b("いける", "なる", "だめ", "駄目"), p1("記号")))),
+        Rule(pt("te-hoshii", "～てほしい", "N4", "Querer que outra pessoa faça algo: forma て + ほしい. 「来てほしい」 = quero que você venha. (～たい é o que eu quero fazer.)", "もっとゆっくり話してほしい。"),
+            listOf(renyou, te, b("ほしい", "欲しい"))),
+        Rule(pt("tagaru", "～たがる", "N4", "Desejo de outra pessoa (3ª pessoa): radical ます + たがる; muito usado como ～たがっている. (～たい é só para o falante.)", "子供はゲームをしたがっている。"),
+            listOf(renyou, and(aux, b("たい"), cf("ガル接続")), b("がる"))),
+        Rule(pt("nasai", "～なさい", "N4", "Ordem suave, de pai/mãe ou professor: radical ます + なさい.", "早く寝なさい。"),
+            listOf(renyou, and(verb, b("なさる"), s("なさい")))),
+        Rule(pt("na-prohib", "～な (proibição)", "N4", "Proibição forte e informal: forma de dicionário + な. 「入るな」 = não entre!", "ここで走るな。"),
+            listOf(and(verb, cf("基本形")), and(p1("助詞"), p2("終助詞"), s("な")))),
+        Rule(pt("imperative", "forma imperativa (～え／～ろ)", "N4", "Ordem direta e brusca: 行く → 行け, 食べる → 食べろ, する → しろ, 来る → 来い. Em avisos, gritos, mangás e fala muito informal.", "早く来い！"),
+            listOf(and(verbMain, cf("命令ｅ", "命令ｒｏ", "命令ｙｏ", "命令ｉ")))),
+        Rule(pt("to-cond", "～と (condicional)", "N4", "\"Quando / sempre que A, acontece B\": forma de dicionário + と, para resultados naturais e automáticos (春になると花が咲く). Não serve para pedidos nem vontades.", "このボタンを押すとドアが開く。"),
+            listOf(and(or(verb, adjI, aux), cf("基本形")), and(p1("助詞"), p2("接続助詞"), s("と")))),
+        Rule(pt("hou-ga", "～のほうが (comparação)", "N5", "\"A é mais … (do que B)\": AのほうがBより…. Com verbo: 行くほうが早い.", "電車のほうがバスより速い。"),
+            listOf(and(noun, p2("非自立"), s("ほう", "方")), and(p1("助詞"), s("が")))),
+        Rule(pt("no-nom", "～のが／のは／のを (nominalização)", "N4", "の transforma o verbo em substantivo: 読むのが好き (gosto de ler), 泳ぐのは楽しい (nadar é divertido).", "日本語を話すのは難しい。"),
+            listOf(and(or(verb, adjI, aux), cf("基本形")), and(noun, p2("非自立"), s("の")), and(p1("助詞"), s("が", "は", "を")))),
+        Rule(pt("zuni", "～ずに", "N3", "\"Sem fazer…\", versão mais escrita de ～ないで: 食べずに; する → せずに.", "朝ご飯を食べずに出かけた。"),
+            listOf(mizen, and(aux, b("ぬ"), s("ず")), and(p1("助詞"), s("に")))),
+        Rule(pt("nakute", "～なくて (causa)", "N4", "Negativo em forma て, ligando frases: \"por não…\" ou \"não… e…\": 時間がなくて行けない.", "お金がなくて買えなかった。"),
+            listOf(mizen, and(nai, s("なく")), te)),
+        Rule(pt("nakute", "～なくて (causa)", "N4", "Negativo em forma て, ligando frases: \"por não…\" ou \"não… e…\": 時間がなくて行けない.", "お金がなくて買えなかった。"),
+            listOf(and(adjI, b("ない", "無い"), cf("連用テ接続")), te)),
+        Rule(pt("adj-kute", "～くて (adjetivo-i, ligação)", "N5", "Forma て do adjetivo-i, para ligar: 安くておいしい (barato e gostoso).", "この店は安くておいしい。"),
+            listOf(and(adjI, cf("連用テ接続"), not(b("ない", "無い"))), te)),
+        Rule(pt("te", "～て (ligação de ações)", "N5", "Forma て ligando ações em sequência ou causa: 起きて、顔を洗って、ご飯を食べる.", "朝起きて、コーヒーを飲んだ。"),
+            listOf(renyou, te)),
+        Rule(pt("you-ni", "～ように (finalidade)", "N4", "\"Para que…\", com verbos que não dependem da vontade (potencial, negativo, ある): 忘れないようにメモする, 見えるように前に座る. (ために é para ações voluntárias.)", "遅れないように早く出た。"),
+            listOf(or(and(verb, cf("基本形")), and(nai, cf("基本形"))), and(noun, s("よう")), and(p1("助詞"), s("に")))),
+        Rule(pt("made-ni", "～までに", "N4", "Prazo: \"até (no máximo) …\". Diferente de まで (até, durante todo o tempo).", "金曜日までにレポートを出す。"),
+            listOf(and(p1("助詞"), s("まで")), and(p1("助詞"), s("に")))),
+        Rule(pt("kurai", "～くらい／ぐらい", "N4", "Quantidade aproximada (\"mais ou menos\") ou grau (\"a ponto de\").", "駅まで十分くらいかかる。"),
+            listOf(and(p1("助詞"), s("くらい", "ぐらい")))),
+        Rule(pt("ru-koto-ga-aru", "～ことがある (às vezes)", "N4", "Com a forma de dicionário: \"às vezes acontece de…\". (Com た é experiência: ～たことがある.)", "たまに朝ご飯を食べないことがある。"),
+            listOf(or(and(verb, cf("基本形")), and(nai, cf("基本形"))), and(noun, s("こと")), and(p1("助詞"), s("が")), b("ある"))),
+        Rule(pt("saserareru", "～させられる (causativo-passivo)", "N3", "\"Ser obrigado a fazer\": causativo + passivo. 行かせられる (= 行かされる), 食べさせられる.", "母に野菜を食べさせられた。"),
+            listOf(mizen, and(verb, b("せる", "させる")), and(verb, b("られる")))),
+        Rule(pt("tara-dou", "～たらどうですか", "N4", "Sugestão: \"que tal se…?\": 休んだらどうですか.", "医者に行ったらどうですか。"),
+            listOf(or(renyou, and(aux, cf("連用タ接続")), and(adjI, cf("連用タ接続"))), and(aux, b("た", "だ"), cf("仮定形")), and(adv, s("どう")))),
+        Rule(pt("tte", "～って (citação／tópico informal)", "N4", "Versão informal de と (citar: 来るって言った) e de は (tópico: 田中さんって誰？).", "明日は休みだって聞いた。"),
+            listOf(and(p1("助詞"), s("って")))),
+        Rule(pt("te-kuremasenka", "～てくれませんか／もらえませんか／いただけませんか", "N4", "Pedido educado: \"poderia…?\". くれませんか < もらえませんか < いただけませんか (cada vez mais polido).", "写真を撮っていただけませんか。"),
+            listOf(renyou, te, b("くれる", "もらえる", "いただける", "くださる")) + masen + listOf(and(p1("助詞"), s("か")))),
+        Rule(pt("te-kuremasenka", "～てくれませんか／もらえませんか／いただけませんか", "N4", "Pedido educado: \"poderia…?\". くれませんか < もらえませんか < いただけませんか (cada vez mais polido).", "写真を撮っていただけませんか。"),
+            listOf(renyou, te, and(verb, s("い")), and(aux, s("た")), and(p1("助詞"), s("だけ"))) + masen + listOf(and(p1("助詞"), s("か")))),
+        Rule(pt("amari-nai", "あまり／全然～ない", "N5", "Advérbios que pedem negativo: あまり～ない (não muito), 全然～ない (nada), なかなか～ない (não consigo de jeito nenhum), めったに～ない (raramente).", "日本語は全然分からない。"),
+            listOf(nai), before = negAdv),
+        Rule(pt("amari-nai", "あまり／全然～ない", "N5", "Advérbios que pedem negativo: あまり～ない (não muito), 全然～ない (nada), なかなか～ない (não consigo de jeito nenhum), めったに～ない (raramente).", "日本語は全然分からない。"),
+            masen, before = negAdv),
     )
 
     // ---------- detecção ----------
@@ -254,8 +330,23 @@ object Grammar {
         "sou-hearsay" to listOf("desu"),
         "you-da" to listOf("desu"),
         "n-desu" to listOf("desu"),
-        "hou-ga-ii" to listOf("ta"),
-    )
+        "hou-ga-ii" to listOf("ta", "hou-ga"),
+        "mada-te-inai" to listOf("te-iru", "nai", "masen", "masu", "te"),
+        "mou-ta" to listOf("ta", "mashita", "masu"),
+        "nakya" to listOf("nai", "to-cond", "nakute"),
+        "nakereba" to listOf("nakute", "te"),
+        "nakute-mo-ii" to listOf("nakute", "temo"),
+        "te-hoshii" to listOf("te"),
+        "tagaru" to listOf("tai", "te-iru", "te", "ta"),
+        "koto-ni-naru" to listOf("adj-ku-naru"),
+        "saserareru" to listOf("saseru", "rareru"),
+        "tara-dou" to listOf("tara", "desu", "ka"),
+        "you-ni-suru" to listOf("you-ni"),
+        "you-ni-naru" to listOf("you-ni", "adj-ku-naru"),
+        "te-kuremasenka" to listOf("te-ageru", "masen", "masenka", "ka", "masu", "te", "ta", "dake", "te-iru"),
+        "amari-nai" to listOf("nai", "masen"),
+    ) + listOf("te-iru", "te-kudasai", "te-mo-ii", "te-wa-ikenai", "te-kara", "te-miru", "te-shimau", "te-oku", "te-aru", "te-kuru", "te-iku",
+        "te-ageru", "temo").map { it to listOf("te") }
 
     private val pointsById: Map<String, Point> = rules.associate { it.point.id to it.point }
 
@@ -273,9 +364,15 @@ object Grammar {
                 var ok = true
                 for (k in 0 until n) if (!rule.steps[k](tokens[i + k])) { ok = false; break }
                 if (ok) {
-                    val first = tokens[i]
+                    var first = tokens[i]
                     val last = tokens[i + n - 1]
-                    if (seen.add(rule.point.id)) {
+                    val bf = rule.before
+                    val anchored = if (bf == null) true else {
+                        val a = (0 until i).lastOrNull { bf(tokens[it]) }
+                        if (a != null) first = tokens[a]
+                        a != null
+                    }
+                    if (anchored && seen.add(rule.point.id)) {
                         var end = last.position + last.surface.length
                         // Não inclui pontuação final no trecho do padrão
                         while (end > first.position && sentence[end - 1] in "。、？！?!") end--
@@ -293,5 +390,5 @@ object Grammar {
     }
 
     /** Todos os pontos do catálogo (para alternativas erradas em exercícios). */
-    val all: List<Point> get() = rules.map { it.point }
+    val all: List<Point> get() = rules.map { it.point }.distinctBy { it.id }
 }

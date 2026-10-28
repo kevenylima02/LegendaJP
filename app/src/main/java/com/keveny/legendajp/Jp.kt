@@ -121,7 +121,7 @@ object Jp {
         val tokens = tokenize(sentence)
         val out = content.toMutableList()
         for (t in tokens) {
-            if (t.partOfSpeechLevel1 == "記号" || t.surface.isBlank()) continue
+            if (t.partOfSpeechLevel1 == "記号" || t.surface.isBlank() || !isLexical(t.surface)) continue
             val s = t.position
             val e = s + t.surface.length
             if (content.any { it.start < e && s < it.end }) continue
@@ -144,7 +144,14 @@ object Jp {
 
     // ---------- classificação ----------
 
+    /** Kana ou kanji: só com pelo menos um desses o token é uma palavra japonesa de verdade. */
+    fun isLexicalChar(c: Char) = c in '\u3041'..'\u3096' || c in '\u30A1'..'\u30FA' || c in '\u4E00'..'\u9FFF' || c in '\u3400'..'\u4DBF' || c == '々' || c == '〆' || c == 'ヶ'
+    fun isLexical(s: String) = s.any { isLexicalChar(it) }
+    /** Número, letra latina ou numeral romano: aparece em verde (não é palavra para estudar) e não tem toque. */
+    fun isSymbolChar(c: Char) = !isLexicalChar(c) && (c.isLetterOrDigit() || Character.getType(c) == Character.LETTER_NUMBER.toInt())
+
     private fun isContent(t: Token): Boolean {
+        if (!isLexical(t.surface)) return false
         val p1 = t.partOfSpeechLevel1
         val p2 = t.partOfSpeechLevel2
         return when (p1) {
@@ -399,7 +406,21 @@ object Jp {
             }, w.start, w.end, flags)
             if (isSaved) sb.setSpan(ForegroundColorSpan(color), w.start, w.end, flags)
         }
+        paintSymbols(sb, sentence, if (knownColor != 0) knownColor else savedColor)
         return sb
+    }
+
+    /** Números, letras e numerais romanos sempre em verde: todo mundo os conhece, e não contam para o estudo. */
+    private fun paintSymbols(sb: SpannableStringBuilder, sentence: String, color: Int) {
+        var i = 0
+        while (i < sentence.length) {
+            if (isSymbolChar(sentence[i])) {
+                var j = i + 1
+                while (j < sentence.length && isSymbolChar(sentence[j])) j++
+                sb.setSpan(ForegroundColorSpan(color), i, j, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                i = j
+            } else i++
+        }
     }
 
     /** Só o destaque das salvas, sem toque (lista de vocabulário etc.). */
@@ -410,6 +431,7 @@ object Jp {
             val c = when { keyIn(w, known) != null -> knownColor; keyIn(w, saved) != null -> savedColor; else -> continue }
             sb.setSpan(ForegroundColorSpan(c), w.start, w.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
+        paintSymbols(sb, sentence, if (knownColor != 0) knownColor else savedColor)
         return sb
     }
 

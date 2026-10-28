@@ -11,7 +11,8 @@ object Conj {
     enum class V(val label: String) {
         DICT("forma de dicionário"), STEM("radical da forma ます"), TE("forma て"), TA("forma た (passado)"),
         NAI("forma ない"), NA("forma ない sem o い"), VOL("forma volitiva (よう)"), BA("forma ば"),
-        PASS("forma passiva"), CAUS("forma causativa"), MASU("forma ます")
+        PASS("forma passiva"), CAUS("forma causativa"), MASU("forma ます"),
+        IMP("forma imperativa"), ZU("forma ず"), CAUSPASS("forma causativo-passiva")
     }
 
     /** Formas de adjetivo-い. */
@@ -65,6 +66,7 @@ object Conj {
                 val s = base.dropLast(1)
                 m[V.STEM] = s; m[V.TE] = s + "て"; m[V.TA] = s + "た"; m[V.NAI] = s + "ない"
                 m[V.VOL] = s + "よう"; m[V.BA] = s + "れば"; m[V.PASS] = s + "られる"; m[V.CAUS] = s + "させる"
+                m[V.IMP] = s + "ろ"; m[V.ZU] = s + "ず"; m[V.CAUSPASS] = s + "させられる"
             }
             Kind.GODAN -> {
                 val s = base.dropLast(1)
@@ -74,18 +76,22 @@ object Conj {
                 m[V.NAI] = if (base == "ある") "ない" else s + aRow.getValue(c) + "ない"
                 m[V.VOL] = s + oRow.getValue(c) + "う"; m[V.BA] = s + eRow.getValue(c) + "ば"
                 m[V.PASS] = s + aRow.getValue(c) + "れる"; m[V.CAUS] = s + aRow.getValue(c) + "せる"
+                m[V.IMP] = s + eRow.getValue(c); m[V.ZU] = s + aRow.getValue(c) + "ず"; m[V.CAUSPASS] = s + aRow.getValue(c) + "せられる"
             }
             Kind.SURU -> {
                 val p = base.dropLast(2) // 勉強する → 勉強
                 m[V.STEM] = p + "し"; m[V.TE] = p + "して"; m[V.TA] = p + "した"; m[V.NAI] = p + "しない"
                 m[V.VOL] = p + "しよう"; m[V.BA] = p + "すれば"; m[V.PASS] = p + "される"; m[V.CAUS] = p + "させる"
+                m[V.IMP] = p + "しろ"; m[V.ZU] = p + "せず"; m[V.CAUSPASS] = p + "させられる"
             }
             Kind.KURU -> if (base == "来る") {
                 m[V.STEM] = "来"; m[V.TE] = "来て"; m[V.TA] = "来た"; m[V.NAI] = "来ない"
                 m[V.VOL] = "来よう"; m[V.BA] = "来れば"; m[V.PASS] = "来られる"; m[V.CAUS] = "来させる"
+                m[V.IMP] = "来い"; m[V.ZU] = "来ず"; m[V.CAUSPASS] = "来させられる"
             } else {
                 m[V.STEM] = "き"; m[V.TE] = "きて"; m[V.TA] = "きた"; m[V.NAI] = "こない"
                 m[V.VOL] = "こよう"; m[V.BA] = "くれば"; m[V.PASS] = "こられる"; m[V.CAUS] = "こさせる"
+                m[V.IMP] = "こい"; m[V.ZU] = "こず"; m[V.CAUSPASS] = "こさせられる"
             }
         }
         m[V.DICT] = base
@@ -137,6 +143,9 @@ object Conj {
         V.BA -> "Forma ば — grupo 1: a última sílaba vai para a linha え + ば (かく→かけば、よむ→よめば、かう→かえば); grupo 2: tira o る + れば (たべる→たべれば); grupo 3: する→すれば、くる→くれば."
         V.PASS -> "Passivo — grupo 1: linha あ + れる (かく→かかれる、かう→かわれる); grupo 2: tira o る + られる (たべる→たべられる); grupo 3: する→される、くる→こられる."
         V.CAUS -> "Causativo — grupo 1: linha あ + せる (かく→かかせる、かう→かわせる); grupo 2: tira o る + させる (たべる→たべさせる); grupo 3: する→させる、くる→こさせる."
+        V.IMP -> "Forma imperativa — grupo 1: a última sílaba vai para a linha え (かく→かけ、よむ→よめ、かう→かえ); grupo 2: tira o る + ろ (たべる→たべろ; na escrita também よ); grupo 3: する→しろ、くる→こい."
+        V.ZU -> "Forma ず — como a forma ない, trocando ない por ず: grupo 1: かく→かかず、かう→かわず; grupo 2: たべる→たべず; grupo 3: する→せず (não しず!), くる→こず."
+        V.CAUSPASS -> "Causativo-passivo — causativo sem o る + られる: grupo 1: かく→かかせられる (falado também かかされる), かう→かわせられる; grupo 2: たべる→たべさせられる; grupo 3: する→させられる、くる→こさせられる."
     }
 
     fun ruleAdj(f: A): String = when (f) {
@@ -170,6 +179,9 @@ object Conj {
                     V.BA -> { out.add(s + a + "ば"); out.add(s + i + "ば"); if (asIchidan) out.add(s + "れば"); out.add(s + c + "ば") }
                     V.PASS -> { out.add(s + e + "れる"); if (asIchidan) out.add(s + "られる"); out.add(s + i + "られる"); out.add(s + c + "れる") }
                     V.CAUS -> { out.add(s + e + "せる"); if (asIchidan) out.add(s + "させる"); out.add(s + i + "させる"); out.add(s + o + "せる") }
+                    V.IMP -> { out.add(s + i); if (asIchidan) out.add(s + "ろ"); out.add(s + c + "ろ"); out.add(s + o) }
+                    V.ZU -> { out.add(s + i + "ず"); out.add(s + c + "ず"); if (asIchidan) out.add(s + "ず"); out.add(s + e + "ず") }
+                    V.CAUSPASS -> { out.add(s + e + "せられる"); if (asIchidan) out.add(s + "させられる"); out.add(s + i + "させられる"); out.add(s + a + "さられる") }
                     V.DICT -> {}
                 }
             }
@@ -185,6 +197,9 @@ object Conj {
                     V.BA -> { out.add(s + "らば"); out.add(s + "ば"); out.add(s + "るば") }
                     V.PASS -> { out.add(s + "れる"); out.add(s + "らる"); out.add(s + "られれる") }
                     V.CAUS -> { out.add(s + "らせる"); out.add(s + "させれる"); out.add(s + "せる") }
+                    V.IMP -> { out.add(s + "れ"); out.add(s + "るろ"); out.add(s + "り") }
+                    V.ZU -> { out.add(s + "らず"); out.add(s + "るず"); out.add(s + "ないず") }
+                    V.CAUSPASS -> { out.add(s + "らせられる"); out.add(s + "せられる"); out.add(s + "させれる") }
                     V.DICT -> {}
                 }
             }
@@ -200,6 +215,9 @@ object Conj {
                     V.BA -> { out.add(p + "しれば"); out.add(p + "せば"); out.add(p + "すば") }
                     V.PASS -> { out.add(p + "しられる"); out.add(p + "すられる"); out.add(p + "せられる") }
                     V.CAUS -> { out.add(p + "しさせる"); out.add(p + "すせる"); out.add(p + "させれる") }
+                    V.IMP -> { out.add(p + "すれ"); out.add(p + "しれ"); out.add(p + "すろ") }
+                    V.ZU -> { out.add(p + "しず"); out.add(p + "すず"); out.add(p + "さず") }
+                    V.CAUSPASS -> { out.add(p + "しさせられる"); out.add(p + "すせられる"); out.add(p + "させれる") }
                     V.DICT -> {}
                 }
             }
@@ -213,6 +231,9 @@ object Conj {
                 V.BA -> { out.add("きれば"); out.add("こば"); out.add("これば") }
                 V.PASS -> { out.add("くられる"); out.add("きられる"); out.add("これる") }
                 V.CAUS -> { out.add("くさせる"); out.add("きさせる"); out.add("こさす") }
+                V.IMP -> { out.add("くれ"); out.add("きろ"); out.add("ころ") }
+                V.ZU -> { out.add("くず"); out.add("きず"); out.add("こなず") }
+                V.CAUSPASS -> { out.add("くさせられる"); out.add("きさせられる"); out.add("こられさせる") }
                 V.DICT -> {}
             }
         }

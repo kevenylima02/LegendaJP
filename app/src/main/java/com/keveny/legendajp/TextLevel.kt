@@ -36,7 +36,8 @@ object TextLevel {
         val points = HashMap<String, String>() // id → nível
         for (t in texts) {
             for (w in (try { Jp.wordsAll(t) + Jp.expressions(t) } catch (_: Exception) { emptyList() })) {
-                if (w.posKey !in content || w.base.all { it.isDigit() }) continue
+                // Números, letras, símbolos: não são palavras (nem contam na porcentagem)
+                if (w.posKey !in content || !Jp.isLexical(w.base)) continue
                 tokens++
                 distinct.add(w.key)
                 when { Jp.keyIn(w, known) != null -> k++; Jp.keyIn(w, studying) != null -> s++ }

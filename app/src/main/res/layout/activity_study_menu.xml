@@ -66,6 +66,14 @@
         android:layout_marginTop="8dp"
         android:text="Revisar erros" />
 
+    <Button
+        android:id="@+id/btnGrammarDict"
+        style="@style/Button.Outline"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Dicionário de gramática" />
+
     <TextView
         android:id="@+id/kinds"
         android:layout_width="match_parent"

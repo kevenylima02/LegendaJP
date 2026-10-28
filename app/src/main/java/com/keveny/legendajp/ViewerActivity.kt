@@ -88,8 +88,7 @@ class ViewerActivity : Activity() {
         seek = findViewById(R.id.seek)
         time = findViewById(R.id.time)
         listView.adapter = adapter
-        listView.setOnItemClickListener { _, _, pos, _ -> playFrom(lines[pos].sec) }
-        listView.setOnItemLongClickListener { _, _, pos, _ -> showGrammar(lines[pos].text); true }
+        listView.setOnItemLongClickListener { _, _, pos, _ -> showGrammar(lines[pos].text, maxOf(0, lines[pos].sec)); true }
 
         btnPlay.setOnClickListener {
             val p = player ?: return@setOnClickListener
@@ -214,7 +213,7 @@ class ViewerActivity : Activity() {
     }
 
     /** Pontos gramaticais da frase (toque longo). */
-    private fun showGrammar(sentence: String) {
+    private fun showGrammar(sentence: String, sec: Int = 0) {
         val hits = try { Grammar.find(sentence) } catch (_: Exception) { emptyList() }
         val sb = android.text.SpannableStringBuilder()
         if (hits.isEmpty()) {
@@ -248,8 +247,16 @@ class ViewerActivity : Activity() {
             addView(head); addView(tv)
         }
         val scroll = android.widget.ScrollView(this).apply { addView(box) }
-        AlertDialog.Builder(this).setTitle("Gramática da frase").setView(scroll)
-            .setPositiveButton("Fechar", null).show()
+        val b = AlertDialog.Builder(this).setTitle("Gramática da frase").setView(scroll)
+            .setPositiveButton("Fechar", null)
+            .setNegativeButton("Dicionário") { _, _ ->
+                startActivity(Intent(this, GrammarDictActivity::class.java).putExtra(GrammarDictActivity.EXTRA_ID, hits.firstOrNull()?.point?.id))
+            }
+        // Quando o app não reconhece uma palavra da frase: a IA separa e deixa salvar cada uma
+        if (Ai.enabled(this)) b.setNeutralButton("✦ Palavras (IA)") { _, _ ->
+            AiWords.show(this, sentence, sentence, Recordings.baseName(name), sec) { adapter.notifyDataSetChanged() }
+        }
+        b.show()
     }
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
@@ -505,14 +512,12 @@ class ViewerActivity : Activity() {
             // Toque longo (no texto ou no tempo) mostra a gramática da frase
             val longPress = View.OnLongClickListener {
                 Jp.suppressTapUntil = android.os.SystemClock.uptimeMillis() + 1000
-                showGrammar(l.text); true
+                showGrammar(l.text, maxOf(0, l.sec)); true
             }
             tv.setOnLongClickListener(longPress)
             stamp.setOnLongClickListener(longPress)
-            // Toque fora de uma palavra toca o trecho
-            tv.setOnClickListener {
-                if (android.os.SystemClock.uptimeMillis() - Jp.lastWordTap > 400) playFrom(l.sec)
-            }
+            // Toque no texto fora de uma palavra não faz nada (só o tempo, à esquerda, toca o trecho)
+            tv.setOnClickListener(null)
             // Tradução embaixo da frase, quando já existe (tocar alterna ML Kit ⇄ Gemini)
             val trv = v.findViewById<TextView>(R.id.tr)
             if (l.text in translated) {

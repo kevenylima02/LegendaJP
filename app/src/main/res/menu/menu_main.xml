@@ -9,6 +9,10 @@
         android:id="@+id/action_mistakes"
         android:title="Revisar erros"
         android:showAsAction="never" />
+    <item
+        android:id="@+id/action_grammar_dict"
+        android:title="Dicionário de gramática"
+        android:showAsAction="never" />
     <!-- Transcrição -->
     <item
         android:id="@+id/action_share"

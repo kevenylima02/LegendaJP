@@ -37,6 +37,7 @@ object Ai {
         TRANSLATE("Traduzir a frase com contexto"),
         WORD("Explicar a palavra nesta frase"),
         GRAMMAR("Explicar a gramática"),
+        GUIDE("Escrever o material de estudo"),
     }
 
     /**
@@ -69,7 +70,7 @@ object Ai {
         else -> Prefs(ctx).geminiModel.ifBlank { DEFAULT_MODEL }
     }
 
-    private fun cacheKey(ctx: Context, r: Request) = "${r.task}|${modelId(ctx)}|${r.sentence}|${r.target}|${r.note}"
+    private fun cacheKey(ctx: Context, r: Request) = "${r.task}|${modelId(ctx)}|${r.sentence}|${r.target}|${r.note}" + (if (r.task == Task.GUIDE) "|txt" else "")
 
     /** Resposta guardada, se houver. Chame fora da UI. */
     fun cached(ctx: Context, r: Request): Result? {
@@ -90,7 +91,7 @@ object Ai {
                 val prompt = prompt(app, r)
                 val out = when (mode(app)) {
                     NANO -> runNano(prompt)
-                    CLOUD -> runCloud(app, prompt)
+                    CLOUD -> if (r.task == Task.GUIDE) runCloud(app, prompt, 8192, json = false) else runCloud(app, prompt)
                     else -> throw IllegalStateException("A IA está desligada em Configurações.")
                 }
                 val parsed = parse(r.task, out, modelLabel(app), cached = false)
@@ -482,6 +483,7 @@ object Ai {
     // =====================================================================
 
     private fun prompt(ctx: Context, r: Request): String {
+        if (r.task == Task.GUIDE) return guidePrompt(r)
         val context = contextLines(ctx, r.recording, r.sentence)
         val sb = StringBuilder()
         sb.append("Você é professor de japonês de um brasileiro que estuda para o JLPT N${r.level}. ")
@@ -514,6 +516,7 @@ object Ai {
                     "\"nesta_frase\" (o que ele faz nesta frase, 1 linha), \"exemplo_ja\" (frase nova e simples), " +
                     "\"exemplo_pt\" (tradução do exemplo), \"nivel\" (N5 a N1)."
             )
+            Task.GUIDE -> {}
         }
         sb.append("\nResponda somente com um objeto JSON, sem markdown. Textos curtos, em português do Brasil (o japonês em japonês).")
         return sb.toString()
@@ -556,6 +559,19 @@ object Ai {
     // Resposta → campos
     // =====================================================================
 
+    /** Material de estudo de um nível (dicionário de gramática): r.sentence = "N5", r.note = padrões, um por linha. */
+    private fun guidePrompt(r: Request): String =
+        "Você é professor de japonês de um brasileiro que estuda para o JLPT N${r.level}. " +
+            "Escreva um material de estudo, em português do Brasil, sobre a gramática do nível ${r.sentence}, cobrindo estes padrões " +
+            "(um por linha: nome — resumo):\n${r.note}\n" +
+            "Formato: texto corrido, sem JSON e sem markdown (nada de asteriscos, # ou tabelas). " +
+            "Comece com a linha VISÃO GERAL e 3 a 5 linhas sobre o que a gramática desse nível permite dizer e por onde começar. " +
+            "Depois, uma seção por padrão, na ordem dada: o nome do padrão numa linha própria; depois \"Significado:\"; " +
+            "\"Formação:\" (para verbos, grupo 1 godan, grupo 2 ichidan e grupo 3 する／来る, cada um com exemplo em hiragana; " +
+            "para adjetivos e substantivos, como se ligam); e \"Exemplo:\" com uma frase simples e a tradução. Uma linha em branco entre as seções. " +
+            "Termine com a linha DICAS E ERROS COMUNS: padrões parecidos e como diferenciar, e os erros mais comuns de brasileiros. " +
+            "O japonês em japonês, com a leitura em hiragana entre parênteses quando houver kanji."
+
     private val labels = mapOf(
         Task.TRANSLATE to listOf("traducao" to "Tradução (IA)", "literal" to "Literal", "observacao" to "Obs."),
         Task.WORD to listOf(
@@ -566,9 +582,11 @@ object Ai {
             "padrao" to "Padrão", "nivel" to "Nível", "significado" to "Significado", "como_formar" to "Como se forma",
             "nesta_frase" to "Nesta frase", "exemplo_ja" to "Exemplo", "exemplo_pt" to ""
         ),
+        Task.GUIDE to listOf("introducao" to "Visão geral", "material" to "Padrões", "dicas" to "Dicas e erros comuns"),
     )
 
     private fun parse(task: Task, out: String, model: String, cached: Boolean): Result {
+        if (task == Task.GUIDE) return Result(emptyList(), out.trim(), if (out.isBlank()) "Resposta vazia" else null, model, cached)
         val a = out.indexOf('{')
         val b = out.lastIndexOf('}')
         val o = try { if (a >= 0 && b > a) JSONObject(out.substring(a, b + 1)) else null } catch (_: Exception) { null }
@@ -614,14 +632,14 @@ object Ai {
         }
     }
 
-    private fun runCloud(ctx: Context, prompt: String, maxTokens: Int = 2048): String {
+    private fun runCloud(ctx: Context, prompt: String, maxTokens: Int = 2048, json: Boolean = true): String {
         val p = Prefs(ctx)
         val key = p.geminiKey.ifBlank { TEST_KEY }
         if (key.isBlank()) throw IllegalStateException("Sem chave do Gemini: cole a sua em Configurações → Inteligência artificial.")
         val model = p.geminiModel.ifBlank { DEFAULT_MODEL }
         val body = JSONObject()
             .put("contents", JSONArray().put(JSONObject().put("parts", JSONArray().put(JSONObject().put("text", prompt)))))
-            .put("generationConfig", JSONObject().put("responseMimeType", "application/json").put("temperature", 0.3).put("maxOutputTokens", maxTokens))
+            .put("generationConfig", JSONObject().put("responseMimeType", if (json) "application/json" else "text/plain").put("temperature", 0.3).put("maxOutputTokens", maxTokens))
         val conn = URL("https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent").openConnection() as HttpURLConnection
         try {
             conn.requestMethod = "POST"

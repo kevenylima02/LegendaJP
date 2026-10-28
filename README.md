@@ -77,6 +77,23 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   pasta, Selecionar vários (marca e move de uma vez), Renomear, Apagar. Toque longo numa pasta: Estudar a
   pasta inteira (as frases de todos os itens juntas), Renomear, Apagar (os itens voltam para Sem pasta). Um
   texto criado ou importado dentro de uma pasta já entra nela. Só no banco: os arquivos não mudam de lugar.
+- **Dicionário de gramática** (menu ⋮, Estudar e Configurações): todos os padrões do catálogo com busca, filtros
+  N5/N4/N3 e "Nas minhas frases"; cada ficha tem explicação, como se forma (grupos 1, 2 e 3), exemplo, as suas
+  frases onde o padrão apareceu, estado na revisão, "Estudar" (sessão só com aquele padrão) e ✦ explicação pela IA.
+  "✦ Material de estudo do nível" pede ao Gemini um material sobre os padrões do nível e guarda a resposta.
+  O toque longo numa frase (leitor e gravação) tem o botão "Dicionário", que abre na ficha do padrão.
+- **Mais 24 padrões no catálogo** (110 no total): まだ～ていない, もう～た, ～なきゃ／なくちゃ／ないと, ～てほしい,
+  ～たがる, ～なさい, ～な (proibição), forma imperativa, ～と (condicional), ～のほうが, ～のが／のは (nominalização),
+  ～ずに, ～なくて, ～くて, ～て (ligação), ～ように (finalidade), ～までに, ～くらい, ～ことがある (às vezes),
+  ～させられる, ～たらどうですか, ～って, ～てくれませんか／いただけませんか, あまり／全然～ない. Correções:
+  ～たら nunca era detectado (o Kuromoji junta たら num token só), ～なければいけません também não, e
+  「～てください」 não conta mais como ～てくれる. Os novos padrões têm exercícios de uso (formas imperativa, ず e
+  causativo-passiva entraram no conjugador, com erros típicos de estudante).
+- **Números, letras e símbolos não são palavras**: datas, "ABC", numerais romanos etc. aparecem sempre em verde,
+  não têm toque, não podem ser salvos e não entram na porcentagem "conheço / estudando / novas".
+- **Gravação**: tocar no texto de uma frase não pula mais o áudio (só o tempo à esquerda toca o trecho). No toque
+  longo da frase, "✦ Palavras (IA)" separa as palavras com o Gemini e deixa salvar cada uma, para quando o app não
+  reconhece a palavra (o mesmo diálogo do marcador do leitor).
 - **Drills de gramática mais difíceis**: as opções de "Qual forma combina", "Transforme com o padrão" e
   "Português → padrão" vêm em hiragana (o kanji não entrega a resposta e o erro de leitura conta: こない ≠
   くない) e as erradas são erros típicos de estudante — tratar o grupo 1 como 2 e vice-versa (たべらない, かくない),
