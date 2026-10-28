@@ -63,10 +63,11 @@ object Furigana {
      * skip: trecho da frase que não pode ganhar leitura (a palavra de um exercício de kanji).
      * Devolve true se colocou alguma leitura (para ajustar o espaçamento com style()).
      */
-    fun decorate(ctx: Context, sb: SpannableStringBuilder, offset: Int, sentence: String, skip: IntRange? = null, force: Boolean = false): Boolean {
+    fun decorate(ctx: Context, sb: SpannableStringBuilder, offset: Int, sentence: String, skip: IntRange? = null, force: Boolean = false, given: List<Ruby> = emptyList()): Boolean {
         val mode = if (force) ALL else mode(ctx)
         if (mode == NONE) return false
-        val rubies = of(sentence)
+        // As leituras do autor (ruby do texto) valem sobre as do Kuromoji no mesmo trecho
+        val rubies = given + of(sentence).filter { r -> given.none { g -> r.start < g.end && g.start < r.end } }
         if (rubies.isEmpty()) return false
         val hidden: List<IntRange> = if (mode == UNKNOWN) {
             val mastered = Srs.masteredKanjiKeys(ctx)

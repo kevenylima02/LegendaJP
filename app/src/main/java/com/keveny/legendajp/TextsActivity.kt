@@ -21,7 +21,7 @@ import android.widget.Toast
 
 /**
  * Textos para leitura: a lista (em pastas próprias, separadas das de Gravações) e as formas de trazer um texto
- * (colar, foto, galeria, arquivo ou compartilhar de outro app para o Michi). Tocar abre o leitor;
+ * (colar, foto, galeria, arquivo .txt ou PDF, ou compartilhar de outro app para o Michi). Tocar abre o leitor;
  * toque longo: mover para pasta, selecionar vários, renomear, apagar.
  */
 class TextsActivity : Activity() {
@@ -66,8 +66,9 @@ class TextsActivity : Activity() {
         action("Colar texto") { openEditor(text = "") }
         action("📷 Foto") { takePhoto() }
         action("Imagem da galeria") { startActivityForResult(Intent(MediaStore.ACTION_PICK_IMAGES), reqGallery) }
-        action("Arquivo .txt") {
-            startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("text/*"), reqFile)
+        action("Arquivo .txt / PDF") {
+            startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*")
+                .putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("text/plain", "text/*", "application/pdf")), reqFile)
         }
         root.addView(actions)
         root.addView(TextView(this).apply {
@@ -266,8 +267,16 @@ class TextsActivity : Activity() {
             }
             reqGallery -> if (resultCode == RESULT_OK) data?.data?.let { openEditor(image = it) }
             reqFile -> if (resultCode == RESULT_OK) data?.data?.let { uri ->
-                val t = try { contentResolver.openInputStream(uri)?.bufferedReader(Charsets.UTF_8)?.use { it.readText() } } catch (_: Exception) { null }
-                if (t != null) openEditor(text = t)
+                val isPdf = contentResolver.getType(uri) == "application/pdf" || uri.toString().lowercase().endsWith(".pdf")
+                if (isPdf) {
+                    startActivity(Intent(this, TextEditActivity::class.java).apply {
+                        putExtra(TextEditActivity.EXTRA_PDF, uri.toString())
+                        if (folder > 0) putExtra(TextEditActivity.EXTRA_FOLDER, folder)
+                    })
+                } else {
+                    val t = try { contentResolver.openInputStream(uri)?.bufferedReader(Charsets.UTF_8)?.use { it.readText() } } catch (_: Exception) { null }
+                    if (t != null) openEditor(text = t)
+                }
             }
         }
     }

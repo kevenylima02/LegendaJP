@@ -77,6 +77,12 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   pasta, Selecionar vários (marca e move de uma vez), Renomear, Apagar. Toque longo numa pasta: Estudar a
   pasta inteira (as frases de todos os itens juntas), Renomear, Apagar (os itens voltam para Sem pasta). Um
   texto criado ou importado dentro de uma pasta já entra nela. Só no banco: os arquivos não mudam de lugar.
+- **Ruby do autor**: texto com furigana no estilo Aozora (｜漢字《かんじ》 ou 漢字《かんじ》) ou HTML
+  (<ruby>漢字<rt>かんじ</rt></ruby>) mantém a leitura dada pelo autor no leitor, por cima da do Kuromoji
+  (segue a configuração de furigana); notas ［＃…］ do Aozora são removidas. No arquivo, a leitura vai numa
+  linha "#rb" antes da frase.
+- **Importar PDF**: em Textos, "Arquivo .txt / PDF" aceita PDF; cada página (até 20) vira uma imagem e é
+  lida no celular pelo ML Kit ou, com ✦ Ler com IA, pelo Gemini página por página, mantendo o layout.
 - **Escolher gramática**: o botão Gramática da tela Estudar abre a lista dos padrões do catálogo que aparecem
   nas frases da gravação (ou pasta): nível, explicação, em quantas frases, estado na revisão, uma frase de
   exemplo com o trecho em negrito (toque longo: todas as frases) e ✦ Explicar com IA. Marque até 5: a sessão

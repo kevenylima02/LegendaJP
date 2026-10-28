@@ -251,7 +251,7 @@ class ReaderActivity : Activity() {
             }
             is Texts.Block.Heading -> {
                 val factor = when (b.level) { 1 -> 1.45f; 2 -> 1.25f; else -> 1.1f }
-                content.addView(sentenceView(listOf(Texts.Sentence(-1, b.text)), size * factor, furigana, bold = true))
+                content.addView(sentenceView(listOf(Texts.Sentence(-1, b.text, b.ruby)), size * factor, furigana, bold = true))
             }
             is Texts.Block.Table -> {
                 val table = TableLayout(this)
@@ -290,7 +290,7 @@ class ReaderActivity : Activity() {
         for (s in sents) {
             val off = sb.length
             sb.append(Jp.decorate(s.text, VocabDb.studyKeys, th.saved, VocabDb.knownKeys, th.known, all = true) { w -> onWordTap(tv, w, s) })
-            if (furigana) Furigana.decorate(this, sb, off, s.text)
+            if (furigana) Furigana.decorate(this, sb, off, s.text, given = s.ruby)
             ranges.add(off until sb.length to s)
         }
         tv.apply {
