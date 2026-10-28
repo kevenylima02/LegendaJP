@@ -57,8 +57,8 @@ class StudyMenuActivity : Activity() {
         )
         for ((focus, id) in focusButtons) {
             findViewById<Button>(id).setOnClickListener {
-                // Gramática vai direto; os outros focos passam pela escolha das palavras
-                val target = if (focus == StudyGen.Focus.GRAMATICA) StudyActivity::class.java else WordPickActivity::class.java
+                // Gramática passa pela escolha dos padrões; os outros focos, pela escolha das palavras
+                val target = if (focus == StudyGen.Focus.GRAMATICA) GrammarPickActivity::class.java else WordPickActivity::class.java
                 startActivity(
                     Intent(this, target)
                         .putExtra(StudyActivity.EXTRA_URI, uri)
@@ -100,7 +100,7 @@ class StudyMenuActivity : Activity() {
             runOnUiThread {
                 if (isFinishing) return@runOnUiThread
                 for ((focus, id) in focusButtons) {
-                    val n = if (focus == StudyGen.Focus.GRAMATICA) av.grammar else av.words[focus] ?: 0
+                    val n = if (focus == StudyGen.Focus.GRAMATICA) av.points else av.words[focus] ?: 0
                     val b = findViewById<Button>(id)
                     b.text = "${focus.label}  ·  $n"
                     b.isEnabled = n > 0
@@ -108,7 +108,8 @@ class StudyMenuActivity : Activity() {
                 }
                 val kinds = StudyGen.kinds.entries.joinToString("\n") { (f, ks) -> "${f.label}: " + ks.joinToString(", ") }
                 val what = "Os números são o que ainda dá para estudar aqui: palavras que ainda não foram marcadas como conhecidas, " +
-                    "estudadas nem puladas (Misto, Vocabulário e Kanji) e exercícios de gramática. " +
+                    "estudadas nem puladas (Misto, Vocabulário e Kanji) e padrões gramaticais encontrados nas frases (Gramática; " +
+                    "${av.grammar} exercícios). " +
                     "Kanji: ${av.words[StudyGen.Focus.KANJI] ?: 0} palavras com ${av.kanji} kanji novos."
                 findViewById<TextView>(R.id.kinds).text = "$what\n\nTipos de exercício\n$kinds"
             }

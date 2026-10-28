@@ -55,6 +55,11 @@
             android:exported="false"
             android:parentActivityName=".StudyMenuActivity" />
 
+        <activity
+            android:name=".GrammarPickActivity"
+            android:exported="false"
+            android:parentActivityName=".StudyMenuActivity" />
+
         <!-- Modelo de leitura de japonês (OCR) baixado pelo Google Play ao instalar -->
         <meta-data
             android:name="com.google.mlkit.vision.DEPENDENCIES"

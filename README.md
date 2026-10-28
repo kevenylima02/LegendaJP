@@ -77,6 +77,21 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   pasta, Selecionar vários (marca e move de uma vez), Renomear, Apagar. Toque longo numa pasta: Estudar a
   pasta inteira (as frases de todos os itens juntas), Renomear, Apagar (os itens voltam para Sem pasta). Um
   texto criado ou importado dentro de uma pasta já entra nela. Só no banco: os arquivos não mudam de lugar.
+- **Escolher gramática**: o botão Gramática da tela Estudar abre a lista dos padrões do catálogo que aparecem
+  nas frases da gravação (ou pasta): nível, explicação, em quantas frases, estado na revisão, uma frase de
+  exemplo com o trecho em negrito (toque longo: todas as frases) e ✦ Explicar com IA. Marque até 5: a sessão
+  fica só com eles — Identificar, Lacuna e Ordenar nas frases que os têm, e exercícios de uso (Qual forma
+  combina, Transforme, Português → padrão, Escrever com IA) com um banco de verbos que cobre todos os grupos
+  (godan por terminação, ichidan, する, 来る) e adjetivos-い. "Tudo misturado" estuda como antes. O número do
+  botão é a quantidade de padrões encontrados.
+- **Detalhe por palavra**: a tela da palavra mostra, para significado, leitura do kanji e escrita do kanji,
+  quantos exercícios você respondeu e quantos acertou (contado a partir desta versão).
+- **Textos com layout (Markdown leve)**: no editor de texto, `# título`, `| tabela |` (com a linha `|---|`
+  depois do cabeçalho), `- item` e linha vazia entre parágrafos viram título, tabela, lista e parágrafos no
+  leitor — cada célula e item continua tocável, com furigana, estudo e áudio como qualquer frase. ✦ Ler com
+  IA (Gemini) agora transcreve a foto mantendo o layout da página nesse Markdown (tabelas de exercícios,
+  títulos, listas); o ML Kit continua devolvendo texto corrido. No arquivo, a estrutura vai em linhas com #
+  (#h1, #li, #table/#row/#cell), que o resto do app ignora.
 - **Conheço a palavra ≠ sei escrever**: duas marcas por palavra. "Já conheço" (palavra) tira a palavra dos
   exercícios de vocabulário e dos flashcards de significado, pinta de verde e conta no "conheço X%"; em Kanji
   ela continua, só com os exercícios de escrita (Leitura → palavra em kanji, Montar a palavra, Montar o kanji

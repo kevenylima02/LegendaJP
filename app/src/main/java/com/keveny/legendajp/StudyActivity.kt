@@ -41,6 +41,8 @@ class StudyActivity : Activity() {
         const val EXTRA_WORD_LABEL = "wordLabel"
         /** Palavras escolhidas antes do estudo (WordPickActivity). */
         const val EXTRA_KEYS = "keys"
+        /** Padrões gramaticais escolhidos (GrammarPickActivity): a sessão fica só com eles. */
+        const val EXTRA_POINTS = "points"
         /** Revisão espaçada de hoje (ReviewActivity); EXTRA_SRS_MODE: misto, exercicios ou flash. */
         const val EXTRA_SRS = "srs"
         const val EXTRA_SRS_MODE = "srsMode"
@@ -195,12 +197,13 @@ class StudyActivity : Activity() {
         val srsMode = intent.getStringExtra(EXTRA_SRS_MODE) ?: "misto"
         val saved = intent.getBooleanExtra(EXTRA_SAVED, false)
         val uri = intent.getParcelableExtra(EXTRA_URI, Uri::class.java)
-        if (!mistakes && !saved && !srs && uri == null) { finish(); return }
         val name = intent.getStringExtra(EXTRA_NAME) ?: ""
+        if (!mistakes && !saved && !srs && uri == null && !Folders.isStudyName(name)) { finish(); return }
         val focus = try { StudyGen.Focus.valueOf(intent.getStringExtra(EXTRA_FOCUS) ?: "MISTO") } catch (_: Exception) { StudyGen.Focus.MISTO }
         val wordKey = intent.getStringExtra(EXTRA_WORD_KEY)
         val wordLabel = intent.getStringExtra(EXTRA_WORD_LABEL) ?: ""
         val keys = intent.getStringArrayListExtra(EXTRA_KEYS)
+        val points = intent.getStringArrayListExtra(EXTRA_POINTS)?.toSet()
         multiRecording = mistakes || saved || srs
         recording = when {
             srs -> SRS_RECORDING
@@ -213,6 +216,7 @@ class StudyActivity : Activity() {
             mistakes -> "Erros"
             wordKey != null -> "Palavra: $wordLabel"
             keys != null -> "${focus.label} · ${keys.size} palavras"
+            points != null -> "Gramática · " + points.joinToString(", ") { Grammar.point(it)?.name ?: it }
             else -> focus.label
         }
         title = when {
@@ -248,9 +252,13 @@ class StudyActivity : Activity() {
                     saved -> VocabDb.savedKeys
                     else -> null
                 }
-                val max = if (keys != null) maxOf(MAX_ITEMS, keys.size * 2) else MAX_ITEMS
+                val max = when {
+                    keys != null -> maxOf(MAX_ITEMS, keys.size * 2)
+                    points != null -> minOf(40, maxOf(MAX_ITEMS, points.size * 6))
+                    else -> MAX_ITEMS
+                }
                 built = StudyGen.build(this, lines, focus, Prefs(this).levels, max, only,
-                    grammar = !saved && wordKey == null, cover = keys != null)
+                    grammar = !saved && wordKey == null, cover = keys != null, points = points)
             }
             // Traços das peças de "Montar o kanji" (uma passada pelo arquivo)
             Strokes.load(this, built.filterIsInstance<Item.Parts>().flatMap { it.tiles.map { p -> p.src } }.toSet())
@@ -725,7 +733,7 @@ class StudyActivity : Activity() {
             }
             val db = VocabDb.get(this)
             if (sessionId < 0) sessionId = db.startSession(recording, focusLabel, 0)
-            db.addStudyItem(sessionId, VocabDb.StudyItem(item.kind, promptText, answer, given, ok, item.sentence))
+            db.addStudyItem(sessionId, VocabDb.StudyItem(item.kind, promptText, answer, given, ok, item.sentence, item.wordKey))
             if (key != null && key in VocabDb.savedKeys && trains != null && trains != StudyGen.TRAINS_GRAMMAR) {
                 db.bumpScore(key, kanji = trains == StudyGen.TRAINS_KANJI, correct = ok)
             }

@@ -47,8 +47,17 @@ object StudyGen {
         class Parts(s: Line, val word: Jp.Word, val kanji: Char, val parts: List<KanjiParts.Part>, val tiles: List<KanjiParts.Part>) :
             Item(Focus.KANJI, "Montar o kanji com as partes", s.text, s.sec, s.endSec, Jlpt.kanjiLevel(kanji), word.key, s.recording)
 
-        /** Identidade para não repetir o mesmo exercício na sessão. */
-        val identity: String get() = kind + "|" + (wordKey ?: sentence)
+        /** Identidade para não repetir o mesmo exercício na sessão (drills: a pergunta, que traz o verbo e o padrão). */
+        val identity: String get() = kind + "|" + (wordKey ?: sentence) + (grammarId?.let { "|$it" } ?: "") + (if (this is Drill) "|$prompt" else "")
+
+        /** Padrão gramatical do exercício, se ele é de um padrão específico. */
+        val grammarId: String? get() = when (this) {
+            is GrammarQ -> hit.point.id
+            is GrammarCloze -> hit.point.id
+            is Drill -> pointId
+            is FreeWrite -> pointId
+            else -> null
+        }
     }
 
     enum class Difficulty(val label: String) { FACIL("Fácil"), MEDIO("Médio"), DIFICIL("Difícil") }
@@ -109,7 +118,7 @@ object StudyGen {
 
     /** Quantos exercícios distintos cada foco consegue gerar. */
     /** O que ainda dá para estudar aqui: palavras por foco (as que o escolhedor vai mostrar), kanji novos e exercícios de gramática. */
-    data class Available(val words: Map<Focus, Int>, val kanji: Int, val grammar: Int)
+    data class Available(val words: Map<Focus, Int>, val kanji: Int, val grammar: Int, val points: Int)
 
     /**
      * Mesmas regras do escolhedor de palavras (WordPickActivity): tipos de exercício desligados, palavras
@@ -122,10 +131,13 @@ object StudyGen {
         val items = generateAll(ctx, lines, kotlin.random.Random(1), restrict, grammar = restrict == null)
             .filter { it.kind !in disabled }.distinctBy { it.identity }
         val grammar = items.count { it.focus == Focus.GRAMATICA }
+        // Padrões encontrados nas frases (o mesmo que o escolhedor de gramática lista)
+        val points = lines.filter { it.text.length >= 4 }
+            .flatMap { l -> (try { Grammar.find(l.text) } catch (_: Exception) { emptyList() }).map { it.point.id } }.toSet().size
         val wordItems = items.filter { it.focus != Focus.GRAMATICA }
         val words = listOf(Focus.MISTO, Focus.VOCAB, Focus.KANJI).associateWith { candidatesOf(wordItems, it, exclude).size }
         val kanji = candidatesOf(wordItems, Focus.KANJI, exclude).flatMap { c -> c.word.base.filter(::isKanji).toList() }.distinct().size
-        return Available(words, kanji, grammar)
+        return Available(words, kanji, grammar, points)
     }
 
     /**
@@ -133,16 +145,23 @@ object StudyGen {
      * do usuário ou acima (level menor = mais difícil).
      * @param grammar inclui gramática e ordenar frase; com onlyKeys, só das frases que têm essas palavras.
      * @param cover garante pelo menos um exercício de cada palavra de onlyKeys (palavras escolhidas).
+     * @param points padrões gramaticais escolhidos: só exercícios deles (Ordenar só em frases que os têm),
+     *   mais os exercícios de uso com verbos de todos os grupos (GrammarDrill.coverage).
      */
     fun build(
         ctx: Context, lines: List<Line>, focus: Focus, levels: Set<Int>, max: Int, onlyKeys: Set<String>? = null,
-        grammar: Boolean = onlyKeys == null, cover: Boolean = false
+        grammar: Boolean = onlyKeys == null, cover: Boolean = false, points: Set<String>? = null
     ): List<Item> {
         val rnd = kotlin.random.Random(System.nanoTime())
         val disabled = Prefs(ctx).disabledKinds
-        val all = generateAll(ctx, lines, rnd, onlyKeys, grammar).shuffled(rnd)
-            .filter { it.kind !in disabled }
-            .distinctBy { it.identity }
+        var gen = generateAll(ctx, lines, rnd, onlyKeys, grammar).filter { it.kind !in disabled }
+        if (points != null) {
+            val has = HashMap<String, Boolean>()
+            fun sentenceHas(s: String) = has.getOrPut(s) { (try { Grammar.find(s) } catch (_: Exception) { emptyList() }).any { it.point.id in points } }
+            gen = gen.filter { it.focus == Focus.GRAMATICA && (it.grammarId?.let { p -> p in points } ?: sentenceHas(it.sentence)) } +
+                GrammarDrill.coverage(ctx, points, lines, rnd, withAi = Ai.enabled(ctx)).filter { it.kind !in disabled }
+        }
+        val all = gen.shuffled(rnd).distinctBy { it.identity }
         val pool = if (focus == Focus.MISTO) all else all.filter { it.focus == focus }
         val out = mutableListOf<Item>()
         if (cover && onlyKeys != null) {

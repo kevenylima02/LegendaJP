@@ -98,6 +98,46 @@ object GrammarDrill {
     /** Verbos para quando a frase não tem um que sirva. */
     private val fallbackVerbs = listOf("食べる", "飲む", "行く", "見る", "読む", "書く", "話す", "待つ", "遊ぶ", "買う", "寝る", "起きる")
 
+    /** Banco para cobrir todos os grupos: godan por terminação (く ぐ す つ ぶ む る う), ichidan, する, 来る; e adjetivos-い. */
+    private val verbBank = listOf(
+        "書く" to "escrever", "泳ぐ" to "nadar", "話す" to "falar", "待つ" to "esperar", "遊ぶ" to "brincar", "読む" to "ler",
+        "帰る" to "voltar para casa", "買う" to "comprar", "食べる" to "comer", "見る" to "ver", "する" to "fazer", "来る" to "vir",
+    )
+    private val adjBank = listOf("高い" to "alto / caro", "新しい" to "novo", "楽しい" to "divertido")
+
+    /**
+     * Exercícios de uso dos padrões escolhidos com todos os grupos de verbo (e adjetivos-い, quando o padrão
+     * aceita): Qual forma combina e Transforme para cada palavra do banco, Português → padrão e a frase
+     * livre (IA) uma vez por padrão. A frase de apoio é a primeira da gravação que tem o padrão.
+     */
+    fun coverage(ctx: android.content.Context, ids: Set<String>, lines: List<Line>, rnd: kotlin.random.Random, withAi: Boolean): List<Item> {
+        val out = mutableListOf<Item>()
+        val db = VocabDb.get(ctx)
+        for (id in ids) {
+            val s = spec(id) ?: continue
+            val line = lines.firstOrNull { l -> (try { Grammar.find(l.text) } catch (_: Exception) { emptyList() }).any { it.point.id == id } }
+                ?: Line(-1, s.point?.example ?: "", -1)
+            val bank = (if (s.verb.isNotEmpty()) verbBank.map { it to "動詞" } else emptyList()) +
+                (if (s.adj.isNotEmpty()) adjBank.map { it to "形容詞" } else emptyList())
+            val targets = mutableListOf<Target>()
+            for ((pair, posKey) in bank) {
+                val (base, pt) = pair
+                if (Tr.cached(ctx, base) == null) db.putTranslation(base, pt)
+                val w = Jp.Word(base, base, base, base, if (posKey == "動詞") "verbo" else "adjetivo", posKey, "", -1, -1)
+                val t = target(w) ?: continue
+                if (!t.fits(s) || t.results(s).isEmpty()) continue
+                targets.add(t)
+                form(ctx, line, t, s, rnd)?.let { out.add(it) }
+                transform(ctx, line, t, s, rnd)?.let { out.add(it) }
+            }
+            val t = targets.randomOrNull(rnd) ?: continue
+            val usable = specs.filter { t.fits(it) && t.results(it).isNotEmpty() }
+            meaning(ctx, line, t, s, usable, rnd)?.let { out.add(it) }
+            if (withAi) out.add(Item.FreeWrite(line, id, t.word))
+        }
+        return out
+    }
+
     private fun levelOf(s: Spec) = s.point?.level?.removePrefix("N")?.toIntOrNull() ?: 5
 
     /** Uma palavra que dá para conjugar: verbo ou adjetivo-い, com as formas. */

@@ -44,7 +44,7 @@ class TextEditActivity : Activity() {
         image = intent.getStringExtra(EXTRA_IMAGE)?.let { Uri.parse(it) }
         titleIn = EditText(this).apply { hint = "Título (opcional)"; setSingleLine(); textSize = 16f; setText(intent.getStringExtra(EXTRA_TITLE) ?: "") }
         body = EditText(this).apply {
-            hint = "Cole ou escreva o texto em japonês. Linha em branco separa parágrafos."
+            hint = "Cole ou escreva o texto em japonês. Linha em branco separa parágrafos. Markdown leve: # título, | tabela |, - item."
             gravity = Gravity.TOP; textSize = 17f
             setText(intent.getStringExtra(EXTRA_TEXT) ?: "")
         }
@@ -92,14 +92,14 @@ class TextEditActivity : Activity() {
         if (!Ai.enabled(this) || Ai.mode(this) != Ai.CLOUD) { Toast.makeText(this, "Precisa do Gemini na nuvem (Configurações → IA)", Toast.LENGTH_LONG).show(); return }
         status.text = "✦ Lendo a imagem com ${Ai.modelLabel(this)}…"
         Ai.readImage(this, uri) { text, err ->
-            if (text != null) { body.setText(text); status.text = "Lido pelo Gemini. Confira antes de salvar." }
+            if (text != null) { body.setText(text); status.text = "Lido pelo Gemini com o layout da página (títulos, tabelas e listas em Markdown). Confira antes de salvar." }
             else status.text = "Não consegui: $err"
         }
     }
 
     private fun save() {
-        val paras = Texts.split(body.text.toString())
-        if (paras.isEmpty()) { Toast.makeText(this, "O texto está vazio", Toast.LENGTH_SHORT).show(); return }
+        val paras = Texts.toLines(body.text.toString())
+        if (paras.none { !it.startsWith("#") }) { Toast.makeText(this, "O texto está vazio", Toast.LENGTH_SHORT).show(); return }
         val t = titleIn.text.toString().trim().ifEmpty { null }
         Thread {
             val name = try { Texts.save(this, t, paras) } catch (e: Exception) {

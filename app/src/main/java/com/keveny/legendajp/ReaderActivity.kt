@@ -29,7 +29,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
+import android.widget.TableLayout
+import android.widget.TableRow
 import android.widget.PopupWindow
 import android.widget.ScrollView
 import android.widget.TextView
@@ -71,6 +74,7 @@ class ReaderActivity : Activity() {
     private lateinit var progressLabel: TextView
     private val toolButtons = HashMap<String, TextView>()
     private var paragraphs: List<List<Texts.Sentence>> = emptyList()
+    private var blocks: List<Texts.Block> = emptyList()
     private var hasAudio = false
     private var player: MediaPlayer? = null
     private var tts: TextToSpeech? = null
@@ -108,7 +112,8 @@ class ReaderActivity : Activity() {
 
     private fun load() {
         Thread {
-            val p = Texts.read(this, name)
+            val bl = Texts.readBlocks(this, name)
+            val p = Texts.groups(bl)
             val audio = Recordings.find(this, "$base.wav") != null
             val t = Recordings.display(this, name)
             val level = try { TextLevel.analyze(p.flatten().map { it.text }) } catch (_: Exception) { null }
@@ -117,6 +122,7 @@ class ReaderActivity : Activity() {
                 title = t
                 actionBar?.subtitle = if (t != Recordings.prettyName(name)) "Criado em ${Recordings.prettyName(name)}" else null
                 paragraphs = p
+                blocks = bl
                 hasAudio = audio
                 render(level)
                 invalidateOptionsMenu()
@@ -238,33 +244,70 @@ class ReaderActivity : Activity() {
             content.addView(TextView(this).apply { text = "Texto vazio."; textSize = 16f; setTextColor(th.text) })
             return
         }
-        for (para in paragraphs) {
-            val sb = SpannableStringBuilder()
-            val ranges = mutableListOf<Pair<IntRange, Texts.Sentence>>()
-            val tv = TextView(this)
-            for (s in para) {
-                val off = sb.length
-                sb.append(Jp.decorate(s.text, VocabDb.studyKeys, th.saved, VocabDb.knownKeys, th.known, all = true) { w -> onWordTap(tv, w, s) })
-                if (furigana) Furigana.decorate(this, sb, off, s.text)
-                ranges.add(off until sb.length to s)
+        for (b in blocks) when (b) {
+            is Texts.Block.Para -> {
+                content.addView(sentenceView(b.sentences, size, furigana, prefix = if (b.bullet) "• " else ""))
+                if (prefs.readerTranslations) content.addView(paragraphTranslation(b.sentences))
             }
-            tv.apply {
-                text = sb
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
-                setTextColor(th.text)
-                // O furigana ocupa o espaço entre as linhas (e o topo do parágrafo)
-                val extra = if (furigana) size * 0.62f else size * 0.42f
-                setLineSpacing(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, extra, resources.displayMetrics), 1f)
-                setPadding(0, if (furigana) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, size * 0.55f, resources.displayMetrics).toInt() else 0, 0, dp(14))
-                movementMethod = LinkMovementMethod.getInstance()
-                highlightColor = Color.TRANSPARENT
+            is Texts.Block.Heading -> {
+                val factor = when (b.level) { 1 -> 1.45f; 2 -> 1.25f; else -> 1.1f }
+                content.addView(sentenceView(listOf(Texts.Sentence(-1, b.text)), size * factor, furigana, bold = true))
             }
-            for ((r, s) in ranges) placed[s] = tv to r
-            attachTouch(tv, ranges)
-            content.addView(tv)
-            if (prefs.readerTranslations) content.addView(paragraphTranslation(para))
+            is Texts.Block.Table -> {
+                val table = TableLayout(this)
+                for ((ri, row) in b.rows.withIndex()) {
+                    val tr = TableRow(this)
+                    val head = b.header && ri == 0
+                    for (cell in row) {
+                        val tv = sentenceView(cell, size * 0.9f, furigana, bold = head)
+                        tv.setPadding(dp(10), dp(6), dp(10), dp(6))
+                        tv.maxWidth = dp(260)
+                        tv.background = GradientDrawable().apply {
+                            setColor(if (head) th.card else Color.TRANSPARENT)
+                            setStroke(dp(1), th.outline)
+                        }
+                        tr.addView(tv, TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.MATCH_PARENT))
+                    }
+                    table.addView(tr)
+                }
+                content.addView(HorizontalScrollView(this).apply {
+                    isHorizontalScrollBarEnabled = false
+                    addView(table)
+                    setPadding(0, 0, 0, dp(16))
+                })
+            }
         }
         scroll.post { updateProgress() }
+    }
+
+    /** Um parágrafo (ou título, item ou célula): as frases decoradas e tocáveis, com furigana se for o caso. */
+    private fun sentenceView(sents: List<Texts.Sentence>, size: Float, furigana: Boolean, bold: Boolean = false, prefix: String = ""): TextView {
+        val th = theme
+        val sb = SpannableStringBuilder()
+        val ranges = mutableListOf<Pair<IntRange, Texts.Sentence>>()
+        val tv = TextView(this)
+        if (prefix.isNotEmpty()) sb.append(prefix)
+        for (s in sents) {
+            val off = sb.length
+            sb.append(Jp.decorate(s.text, VocabDb.studyKeys, th.saved, VocabDb.knownKeys, th.known, all = true) { w -> onWordTap(tv, w, s) })
+            if (furigana) Furigana.decorate(this, sb, off, s.text)
+            ranges.add(off until sb.length to s)
+        }
+        tv.apply {
+            text = sb
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
+            setTextColor(th.text)
+            if (bold) setTypeface(null, Typeface.BOLD)
+            // O furigana ocupa o espaço entre as linhas (e o topo do parágrafo)
+            val extra = if (furigana) size * 0.62f else size * 0.42f
+            setLineSpacing(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, extra, resources.displayMetrics), 1f)
+            setPadding(0, if (furigana) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, size * 0.55f, resources.displayMetrics).toInt() else 0, 0, dp(14))
+            movementMethod = LinkMovementMethod.getInstance()
+            highlightColor = Color.TRANSPARENT
+        }
+        for ((r, s) in ranges) placed[s] = tv to r
+        attachTouch(tv, ranges)
+        return tv
     }
 
     /** O que o toque faz depende da ferramenta (a mão não faz nada; o marcador é tratado no toque). */

@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 /** Vocabulário salvo: palavras (forma de dicionário) e as frases onde apareceram. */
-class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 16) {
+class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.db", null, 17) {
 
     companion object {
         @Volatile private var instance: VocabDb? = null
@@ -104,6 +104,7 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         if (oldVersion < 15) Folders.upgradeKinds(db)
         // v16: "sei escrever" separado de "conheço a palavra"; tudo que era conhecido vira só a palavra
         if (oldVersion < 16) db.execSQL("ALTER TABLE words ADD COLUMN known_kanji INTEGER NOT NULL DEFAULT 0")
+        if (oldVersion < 17) db.execSQL("ALTER TABLE study_item ADD COLUMN word_key TEXT")
     }
 
     /** Marca/desmarca "já conheço". Ao marcar, tira a palavra da fila de erros. */
@@ -203,11 +204,29 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         db.execSQL("""CREATE TABLE IF NOT EXISTS study_item (
             id INTEGER PRIMARY KEY AUTOINCREMENT, session_id INTEGER NOT NULL REFERENCES study_session(id) ON DELETE CASCADE,
             kind TEXT NOT NULL, prompt TEXT NOT NULL, answer TEXT NOT NULL, given TEXT NOT NULL,
-            correct INTEGER NOT NULL, sentence TEXT NOT NULL)""")
+            correct INTEGER NOT NULL, sentence TEXT NOT NULL, word_key TEXT)""")
+    }
+
+    /** Respostas por habilidade de uma palavra (desde a v17): significado, leitura do kanji, escrita do kanji → (total, certas). */
+    data class SkillStats(val meaning: Pair<Int, Int>, val reading: Pair<Int, Int>, val writing: Pair<Int, Int>)
+
+    fun skillStats(key: String): SkillStats {
+        var m = 0 to 0; var r = 0 to 0; var w = 0 to 0
+        readableDatabase.rawQuery("SELECT kind, correct FROM study_item WHERE word_key=?", arrayOf(key)).use { c ->
+            while (c.moveToNext()) {
+                val kind = c.getString(0); val ok = c.getInt(1) == 1
+                fun inc(p: Pair<Int, Int>) = (p.first + 1) to (p.second + if (ok) 1 else 0)
+                when (StudyGen.trainsOf(kind)) {
+                    StudyGen.TRAINS_MEANING -> m = inc(m)
+                    StudyGen.TRAINS_KANJI -> if (kind in StudyGen.writingKinds) w = inc(w) else r = inc(r)
+                }
+            }
+        }
+        return SkillStats(m, r, w)
     }
 
     data class StudySession(val id: Long, val recording: String, val focus: String, val total: Int, val correct: Int, val created: Long)
-    data class StudyItem(val kind: String, val prompt: String, val answer: String, val given: String, val correct: Boolean, val sentence: String)
+    data class StudyItem(val kind: String, val prompt: String, val answer: String, val given: String, val correct: Boolean, val sentence: String, val wordKey: String? = null)
 
     fun startSession(recording: String, focus: String, total: Int): Long =
         writableDatabase.insert("study_session", null, ContentValues().apply {
@@ -219,7 +238,7 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
         val db = writableDatabase
         db.insert("study_item", null, ContentValues().apply {
             put("session_id", sessionId); put("kind", it.kind); put("prompt", it.prompt); put("answer", it.answer)
-            put("given", it.given); put("correct", if (it.correct) 1 else 0); put("sentence", it.sentence)
+            put("given", it.given); put("correct", if (it.correct) 1 else 0); put("sentence", it.sentence); put("word_key", it.wordKey)
         })
         if (it.correct) db.execSQL("UPDATE study_session SET correct = correct + 1 WHERE id = ?", arrayOf(sessionId))
         db.execSQL("UPDATE study_session SET total = (SELECT COUNT(*) FROM study_item WHERE session_id = ?) WHERE id = ?",

@@ -97,9 +97,11 @@ class VocabDetailActivity : Activity() {
      * ou o domínio treinado (Score) e o cartão da revisão (kanji ou significado).
      */
     private fun skillSummary(w: VocabDb.Word, hasKanji: Boolean): String {
-        val meaning = if (w.known) "conheço ✓" else "${Score.percent(w.meaningScore)}% treinado"
-        val reading = if (w.known) "conheço ✓" else if (hasKanji) "${Score.percent(w.kanjiScore)}% treinado" else "—"
-        val writing = if (!hasKanji) "—" else if (w.knownKanji) "sei escrever ✓" else "${Score.percent(w.kanjiScore)}% treinado"
+        val st = VocabDb.get(this).skillStats(w.key)
+        fun ex(p: Pair<Int, Int>) = if (p.first == 0) "" else " · ${p.first} ${if (p.first == 1) "exercício" else "exercícios"}, ${p.second} ${if (p.second == 1) "certo" else "certos"}"
+        val meaning = (if (w.known) "conheço ✓" else "${Score.percent(w.meaningScore)}% treinado") + ex(st.meaning)
+        val reading = (if (w.known) "conheço ✓" else if (hasKanji) "${Score.percent(w.kanjiScore)}% treinado" else "—") + (if (hasKanji) ex(st.reading) else "")
+        val writing = (if (!hasKanji) "—" else if (w.knownKanji) "sei escrever ✓" else "${Score.percent(w.kanjiScore)}% treinado") + (if (hasKanji) ex(st.writing) else "")
         val sb = StringBuilder()
         sb.append("\nSignificado: $meaning")
         if (hasKanji) sb.append("\nLeitura do kanji: $reading\nEscrita do kanji: $writing")

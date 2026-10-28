@@ -317,16 +317,19 @@ object Ai {
                     android.graphics.BitmapFactory.decodeStream(it, null, android.graphics.BitmapFactory.Options().apply { inSampleSize = sample })
                 } ?: throw IllegalStateException("Não consegui abrir a imagem")
                 val bytes = java.io.ByteArrayOutputStream().also { bmp.compress(android.graphics.Bitmap.CompressFormat.JPEG, 85, it) }.toByteArray()
-                val prompt = "Transcreva todo o texto em japonês desta imagem, na ordem de leitura (texto vertical: colunas da direita para a esquerda; " +
-                    "mangá: balões na ordem japonesa). Ignore furigana (a leitura pequena ao lado dos kanji), números de página e ruído. " +
-                    "Uma frase por linha; parágrafos ou balões separados por uma linha vazia. Responda só com o texto, sem comentários."
+                val prompt = "Transcreva todo o texto em japonês desta imagem mantendo o layout da página, em Markdown leve: " +
+                    "títulos e subtítulos com # e ##; tabelas como tabelas Markdown (| célula | célula |, com a linha |---|---| depois do cabeçalho; " +
+                    "célula vazia fica vazia); listas e exercícios numerados com \"- \"; parágrafos separados por uma linha vazia e, dentro do parágrafo, " +
+                    "uma frase por linha. Mantenha a ordem de leitura (texto vertical: colunas da direita para a esquerda; mangá: balões na ordem japonesa) " +
+                    "e a ordem dos blocos como estão na página. Ignore furigana (a leitura pequena ao lado dos kanji), números de página e ruído. " +
+                    "Não traduza nem comente; responda só com o Markdown, sem cerca de código."
                 val body = JSONObject()
                     .put("contents", JSONArray().put(JSONObject().put("parts", JSONArray()
                         .put(JSONObject().put("inlineData", JSONObject().put("mimeType", "image/jpeg")
                             .put("data", android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP))))
                         .put(JSONObject().put("text", prompt)))))
                     .put("generationConfig", JSONObject().put("temperature", 0.1))
-                text = runCloudBody(app, body).trim().ifEmpty { null }
+                text = runCloudBody(app, body).trim().removePrefix("```markdown").removePrefix("```").removeSuffix("```").trim().ifEmpty { null }
                 if (text == null) err = "resposta vazia"
             } catch (e: Exception) {
                 Log.e(TAG, "readImage", e)
