@@ -77,6 +77,10 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   pasta, Selecionar vários (marca e move de uma vez), Renomear, Apagar. Toque longo numa pasta: Estudar a
   pasta inteira (as frases de todos os itens juntas), Renomear, Apagar (os itens voltam para Sem pasta). Um
   texto criado ou importado dentro de uma pasta já entra nela. Só no banco: os arquivos não mudam de lugar.
+- **Alternativas parecidas no vocabulário (build-42)**: em "Tradução → palavra", "Palavra → tradução" e na lacuna
+  com substantivo, as erradas são primeiro palavras que dividem um kanji com a resposta (医者 → 歯医者, 医学, 患者),
+  depois leitura parecida e mesma classe, e só no fim palavras quaisquer (WordOptions). O conjunto vem das palavras
+  do texto, do vocabulário salvo e das palavras curtas já traduzidas.
 - **Retorno dos drills formatado (build-41)**: o retorno vem em seções com título em negrito — Regra, Erros comuns
   de estudante (✗ um por linha), Outras formas reais, Como se forma (o grupo da palavra e, para cada forma, um item
   por grupo: 1 godan, 2 ichidan, 3 irregular). As regras de formação (Conj.rule/ruleAdj) agora são "título + um

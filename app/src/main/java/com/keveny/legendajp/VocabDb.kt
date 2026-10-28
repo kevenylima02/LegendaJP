@@ -278,6 +278,12 @@ class VocabDb private constructor(ctx: Context) : SQLiteOpenHelper(ctx, "michi.d
             if (c.moveToFirst()) c.getString(0) else null
         }
 
+    /** Textos curtos já traduzidos (palavras, não frases): servem de alternativas parecidas nos exercícios. */
+    fun translatedShort(): List<String> =
+        readableDatabase.rawQuery("SELECT text FROM tr WHERE length(text) <= 8", null).use { c ->
+            val out = mutableListOf<String>(); while (c.moveToNext()) out.add(c.getString(0)); out
+        }
+
     fun putTranslation(text: String, translation: String) {
         writableDatabase.insertWithOnConflict("tr", null, ContentValues().apply {
             put("text", text); put("translation", translation); put("created", System.currentTimeMillis())

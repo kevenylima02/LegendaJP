@@ -331,6 +331,7 @@ object StudyGen {
             .filter { it.posKey in setOf("名詞", "動詞", "形容詞", "副詞") }
             .distinctBy { it.key }
         val kanjiPool = allWords.flatMap { w -> w.base.filter(::isKanji).toList() }.distinct()
+        val optPool = WordOptions.pool(ctx, allWords)   // alternativas parecidas (mesmo kanji, leitura parecida)
         val saved = VocabDb.savedKeys
         val hitsBySentence = sentences.map { it to (try { Grammar.find(it.text) } catch (_: Exception) { emptyList() }) }
         val allHits = hitsBySentence.flatMap { (l, hs) -> hs.map { l to it } }
@@ -375,19 +376,26 @@ object StudyGen {
             for (w in content) {
                 if (eligible(w)) {
                 if (w.surface.length >= 2 || Jp.keyIn(w, saved) != null) {
+                    // Palavra não conjugada (substantivo): primeiro as parecidas; senão, as da mesma classe no texto
+                    val sim = if (w.surface == w.base) WordOptions.similar(w, optPool, rnd).map { it.base } else emptyList()
                     val same = allWords.filter { it.key != w.key && it.posKey == w.posKey }.shuffled(rnd).map { it.surface }
                     val fallback = allWords.filter { it.key != w.key }.shuffled(rnd).map { it.surface }
-                    val opts = (same + fallback).filter { it != w.surface }.distinct().take(3)
+                    val opts = (sim + same + fallback).filter { it != w.surface }.distinct().take(3)
                     if (opts.size == 3) out.add(Item.Cloze(line, w, (opts + w.surface).shuffled(rnd)))
                 }
                 val tr = Tr.cached(ctx, w.base)
                 if (tr != null) {
-                    val others = allWords.filter { it.key != w.key }.shuffled(rnd).take(3)
+                    // Alternativas parecidas: mesmo kanji (医者 → 歯医者, 医学), leitura parecida, mesma classe
+                    val similar = WordOptions.similar(w, optPool, rnd, 12)
+                    val others = (similar.map { it.base } + allWords.filter { it.key != w.key }.shuffled(rnd).map { it.base })
+                        .filter { it != w.base }.distinct().take(3)
                     if (others.size == 3) {
                         out.add(Item.Choice(Focus.VOCAB, "Tradução → palavra", line, "Qual palavra significa \"$tr\"?", w.base,
-                            (others.map { it.base } + w.base).distinct().shuffled(rnd), "${w.base} (${w.reading}) · ${w.pos}", w))
-                        val otherTr = allWords.filter { it.key != w.key }.mapNotNull { Tr.cached(ctx, it.base) }
-                            .filter { it != tr }.distinct().shuffled(rnd).take(3)
+                            (others + w.base).distinct().shuffled(rnd), "${w.base} (${w.reading}) · ${w.pos}", w))
+                        // Traduções das parecidas primeiro (médico → dentista, medicina), depois as do texto
+                        val otherTr = (similar.mapNotNull { Tr.cached(ctx, it.base) } +
+                            allWords.filter { it.key != w.key }.shuffled(rnd).mapNotNull { Tr.cached(ctx, it.base) })
+                            .filter { it != tr }.distinct().take(3)
                         if (otherTr.size == 3) {
                             out.add(Item.Choice(Focus.VOCAB, "Palavra → tradução", line, "O que significa 「${w.base}」?", tr,
                                 (otherTr + tr).shuffled(rnd), "${w.base} (${w.reading}) · ${w.pos}", w))
