@@ -77,6 +77,10 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   pasta, Selecionar vários (marca e move de uma vez), Renomear, Apagar. Toque longo numa pasta: Estudar a
   pasta inteira (as frases de todos os itens juntas), Renomear, Apagar (os itens voltam para Sem pasta). Um
   texto criado ou importado dentro de uma pasta já entra nela. Só no banco: os arquivos não mudam de lugar.
+- **Retorno dos drills formatado (build-41)**: o retorno vem em seções com título em negrito — Regra, Erros comuns
+  de estudante (✗ um por linha), Outras formas reais, Como se forma (o grupo da palavra e, para cada forma, um item
+  por grupo: 1 godan, 2 ichidan, 3 irregular). As regras de formação (Conj.rule/ruleAdj) agora são "título + um
+  item por grupo", também no dicionário e no escolhedor de gramática; a forma ない não aparece mais duas vezes.
 - **Dicionário mais leve (build-40)**: a lista é reciclada (só as fichas na tela existem), a busca dos padrões nas
   suas frases fica guardada por arquivo (files/grammar_index, refeita só para arquivo novo ou alterado), saiu o
   "ver as N frases", e "Estudar" na ficha monta a sessão só com as frases daquele padrão (até 30) em vez de

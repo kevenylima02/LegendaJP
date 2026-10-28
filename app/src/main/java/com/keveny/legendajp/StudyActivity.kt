@@ -832,7 +832,7 @@ class StudyActivity : Activity() {
             is Item.Drill -> Grammar.point(item.pointId)?.let { p ->
                 sb.append("\n\n"); bold("${p.name} · ${p.level}")
                 sb.append("\n").append(p.explanation)
-                if (item.note.isNotBlank()) { sb.append("\n"); colored(item.note, sec) }
+                if (item.note.isNotBlank()) Markup.append(sb, item.note, getColor(R.color.text), sec)
             }
             is Item.GrammarQ -> {
                 sb.append("\n\n"); bold("${item.hit.point.name} · ${item.hit.point.level}")

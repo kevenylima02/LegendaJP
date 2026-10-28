@@ -128,33 +128,70 @@ object Conj {
         Kind.KURU -> "grupo 3 (irregular: 来る)"
     }
 
-    /** Como se faz a forma em cada grupo, com exemplos em hiragana. */
+    /** Título + um item por grupo ("Forma ない\n • Grupo 1…\n • Grupo 2…"). Linhas que começam com " • " são itens. */
+    private fun form(name: String, vararg groups: String) = name + "\n" + groups.joinToString("\n") { " • $it" }
+
+    /** Como se faz a forma em cada grupo, com exemplos em hiragana: título na primeira linha, um item por grupo. */
     fun rule(f: V): String = when (f) {
-        V.DICT -> "Forma de dicionário: a palavra como está, em todos os grupos."
-        V.STEM, V.MASU -> "Radical da forma ます — grupo 1: a última sílaba vai para a linha い (かく→かき、およぐ→およぎ、はなす→はなし、まつ→まち、あそぶ→あそび、よむ→よみ、かえる→かえり、かう→かい); " +
-            "grupo 2: tira o る (たべる→たべ、みる→み); grupo 3: する→し、くる→き. Daí + ます."
-        V.TE -> "Forma て — grupo 1: く→いて (かく→かいて), ぐ→いで (およぐ→およいで), す→して (はなす→はなして), つ・る・う→って (まつ→まって、かえる→かえって、かう→かって), " +
-            "ぬ・ぶ・む→んで (あそぶ→あそんで、よむ→よんで); exceção いく→いって; grupo 2: tira o る + て (たべる→たべて); grupo 3: する→して、くる→きて."
-        V.TA -> "Forma た — igual à forma て, trocando て por た e で por だ: grupo 1: かく→かいた、およぐ→およいだ、はなす→はなした、まつ→まった、よむ→よんだ (いく→いった); " +
-            "grupo 2: たべる→たべた; grupo 3: する→した、くる→きた."
-        V.NAI, V.NA -> "Forma ない — grupo 1: a última sílaba vai para a linha あ + ない (かく→かかない、およぐ→およがない、はなす→はなさない、まつ→またない、よむ→よまない、かえる→かえらない); " +
-            "verbos em う usam わ (かう→かわない); ある→ない; grupo 2: tira o る + ない (たべる→たべない); grupo 3: する→しない、くる→こない."
-        V.VOL -> "Forma volitiva — grupo 1: a última sílaba vai para a linha お + う (かく→かこう、よむ→よもう、かう→かおう); grupo 2: tira o る + よう (たべる→たべよう); grupo 3: する→しよう、くる→こよう."
-        V.BA -> "Forma ば — grupo 1: a última sílaba vai para a linha え + ば (かく→かけば、よむ→よめば、かう→かえば); grupo 2: tira o る + れば (たべる→たべれば); grupo 3: する→すれば、くる→くれば."
-        V.PASS -> "Passivo — grupo 1: linha あ + れる (かく→かかれる、かう→かわれる); grupo 2: tira o る + られる (たべる→たべられる); grupo 3: する→される、くる→こられる."
-        V.CAUS -> "Causativo — grupo 1: linha あ + せる (かく→かかせる、かう→かわせる); grupo 2: tira o る + させる (たべる→たべさせる); grupo 3: する→させる、くる→こさせる."
-        V.IMP -> "Forma imperativa — grupo 1: a última sílaba vai para a linha え (かく→かけ、よむ→よめ、かう→かえ); grupo 2: tira o る + ろ (たべる→たべろ; na escrita também よ); grupo 3: する→しろ、くる→こい."
-        V.ZU -> "Forma ず — como a forma ない, trocando ない por ず: grupo 1: かく→かかず、かう→かわず; grupo 2: たべる→たべず; grupo 3: する→せず (não しず!), くる→こず."
-        V.CAUSPASS -> "Causativo-passivo — causativo sem o る + られる: grupo 1: かく→かかせられる (falado também かかされる), かう→かわせられる; grupo 2: たべる→たべさせられる; grupo 3: する→させられる、くる→こさせられる."
+        V.DICT -> form("Forma de dicionário",
+            "Todos os grupos: a palavra como está no dicionário (かく、たべる、する、くる).")
+        V.STEM, V.MASU -> form("Radical da forma ます",
+            "Grupo 1 (godan): a última sílaba vai para a linha い: かく→かき、およぐ→およぎ、はなす→はなし、まつ→まち、あそぶ→あそび、よむ→よみ、かえる→かえり、かう→かい.",
+            "Grupo 2 (ichidan): tira o る: たべる→たべ、みる→み.",
+            "Grupo 3 (irregular): する→し、くる→き.",
+            "Daí + ます: かきます、たべます、します、きます.")
+        V.TE -> form("Forma て",
+            "Grupo 1 (godan), pela última sílaba: く→いて (かく→かいて), ぐ→いで (およぐ→およいで), す→して (はなす→はなして), つ・る・う→って (まつ→まって、かえる→かえって、かう→かって), ぬ・ぶ・む→んで (あそぶ→あそんで、よむ→よんで). Exceção: いく→いって.",
+            "Grupo 2 (ichidan): tira o る + て: たべる→たべて.",
+            "Grupo 3 (irregular): する→して、くる→きて.")
+        V.TA -> form("Forma た (passado)",
+            "É a forma て com た no lugar de て (e だ no lugar de で).",
+            "Grupo 1 (godan): かく→かいた、およぐ→およいだ、はなす→はなした、まつ→まった、よむ→よんだ. Exceção: いく→いった.",
+            "Grupo 2 (ichidan): たべる→たべた.",
+            "Grupo 3 (irregular): する→した、くる→きた.")
+        V.NAI, V.NA -> form("Forma ない",
+            "Grupo 1 (godan): a última sílaba vai para a linha あ + ない: かく→かかない、およぐ→およがない、はなす→はなさない、まつ→またない、よむ→よまない、かえる→かえらない. Verbos em う usam わ: かう→かわない. Exceção: ある→ない.",
+            "Grupo 2 (ichidan): tira o る + ない: たべる→たべない.",
+            "Grupo 3 (irregular): する→しない、くる→こない.")
+        V.VOL -> form("Forma volitiva (vamos…)",
+            "Grupo 1 (godan): a última sílaba vai para a linha お + う: かく→かこう、よむ→よもう、かう→かおう.",
+            "Grupo 2 (ichidan): tira o る + よう: たべる→たべよう.",
+            "Grupo 3 (irregular): する→しよう、くる→こよう.")
+        V.BA -> form("Forma ば (se…)",
+            "Grupo 1 (godan): a última sílaba vai para a linha え + ば: かく→かけば、よむ→よめば、かう→かえば.",
+            "Grupo 2 (ichidan): tira o る + れば: たべる→たべれば.",
+            "Grupo 3 (irregular): する→すれば、くる→くれば.")
+        V.PASS -> form("Forma passiva",
+            "Grupo 1 (godan): linha あ + れる: かく→かかれる、かう→かわれる.",
+            "Grupo 2 (ichidan): tira o る + られる: たべる→たべられる.",
+            "Grupo 3 (irregular): する→される、くる→こられる.")
+        V.CAUS -> form("Forma causativa (fazer ou deixar alguém…)",
+            "Grupo 1 (godan): linha あ + せる: かく→かかせる、かう→かわせる.",
+            "Grupo 2 (ichidan): tira o る + させる: たべる→たべさせる.",
+            "Grupo 3 (irregular): する→させる、くる→こさせる.")
+        V.IMP -> form("Forma imperativa (ordem)",
+            "Grupo 1 (godan): a última sílaba vai para a linha え: かく→かけ、よむ→よめ、かう→かえ.",
+            "Grupo 2 (ichidan): tira o る + ろ: たべる→たべろ (na escrita também よ).",
+            "Grupo 3 (irregular): する→しろ、くる→こい.")
+        V.ZU -> form("Forma ず (sem…)",
+            "É a forma ない com ず no lugar de ない.",
+            "Grupo 1 (godan): かく→かかず、かう→かわず.",
+            "Grupo 2 (ichidan): たべる→たべず.",
+            "Grupo 3 (irregular): する→せず (não しず!), くる→こず.")
+        V.CAUSPASS -> form("Forma causativo-passiva (ser obrigado a…)",
+            "É o causativo sem o る + られる.",
+            "Grupo 1 (godan): かく→かかせられる (falado também かかされる), かう→かわせられる.",
+            "Grupo 2 (ichidan): たべる→たべさせられる.",
+            "Grupo 3 (irregular): する→させられる、くる→こさせられる.")
     }
 
     fun ruleAdj(f: A): String = when (f) {
-        A.DICT -> "Adjetivo-い inteiro, como está (たかい)."
-        A.STEM -> "Adjetivo sem o い (たかい→たか; いい→よ)."
-        A.KU -> "Forma く: tira o い + く (たかい→たかく; いい→よく)."
-        A.KATTA -> "Forma かった: tira o い + かった (たかい→たかかった; いい→よかった)."
-        A.KUTE -> "Forma くて: tira o い + くて (たかい→たかくて; いい→よくて)."
-        A.KEREBA -> "Forma ければ: tira o い + ければ (たかい→たかければ; いい→よければ)."
+        A.DICT -> form("Adjetivo-い inteiro", "Como está: たかい、あたらしい.")
+        A.STEM -> form("Adjetivo sem o い", "たかい→たか. Exceção: いい→よ.")
+        A.KU -> form("Forma く", "Tira o い + く: たかい→たかく. Exceção: いい→よく.")
+        A.KATTA -> form("Forma かった (passado)", "Tira o い + かった: たかい→たかかった. Exceção: いい→よかった.")
+        A.KUTE -> form("Forma くて", "Tira o い + くて: たかい→たかくて. Exceção: いい→よくて.")
+        A.KEREBA -> form("Forma ければ (se…)", "Tira o い + ければ: たかい→たかければ. Exceção: いい→よければ.")
     }
 
     /**

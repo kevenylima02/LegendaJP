@@ -39,7 +39,7 @@ object GrammarDrill {
             val parts = mutableListOf<String>()
             for (f in verb.map { it.first }.distinct()) parts.add(Conj.rule(f))
             for (f in adj.map { it.first }.distinct()) parts.add(Conj.ruleAdj(f))
-            return parts.joinToString("\n")
+            return parts.distinct().joinToString("\n\n")   // ない e NA dão a mesma regra: uma vez só
         }
     }
 
@@ -194,9 +194,10 @@ object GrammarDrill {
         fun explain(s: Spec): String {
             val k = kind
             val head = if (verb != null && k != null) "${word.base} é do ${Conj.group(k)}." else if (adj != null) "${word.base} é adjetivo-い." else ""
-            val rules = if (verb != null) s.verb.map { it.first }.distinct().joinToString("\n") { Conj.rule(it) }
-                else s.adj.map { it.first }.distinct().joinToString("\n") { Conj.ruleAdj(it) }
-            return listOf(head, rules).filter { it.isNotBlank() }.joinToString("\n")
+            // Cada forma vira uma seção: "## Forma ない" + um item por grupo (ない e NA dão a mesma regra: uma vez só)
+            val rules = (if (verb != null) s.verb.map { it.first }.distinct().map { Conj.rule(it) } else s.adj.map { it.first }.distinct().map { Conj.ruleAdj(it) })
+                .distinct().joinToString("\n\n") { r -> "## " + r.substringBefore("\n") + "\n" + r.substringAfter("\n", "") }
+            return listOf("## Como se forma", head, rules).filter { it.isNotBlank() }.joinToString("\n")
         }
     }
 
@@ -236,9 +237,9 @@ object GrammarDrill {
         /** Bloco para o retorno: os erros inventados ficam separados das formas reais. */
         fun note(): String {
             val parts = mutableListOf<String>()
-            if (errors.isNotEmpty()) parts.add("Erros comuns de estudante (formas que não existem): " + errors.joinToString("、"))
-            if (others.isNotEmpty()) parts.add("Outras formas reais da palavra, que não cabem aqui: " + others.joinToString("、"))
-            return parts.joinToString("\n")
+            if (errors.isNotEmpty()) parts.add("## Erros comuns de estudante (formas que não existem)\n" + errors.joinToString("\n") { " ✗ $it" })
+            if (others.isNotEmpty()) parts.add("## Outras formas reais da palavra (não cabem aqui)\n" + others.joinToString("\n") { " • $it" })
+            return parts.joinToString("\n\n")
         }
     }
 
@@ -306,7 +307,7 @@ object GrammarDrill {
             "Qual forma combina", line, s.id,
             "Qual forma de ${meaningOf(ctx, t)} combina com 「$name」 (${s.meaning})?",
             answer, (wrong.options + answer).shuffled(rnd),
-            s.rule() + (if (right.size > 1) " Também valem: " + right.drop(1).joinToString("、") + "." else "") + "\n" + wrong.note() + "\n" + t.explain(s),
+            "## Regra\n" + s.rule() + (if (right.size > 1) "\nTambém valem: " + right.drop(1).joinToString("、") + "." else "") + "\n\n" + wrong.note() + "\n\n" + t.explain(s),
             t.word, levelOf(s)
         )
     }
@@ -329,7 +330,7 @@ object GrammarDrill {
         return Item.Drill(
             "Transforme com o padrão", line, s.id,
             "Use 「$name」 (${s.meaning}) com ${meaningOf(ctx, t)}:",
-            answer, (wrong.options + answer).shuffled(rnd), s.rule() + "\n" + wrong.note() + "\n" + t.explain(s), t.word, levelOf(s)
+            answer, (wrong.options + answer).shuffled(rnd), "## Regra\n" + s.rule() + "\n\n" + wrong.note() + "\n\n" + t.explain(s), t.word, levelOf(s)
         )
     }
 
@@ -339,7 +340,7 @@ object GrammarDrill {
         val others = usable.filter { it.id != s.id && it.meaning != s.meaning }.shuffled(rnd)
             .map { it to t.results(it).first() }.filter { it.second != answer }.distinctBy { it.second }.take(3)
         if (others.size < 3) return null
-        val note = (others + (s to answer)).joinToString("\n") { (sp, form) -> "$form = ${sp.meaning}" } + "\n" + t.explain(s)
+        val note = "## Cada forma e o seu sentido\n" + (others + (s to answer)).joinToString("\n") { (sp, form) -> " • $form = ${sp.meaning}" } + "\n\n" + t.explain(s)
         return Item.Drill(
             "Português → padrão", line, s.id,
             "Com ${meaningOf(ctx, t)}, qual forma significa «${s.meaning}»?",
