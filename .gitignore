@@ -8,6 +8,5 @@ local.properties
 tools/bunpro/token.txt
 tools/bunpro/out/
 
-# Banco de gramática: entradas (com dados do Bunpro) e lotes intermediários
+# Banco de gramática: entradas com dados do Bunpro (os lotes escritos, tools/grammar/parts, ficam no git)
 tools/grammar/in/
-tools/grammar/parts/

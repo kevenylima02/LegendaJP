@@ -1,0 +1,801 @@
+[
+ {
+  "id": "bp:1",
+  "leitura": "だ",
+  "romaji": "da",
+  "resumo": "ser/estar (cópula casual)",
+  "significado": "だ é a forma casual de です. Fecha uma frase com substantivo ou adjetivo-な, no sentido de 'X é Y'.",
+  "liga_a": ["substantivo", "adjetivo_na"],
+  "como_formar": [
+   "Substantivo + だ: 学生だ (é estudante)",
+   "Adjetivo-な + だ: 静かだ (é tranquilo)",
+   "Passado: だった; negativo: じゃない; passado negativo: じゃなかった",
+   "Não vai depois de adjetivo-い: ×高いだ → 高い"
+  ],
+  "uso": "Casual: com amigos e família, e em textos no estilo simples (diários, artigos). Soa firme e direto; na fala, muitas vezes ele cai no fim da frase (きれい！) e em perguntas casuais nunca aparece (学生？). Com desconhecidos ou superiores, use です.",
+  "exemplos": [
+   {"jp": "私は学生だ。", "pt": "Eu sou estudante.", "alvo": "だ", "erradas": ["だった", "じゃない", "な"]},
+   {"jp": "今日は雨だ。", "pt": "Hoje está chovendo.", "alvo": "だ", "erradas": ["じゃない", "だった", "の"]},
+   {"jp": "昨日は休みだった。", "pt": "Ontem foi folga.", "alvo": "だった", "erradas": ["だ", "です", "じゃない"]},
+   {"jp": "この部屋は静かだ。", "pt": "Este quarto é silencioso.", "alvo": "だ", "erradas": ["な", "に", "だった"]},
+   {"jp": "あの人は先生じゃない。", "pt": "Aquela pessoa não é professora.", "alvo": "じゃない", "erradas": ["だ", "だった", "くない"]}
+  ],
+  "parecidos": [
+   {"padrao": "です", "diferenca": "Mesmo sentido, mas polido. だ é a versão casual."}
+  ],
+  "erros_comuns": [
+   "Pôr だ depois de adjetivo-い (×高いだ). O adjetivo-い já fecha a frase sozinho: 高い.",
+   "Usar だ com chefe, professor ou desconhecidos: soa seco. Nesses casos use です.",
+   "Perguntar com だ ou だか (×学生だか？). No casual a pergunta é só 学生？ com entonação."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:2",
+  "leitura": "です",
+  "romaji": "desu",
+  "resumo": "ser/estar (cópula polida)",
+  "significado": "です é a cópula polida: fecha a frase dizendo que 'X é Y'. Depois de adjetivo-い, ela só deixa a frase educada.",
+  "liga_a": ["substantivo", "adjetivo_na", "adjetivo_i"],
+  "como_formar": [
+   "Substantivo + です: 学生です",
+   "Adjetivo-な + です: 静かです",
+   "Adjetivo-い + です: 高いです (o passado fica no adjetivo: 高かったです)",
+   "Passado: でした; negativo: じゃありません ou じゃないです"
+  ],
+  "uso": "É o jeito educado padrão: com desconhecidos, no trabalho, em lojas, com professores. Entre amigos próximos soa distante, e aí se usa だ ou nada. Na fala, o u costuma sumir: 'des'.",
+  "exemplos": [
+   {"jp": "私はブラジル人です。", "pt": "Eu sou brasileiro.", "alvo": "です", "erradas": ["でした", "ます", "じゃありません"]},
+   {"jp": "このケーキはおいしいです。", "pt": "Este bolo é gostoso.", "alvo": "です", "erradas": ["でした", "だ", "ます"]},
+   {"jp": "昨日は日曜日でした。", "pt": "Ontem foi domingo.", "alvo": "でした", "erradas": ["です", "ました", "だ"]},
+   {"jp": "田中さんは先生ですか。", "pt": "O Tanaka é professor?", "alvo": "です", "erradas": ["ます", "でした", "だ"]},
+   {"jp": "駅は近くないです。", "pt": "A estação não é perto.", "alvo": "です", "erradas": ["でした", "だ", "ます"]}
+  ],
+  "parecidos": [
+   {"padrao": "だ", "diferenca": "Mesmo sentido, mas casual."},
+   {"padrao": "ます", "diferenca": "ます deixa verbos polidos; です vai com substantivos e adjetivos."}
+  ],
+  "erros_comuns": [
+   "×おいしいでした: no adjetivo-い o passado vai no próprio adjetivo → おいしかったです.",
+   "Pôr です depois de verbo (×行くです). Com verbo, o polido é ます: 行きます."
+  ],
+  "drill": null,
+  "detectar": ["です", "でした"]
+ },
+ {
+  "id": "bp:3",
+  "leitura": "は",
+  "romaji": "wa",
+  "resumo": "marca o tópico: 'quanto a…'",
+  "significado": "は marca o tópico da frase, aquilo sobre o qual se vai falar. O resto da frase comenta esse tópico ('quanto a X, …').",
+  "liga_a": ["substantivo"],
+  "como_formar": [
+   "Substantivo + は: 私は… (quanto a mim…)",
+   "Escreve-se は, mas como partícula lê-se 'wa'.",
+   "Pode vir depois de outras partículas: 日本には…, 友達とは…"
+  ],
+  "uso": "Apresenta o assunto, geralmente algo já conhecido pelos dois. Também marca contraste: 肉は食べますが、魚は食べません (carne eu como; peixe, não). Neutro, vale em qualquer registro.",
+  "exemplos": [
+   {"jp": "私は学生です。", "pt": "Eu sou estudante.", "alvo": "は", "erradas": ["を", "の", "で"]},
+   {"jp": "今日は暑いですね。", "pt": "Hoje está quente, né?", "alvo": "は", "erradas": ["を", "に", "で"]},
+   {"jp": "東京は大きい町です。", "pt": "Tóquio é uma cidade grande.", "alvo": "は", "erradas": ["を", "に", "へ"]},
+   {"jp": "日本には山が多いです。", "pt": "No Japão há muitas montanhas.", "alvo": "は", "erradas": ["を", "が", "も"]},
+   {"jp": "この本はおもしろいです。", "pt": "Este livro é interessante.", "alvo": "は", "erradas": ["を", "に", "と"]}
+  ],
+  "parecidos": [
+   {"padrao": "が", "diferenca": "が aponta quem/o quê (informação nova); は apresenta o assunto já conhecido."},
+   {"padrao": "も", "diferenca": "も toma o lugar de は para dizer 'também'."}
+  ],
+  "erros_comuns": [
+   "Usar は com palavra interrogativa como sujeito: ×誰は来ましたか. O certo é 誰が来ましたか.",
+   "Ler は como 'ha' quando é partícula; lê-se 'wa'.",
+   "Usar は dentro de oração que descreve um substantivo: ×私は作ったケーキ → 私が作ったケーキ."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:4",
+  "leitura": "も",
+  "romaji": "mo",
+  "resumo": "também; também não (com negativo)",
+  "significado": "も quer dizer 'também'. Com verbo negativo, vira 'também não' / 'nem'.",
+  "liga_a": ["substantivo"],
+  "como_formar": [
+   "Substantivo + も: 私も (eu também)",
+   "Toma o lugar de は, が e を: ×私はも → 私も; ×水をも → 水も",
+   "Fica depois das outras partículas: 東京にも, 友達とも",
+   "Com negativo: 私も行きません (eu também não vou)"
+  ],
+  "uso": "Diz que o que vale para uma coisa vale para mais uma. AもBも = 'tanto A quanto B' (ou 'nem A nem B' com negativo). Neutro, vale em qualquer registro.",
+  "exemplos": [
+   {"jp": "私も学生です。", "pt": "Eu também sou estudante.", "alvo": "も", "erradas": ["は", "を", "の"]},
+   {"jp": "田中さんも来ます。", "pt": "O Tanaka também vem.", "alvo": "も", "erradas": ["を", "は", "で"]},
+   {"jp": "私は肉も食べます。", "pt": "Eu como carne também.", "alvo": "も", "erradas": ["を", "が", "は"]},
+   {"jp": "東京にも行きました。", "pt": "Fui a Tóquio também.", "alvo": "も", "erradas": ["は", "が", "を"]},
+   {"jp": "私もお酒を飲みません。", "pt": "Eu também não bebo álcool.", "alvo": "も", "erradas": ["は", "を", "が"]}
+  ],
+  "parecidos": [
+   {"padrao": "は", "diferenca": "は só apresenta o assunto; も acrescenta 'também'."},
+   {"padrao": "と", "diferenca": "AとB lista coisas ('A e B'); AもBも enfatiza 'tanto A quanto B'."}
+  ],
+  "erros_comuns": [
+   "Empilhar partículas: ×私はも, ×本をも. O も substitui は/が/を.",
+   "Esquecer que na negativa も vira 'também não': 私も行きません = 'eu também não vou'."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:5",
+  "leitura": "これ",
+  "romaji": "kore",
+  "resumo": "isto (coisa perto de quem fala)",
+  "significado": "これ quer dizer 'isto': uma coisa que está perto de quem fala. Funciona como substantivo.",
+  "liga_a": ["sozinho"],
+  "como_formar": [
+   "Usa-se como substantivo, com partícula: これは…, これを…, これが…",
+   "Não vem antes de substantivo: 'este livro' é この本 (×これ本)",
+   "Série: これ (isto) / それ (isso) / あれ (aquilo) / どれ (qual?)"
+  ],
+  "uso": "Aponta algo ao alcance de quem fala. Para pessoas, não é educado: use この人 ou, polido, こちら (こちらは田中さんです). Neutro.",
+  "exemplos": [
+   {"jp": "これは私の本です。", "pt": "Isto é meu livro.", "alvo": "これ", "erradas": ["この", "ここ", "どれ"]},
+   {"jp": "これは何ですか。", "pt": "O que é isto?", "alvo": "これ", "erradas": ["この", "どれ", "ここ"]},
+   {"jp": "これがいいです。", "pt": "Quero este aqui.", "alvo": "これ", "erradas": ["この", "ここ", "あの"]},
+   {"jp": "これは日本のお茶です。", "pt": "Isto é chá japonês.", "alvo": "これ", "erradas": ["この", "あれ", "ここ"]},
+   {"jp": "これを見てください。", "pt": "Veja isto, por favor.", "alvo": "これ", "erradas": ["この", "ここ", "どれ"]}
+  ],
+  "parecidos": [
+   {"padrao": "この", "diferenca": "この vem colado a um substantivo (この本); これ fica sozinho."},
+   {"padrao": "ここ", "diferenca": "ここ é lugar ('aqui'); これ é coisa ('isto')."},
+   {"padrao": "それ", "diferenca": "それ é perto de quem ouve ('isso')."}
+  ],
+  "erros_comuns": [
+   "Usar これ antes de substantivo (×これ本). O certo é この本.",
+   "Apresentar alguém com これ: soa rude. Use こちら (こちらは田中さんです)."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:11",
+  "leitura": "それ",
+  "romaji": "sore",
+  "resumo": "isso (coisa perto de quem ouve)",
+  "significado": "それ quer dizer 'isso': uma coisa perto de quem ouve, ou algo que acabou de ser mencionado na conversa.",
+  "liga_a": ["sozinho"],
+  "como_formar": [
+   "Usa-se como substantivo, com partícula: それは…, それを…, それが…",
+   "Não vem antes de substantivo: 'esse livro' é その本 (×それ本)",
+   "Série: これ / それ / あれ / どれ"
+  ],
+  "uso": "Aponta algo na mão ou perto de quem ouve. Também retoma o que o outro acabou de dizer: それはいいですね (isso é ótimo). Neutro.",
+  "exemplos": [
+   {"jp": "それは何ですか。", "pt": "O que é isso?", "alvo": "それ", "erradas": ["その", "そこ", "どれ"]},
+   {"jp": "それは私のかばんです。", "pt": "Isso é a minha bolsa.", "alvo": "それ", "erradas": ["その", "そこ", "これ"]},
+   {"jp": "それをください。", "pt": "Me dá isso aí, por favor.", "alvo": "それ", "erradas": ["その", "そこ", "どれ"]},
+   {"jp": "それはいいですね。", "pt": "Isso é ótimo, hein!", "alvo": "それ", "erradas": ["その", "そこ", "あの"]},
+   {"jp": "それは高いですか。", "pt": "Isso é caro?", "alvo": "それ", "erradas": ["その", "そこ", "どれ"]}
+  ],
+  "parecidos": [
+   {"padrao": "その", "diferenca": "その vem colado a um substantivo (その本); それ fica sozinho."},
+   {"padrao": "あれ", "diferenca": "あれ é longe dos dois; それ é perto de quem ouve."}
+  ],
+  "erros_comuns": [
+   "Usar それ antes de substantivo (×それ本). O certo é その本.",
+   "Usar あれ para algo que o outro acabou de dizer; para assunto recém-mencionado, use それ."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:19",
+  "leitura": "あれ",
+  "romaji": "are",
+  "resumo": "aquilo (longe dos dois)",
+  "significado": "あれ quer dizer 'aquilo': uma coisa longe de quem fala e de quem ouve.",
+  "liga_a": ["sozinho"],
+  "como_formar": [
+   "Usa-se como substantivo, com partícula: あれは…, あれを…",
+   "Não vem antes de substantivo: 'aquele carro' é あの車 (×あれ車)",
+   "Série: これ / それ / あれ / どれ"
+  ],
+  "uso": "Aponta algo distante dos dois. Também pode se referir a algo que os dois conhecem mas não está presente ('aquilo, sabe?'). Sozinho, あれ？ é uma interjeição de surpresa: 'Ué?'.",
+  "exemplos": [
+   {"jp": "あれは何ですか。", "pt": "O que é aquilo?", "alvo": "あれ", "erradas": ["あの", "あそこ", "どれ"]},
+   {"jp": "あれは富士山です。", "pt": "Aquilo é o monte Fuji.", "alvo": "あれ", "erradas": ["あの", "これ", "あそこ"]},
+   {"jp": "あれは私の学校です。", "pt": "Aquela ali é a minha escola.", "alvo": "あれ", "erradas": ["あの", "それ", "どれ"]},
+   {"jp": "あれを見てください。", "pt": "Olhe aquilo, por favor.", "alvo": "あれ", "erradas": ["あの", "これ", "どれ"]},
+   {"jp": "あれはだれの車ですか。", "pt": "Aquele ali é carro de quem?", "alvo": "あれ", "erradas": ["あの", "あそこ", "どれ"]}
+  ],
+  "parecidos": [
+   {"padrao": "あの", "diferenca": "あの vem colado a um substantivo (あの車); あれ fica sozinho."},
+   {"padrao": "あそこ", "diferenca": "あそこ é lugar ('ali'); あれ é coisa ('aquilo')."}
+  ],
+  "erros_comuns": [
+   "Usar あれ antes de substantivo (×あれ車). O certo é あの車.",
+   "Confundir あれ com それ: あれ é longe dos dois; それ é perto de quem ouve."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:6",
+  "leitura": "の",
+  "romaji": "no",
+  "resumo": "de (posse e ligação entre substantivos)",
+  "significado": "の liga dois substantivos: o primeiro descreve o segundo. O uso mais comum é a posse ('de'), como em 私の本 (meu livro).",
+  "liga_a": ["substantivo"],
+  "como_formar": [
+   "Substantivo A + の + substantivo B: 私の本 (meu livro)",
+   "A ordem é ao contrário do português: 'carro do Tanaka' = 田中さんの車",
+   "Se o segundo substantivo é óbvio, ele cai: これは私のです (é meu)"
+  ],
+  "uso": "Além de posse, indica origem (日本の車), assunto (日本語の本), lugar (東京の大学) e cargo (日本語の先生). Neutro, vale em qualquer registro.",
+  "exemplos": [
+   {"jp": "これは私の本です。", "pt": "Este é o meu livro.", "alvo": "の", "erradas": ["は", "が", "と"]},
+   {"jp": "田中さんの車は新しいです。", "pt": "O carro do Tanaka é novo.", "alvo": "の", "erradas": ["が", "を", "に"]},
+   {"jp": "日本の車はいいです。", "pt": "Os carros japoneses são bons.", "alvo": "の", "erradas": ["に", "で", "を"]},
+   {"jp": "日本語の先生はやさしいです。", "pt": "A professora de japonês é gentil.", "alvo": "の", "erradas": ["で", "に", "を"]},
+   {"jp": "あれは私のです。", "pt": "Aquilo é meu.", "alvo": "の", "erradas": ["は", "が", "な"]}
+  ],
+  "parecidos": [
+   {"padrao": "な (adjetivo-な)", "diferenca": "Adjetivo-な usa な antes do substantivo (静かな町); substantivo usa の (日本の町)."}
+  ],
+  "erros_comuns": [
+   "Copiar a ordem do português: 'livro do Tanaka' é 田中さんの本, não ×本の田中さん.",
+   "Pôr の entre adjetivo e substantivo: ×高いの車, ×きれいの花. O certo é 高い車, きれいな花."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:7",
+  "leitura": "いい",
+  "romaji": "ii",
+  "resumo": "bom (adjetivo-い irregular)",
+  "significado": "いい quer dizer 'bom', 'legal'. É irregular: nas conjugações ele vira よ (よくない, よかった).",
+  "liga_a": ["adjetivo_i", "sozinho"],
+  "como_formar": [
+   "Presente: いい (ou よい, mais formal e escrito)",
+   "Negativo: よくない (×いくない); passado: よかった (×いかった)",
+   "Passado negativo: よくなかった; forma て: よくて",
+   "Antes de substantivo: いい天気 (tempo bom)"
+  ],
+  "uso": "いい é a forma do dia a dia; よい é a original, mais formal, e todas as conjugações saem dela. いいです pode ser 'tá bom' ou, dependendo do tom, 'não precisa, obrigado'. Polido: いいです, よくないです, よかったです.",
+  "exemplos": [
+   {"jp": "今日はいい天気ですね。", "pt": "Hoje o tempo está bom, né?", "alvo": "いい", "erradas": ["よく", "いいな", "よくて"]},
+   {"jp": "この映画はよくないです。", "pt": "Este filme não é bom.", "alvo": "よくない", "erradas": ["いくない", "いいじゃない", "よいない"]},
+   {"jp": "旅行はよかったです。", "pt": "A viagem foi boa.", "alvo": "よかった", "erradas": ["いかった", "いいでした", "よいだった"]},
+   {"jp": "田中さんはいい人です。", "pt": "O Tanaka é uma boa pessoa.", "alvo": "いい", "erradas": ["いいな", "よく", "よくない"]},
+   {"jp": "天気がよくて、うれしいです。", "pt": "O tempo está bom, e eu fico feliz.", "alvo": "よくて", "erradas": ["いいくて", "いくて", "よいて"]}
+  ],
+  "parecidos": [
+   {"padrao": "よい", "diferenca": "Mesmo sentido, mais formal e escrito. É dela que saem よくない e よかった."}
+  ],
+  "erros_comuns": [
+   "Conjugar a partir de いい: ×いくない, ×いかった. O certo é よくない, よかった.",
+   "Achar que いいです é sempre 'sim': com o tom certo, é uma recusa educada ('não, obrigado')."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:24",
+  "leitura": "い",
+  "romaji": "i-keiyoushi",
+  "resumo": "adjetivos terminados em い",
+  "significado": "Adjetivos-い terminam em い e se conjugam sozinhos (negativo, passado), sem precisar de だ. Vêm antes do substantivo ou no fim da frase.",
+  "liga_a": ["adjetivo_i"],
+  "como_formar": [
+   "Antes do substantivo: 高い本 (livro caro)",
+   "No fim da frase: この本は高い。 Polido: 高いです",
+   "Negativo: tira o い e põe くない → 高くない; passado: かった → 高かった; passado negativo: くなかった",
+   "Forma て (para ligar): くて → 高くて"
+  ],
+  "uso": "No casual, o adjetivo sozinho fecha a frase (高い, 高くない). No polido, acrescenta-se です no fim (高かったです, 高くないです). Atenção: きれい e 嫌い terminam em い, mas são adjetivos-な.",
+  "exemplos": [
+   {"jp": "この本は高いです。", "pt": "Este livro é caro.", "alvo": "高い", "erradas": ["高いな", "高く", "高かった"]},
+   {"jp": "昨日は寒かったです。", "pt": "Ontem fez frio.", "alvo": "かった", "erradas": ["いでした", "くない", "い"]},
+   {"jp": "この部屋は広くないです。", "pt": "Este quarto não é espaçoso.", "alvo": "くない", "erradas": ["いじゃない", "くなかった", "いない"]},
+   {"jp": "新しい車を買いました。", "pt": "Comprei um carro novo.", "alvo": "新しい", "erradas": ["新しいな", "新しく", "新しの"]},
+   {"jp": "この店は安くておいしいです。", "pt": "Este restaurante é barato e gostoso.", "alvo": "くて", "erradas": ["いて", "いで", "くで"]}
+  ],
+  "parecidos": [
+   {"padrao": "な-Adjectives", "diferenca": "Adjetivo-な precisa de な antes do substantivo e de だ/です no fim; não vira くない."},
+   {"padrao": "いい", "diferenca": "É adjetivo-い, mas irregular: よくない, よかった."}
+  ],
+  "erros_comuns": [
+   "×寒いでした: o passado vai no adjetivo → 寒かったです.",
+   "×高いじゃない: o negativo do adjetivo-い é 高くない.",
+   "Tratar きれい e 嫌い como adjetivo-い (×きれくない). São adjetivos-な: きれいじゃない."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:28",
+  "leitura": "な",
+  "romaji": "na-keiyoushi",
+  "resumo": "adjetivos que pedem な antes do substantivo",
+  "significado": "Adjetivos-な funcionam quase como substantivos: antes de um substantivo levam な (静かな町) e no fim da frase levam だ ou です.",
+  "liga_a": ["adjetivo_na"],
+  "como_formar": [
+   "Antes do substantivo: 静か + な + 町 → 静かな町",
+   "No fim da frase: 静かだ (casual) / 静かです (polido)",
+   "Negativo: 静かじゃない / 静かじゃありません; passado: 静かだった / 静かでした",
+   "Forma て (para ligar): 静かで → 静かできれい"
+  ],
+  "uso": "Conjugam como substantivo, com だ/です. Exemplos comuns: 静か, 元気, 有名, 便利, 暇, 好き, 嫌い, きれい. Alguns terminam em い (きれい, 嫌い, 有名), mas mesmo assim nunca viram くない.",
+  "exemplos": [
+   {"jp": "ここは静かな町です。", "pt": "Aqui é uma cidade tranquila.", "alvo": "な", "erradas": ["の", "だ", "に"]},
+   {"jp": "私の部屋はきれいじゃないです。", "pt": "Meu quarto não está limpo.", "alvo": "じゃない", "erradas": ["くない", "ない", "じゃなかった"]},
+   {"jp": "昨日は暇でした。", "pt": "Ontem eu estava livre.", "alvo": "でした", "erradas": ["かったです", "です", "なでした"]},
+   {"jp": "きれいな花ですね。", "pt": "Que flor bonita, né?", "alvo": "な", "erradas": ["の", "い", "だ"]},
+   {"jp": "この町は静かできれいだ。", "pt": "Esta cidade é tranquila e bonita.", "alvo": "で", "erradas": ["くて", "なで", "と"]}
+  ],
+  "parecidos": [
+   {"padrao": "い-Adjectives", "diferenca": "Adjetivo-い se conjuga sozinho (高くない, 高かった); adjetivo-な usa だ/です."},
+   {"padrao": "の", "diferenca": "Substantivo + の + substantivo (日本の町); adjetivo-な + な + substantivo (静かな町)."}
+  ],
+  "erros_comuns": [
+   "Esquecer o な antes do substantivo (×静か町) ou trocar por の (×静かの町).",
+   "Conjugar きれい como adjetivo-い: ×きれくない. O certo é きれいじゃない.",
+   "Ligar dois adjetivos com と como o 'e' do português (×静かときれい). Use で: 静かできれい."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:8",
+  "leitura": "か",
+  "romaji": "ka",
+  "resumo": "partícula de pergunta (no fim da frase)",
+  "significado": "か no fim da frase transforma uma afirmação em pergunta, como o ponto de interrogação.",
+  "liga_a": ["frase"],
+  "como_formar": [
+   "Frase polida + か: 行きますか。 学生ですか。",
+   "Com palavra interrogativa: 何ですか, どこに行きますか",
+   "No casual, normalmente sem か, só com entonação: 行く？ 学生？"
+  ],
+  "uso": "É a forma normal de perguntar no polido; a ordem das palavras não muda e o ponto final costuma ser 。. No casual, か seco (行くか？) soa brusco e masculino; prefira só a entonação ou の (行くの？).",
+  "exemplos": [
+   {"jp": "これは何ですか。", "pt": "O que é isto?", "alvo": "か", "erradas": ["ね", "よ", "を"]},
+   {"jp": "明日、学校に行きますか。", "pt": "Você vai à escola amanhã?", "alvo": "か", "erradas": ["よ", "が", "を"]},
+   {"jp": "田中さんは先生ですか。", "pt": "O Tanaka é professor?", "alvo": "か", "erradas": ["よ", "が", "は"]},
+   {"jp": "どこに行きますか。", "pt": "Aonde você vai?", "alvo": "か", "erradas": ["よ", "が", "ね"]},
+   {"jp": "ここは駅ですか。", "pt": "Aqui é a estação?", "alvo": "か", "erradas": ["よ", "が", "を"]}
+  ],
+  "parecidos": [
+   {"padrao": "の (pergunta casual)", "diferenca": "行くの？ é a pergunta casual mais suave; か é a do polido."},
+   {"padrao": "ね", "diferenca": "ね pede concordância sobre algo que você já acha; か pergunta de verdade."}
+  ],
+  "erros_comuns": [
+   "Usar か no casual com amigos (行くか？): soa seco. Use só entonação ou の.",
+   "Pôr か depois de だ (×学生だか？). No casual é 学生？; no polido, 学生ですか.",
+   "Mudar a ordem da frase para perguntar, como em outras línguas. Em japonês basta pôr か no fim."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:10",
+  "leitura": "が",
+  "romaji": "ga",
+  "resumo": "marca o sujeito (quem/o quê)",
+  "significado": "が marca o sujeito, principalmente quando ele é informação nova ou quando se quer apontar 'quem' ou 'o quê'.",
+  "liga_a": ["substantivo"],
+  "como_formar": [
+   "Substantivo + が: 雨が降っています",
+   "Com palavra interrogativa como sujeito, sempre が: 誰が来ましたか",
+   "Com ある/いる, 好き/嫌い, 上手/下手, 分かる, 欲しい: 猫が好きです, 日本語が分かります"
+  ],
+  "uso": "Use が para fatos novos (雨が降っています), para identificar alguém (私が行きます = sou eu que vou) e com os verbos e adjetivos da lista acima. Neutro.",
+  "exemplos": [
+   {"jp": "雨が降っています。", "pt": "Está chovendo.", "alvo": "が", "erradas": ["を", "で", "に"]},
+   {"jp": "誰が来ましたか。", "pt": "Quem veio?", "alvo": "が", "erradas": ["は", "を", "の"]},
+   {"jp": "私は猫が好きです。", "pt": "Eu gosto de gatos.", "alvo": "が", "erradas": ["を", "に", "の"]},
+   {"jp": "机の上に本があります。", "pt": "Tem um livro em cima da mesa.", "alvo": "が", "erradas": ["を", "で", "に"]},
+   {"jp": "田中さんは日本語が上手です。", "pt": "O Tanaka é bom em japonês.", "alvo": "が", "erradas": ["を", "で", "に"]}
+  ],
+  "parecidos": [
+   {"padrao": "は", "diferenca": "は apresenta o assunto conhecido; が aponta o sujeito novo ou identifica 'quem'."},
+   {"padrao": "を", "diferenca": "を marca o objeto da ação; com 好き, 分かる, ある usa-se が."}
+  ],
+  "erros_comuns": [
+   "Usar は com interrogativo como sujeito: ×誰は来ましたか → 誰が来ましたか.",
+   "Usar を com 好き, 分かる ou 上手 por causa do português: ×日本語を分かります → 日本語が分かります.",
+   "Confundir com が 'mas', que vem depois de uma frase inteira (高いですが…)."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:78",
+  "leitura": "よ",
+  "romaji": "yo",
+  "resumo": "ênfase: informa algo novo ('viu?', 'tá?')",
+  "significado": "よ no fim da frase mostra que você está passando ao ouvinte uma informação que ele não sabe, ou avisando/insistindo, como 'viu?' ou 'tá?'.",
+  "liga_a": ["frase"],
+  "como_formar": [
+   "Frase + よ: 行きますよ。 おいしいよ。",
+   "Casual com substantivo/adj-な: 学生だよ (mais suave/feminino: 学生よ)",
+   "Junto com ね: よね (confirma algo de que você tem quase certeza)"
+  ],
+  "uso": "Vale no polido e no casual. Serve para avisar (危ないですよ), recomendar (おいしいですよ) e informar. Usado demais, ou para corrigir um superior, soa insistente ou arrogante.",
+  "exemplos": [
+   {"jp": "この映画はおもしろいですよ。", "pt": "Esse filme é legal, viu!", "alvo": "よ", "erradas": ["か", "を", "が"]},
+   {"jp": "危ないですよ！", "pt": "Cuidado, é perigoso!", "alvo": "よ", "erradas": ["ね", "か", "を"]},
+   {"jp": "車が来ますよ。", "pt": "Olha, vem vindo um carro!", "alvo": "よ", "erradas": ["ね", "か", "を"]},
+   {"jp": "明日はテストだよ。", "pt": "Amanhã tem prova, viu?", "alvo": "よ", "erradas": ["か", "の", "を"]},
+   {"jp": "駅はあそこですよ。", "pt": "A estação é ali, ó.", "alvo": "よ", "erradas": ["か", "を", "が"]}
+  ],
+  "parecidos": [
+   {"padrao": "ね", "diferenca": "ね busca concordância sobre algo que os dois sabem; よ informa algo que o outro não sabe."},
+   {"padrao": "よね", "diferenca": "よね confirma: 'é assim, né?'."}
+  ],
+  "erros_comuns": [
+   "Confundir よ com ね: よ informa, ね pede concordância.",
+   "Usar よ para corrigir professor ou chefe (違いますよ): soa atrevido.",
+   "Pôr よ em toda frase: parece insistente."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:71",
+  "leitura": "ね",
+  "romaji": "ne",
+  "resumo": "né? (busca concordância)",
+  "significado": "ね no fim da frase busca a concordância de quem ouve ou confirma algo que os dois sabem ou sentem, como o 'né?' do português.",
+  "liga_a": ["frase"],
+  "como_formar": [
+   "Frase + ね: いい天気ですね。 おいしいね。",
+   "Casual com substantivo/adj-な: きれいだね (mais suave/feminino: きれいね)",
+   "よね: confirma algo de que você tem quase certeza"
+  ],
+  "uso": "Vale no polido e no casual. Serve para comentar algo que os dois estão vendo (暑いですね), elogiar (上手ですね) e confirmar (明日ですね). Deixa a frase mais amigável.",
+  "exemplos": [
+   {"jp": "今日は暑いですね。", "pt": "Hoje está quente, né?", "alvo": "ね", "erradas": ["よ", "か", "を"]},
+   {"jp": "きれいな花ですね。", "pt": "Que flor bonita, né?", "alvo": "ね", "erradas": ["か", "を", "が"]},
+   {"jp": "このラーメン、おいしいね。", "pt": "Esse lámen está gostoso, né?", "alvo": "ね", "erradas": ["か", "だ", "を"]},
+   {"jp": "明日は休みですね。", "pt": "Amanhã é folga, né?", "alvo": "ね", "erradas": ["よ", "が", "を"]},
+   {"jp": "日本語が上手ですね。", "pt": "Você fala japonês muito bem, hein!", "alvo": "ね", "erradas": ["か", "を", "が"]}
+  ],
+  "parecidos": [
+   {"padrao": "よ", "diferenca": "よ informa algo novo; ね busca concordância."},
+   {"padrao": "か", "diferenca": "か pergunta sem saber a resposta; ね confirma o que você já acha."}
+  ],
+  "erros_comuns": [
+   "Usar ね para dar uma informação nova (ex.: explicar o caminho com 駅はあそこですね). Para informar use よ.",
+   "Alongar o ね (ねえ〜) em situação formal: soa infantil."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:12",
+  "leitura": "る",
+  "romaji": "ru-doushi (ichidan)",
+  "resumo": "verbos-る (grupo 2) na forma de dicionário",
+  "significado": "Verbos-る (grupo 2, ichidan) terminam em -iru ou -eru, como 食べる e 見る. Na forma de dicionário, que é a casual, expressam presente ou futuro: 'como', 'vou comer'.",
+  "liga_a": ["dicionario"],
+  "como_formar": [
+   "Forma de dicionário: 食べる, 見る, 起きる, 寝る",
+   "Para o polido, tira o る e põe ます: 食べる → 食べます, 見る → 見ます",
+   "Compare: grupo 1 書く → 書きます; grupo 3 する → します, 来る → 来ます",
+   "Cuidado: alguns verbos em -iru/-eru são do grupo 1: 帰る, 入る, 走る, 知る"
+  ],
+  "uso": "A forma de dicionário é a casual: com amigos e família, e também antes de substantivos e de vários padrões (食べる時). Com desconhecidos ou superiores, use a forma ます.",
+  "exemplos": [
+   {"jp": "毎朝パンを食べる。", "pt": "Eu como pão toda manhã.", "alvo": "べる", "erradas": ["べた", "べない", "べろ"]},
+   {"jp": "毎晩テレビを見る。", "pt": "Eu vejo TV toda noite.", "alvo": "見る", "erradas": ["見た", "見ない", "見ります"]},
+   {"jp": "今日は早く寝る。", "pt": "Hoje vou dormir cedo.", "alvo": "寝る", "erradas": ["寝た", "寝ない", "寝るだ"]},
+   {"jp": "毎朝七時に起きます。", "pt": "Eu acordo às sete toda manhã.", "alvo": "きます", "erradas": ["きります", "きるます", "きました"]},
+   {"jp": "八時に家を出る。", "pt": "Saio de casa às oito.", "alvo": "出る", "erradas": ["出た", "出ない", "出るです"]}
+  ],
+  "parecidos": [
+   {"padrao": "う-Verb (Dictionary)", "diferenca": "No grupo 1 o último som muda (書く → 書きます); no grupo 2 só se tira o る."}
+  ],
+  "erros_comuns": [
+   "Conjugar como grupo 1: ×食べります. O certo é 食べます.",
+   "Achar que todo verbo em -iru/-eru é do grupo 2: 帰る é grupo 1 → 帰ります (×帰ます).",
+   "Pôr です depois do verbo: ×食べるです."
+  ],
+  "drill": {"verbo": [["STEM", "ます"]], "adj": [], "sentido": "… (forma polida)",
+   "teste": {"かく": "かきます", "たべる": "たべます", "する": "します", "くる": "きます"}},
+  "detectar": []
+ },
+ {
+  "id": "bp:26",
+  "leitura": "う",
+  "romaji": "u-doushi (godan)",
+  "resumo": "verbos-う (grupo 1) na forma de dicionário",
+  "significado": "Verbos-う (grupo 1, godan) terminam em um som -u: う, く, ぐ, す, つ, ぬ, ぶ, む, る. Na forma de dicionário (casual) expressam presente ou futuro.",
+  "liga_a": ["dicionario"],
+  "como_formar": [
+   "Forma de dicionário: 書く, 飲む, 話す, 待つ, 買う, 帰る",
+   "Para o polido, o -u vira -i e entra ます: 書く → 書きます, 飲む → 飲みます, 待つ → 待ちます, 買う → 買います",
+   "Compare: grupo 2 食べる → 食べます; grupo 3 する → します, 来る → 来ます"
+  ],
+  "uso": "A forma de dicionário é a casual: com amigos e família, e antes de substantivos e de vários padrões (行く時). Com desconhecidos ou superiores, use a forma ます.",
+  "exemplos": [
+   {"jp": "毎日コーヒーを飲む。", "pt": "Eu bebo café todo dia.", "alvo": "飲む", "erradas": ["飲みる", "飲んだ", "飲まない"]},
+   {"jp": "毎日、日本語の本を読みます。", "pt": "Eu leio livros em japonês todo dia.", "alvo": "みます", "erradas": ["むます", "めます", "みました"]},
+   {"jp": "明日、友達に会う。", "pt": "Amanhã vou encontrar um amigo.", "alvo": "会う", "erradas": ["会った", "会わない", "会いる"]},
+   {"jp": "毎晩九時に家に帰ります。", "pt": "Eu volto para casa às nove toda noite.", "alvo": "ります", "erradas": ["ます", "るます", "りました"]},
+   {"jp": "駅で友達を待つ。", "pt": "Espero meu amigo na estação.", "alvo": "待つ", "erradas": ["待った", "待たない", "待ちる"]}
+  ],
+  "parecidos": [
+   {"padrao": "る-Verb (Dictionary)", "diferenca": "No grupo 2 só se tira o る (食べます); no grupo 1 o som final muda (書きます)."}
+  ],
+  "erros_comuns": [
+   "Tratar 帰る, 入る, 走る, 知る como grupo 2: ×帰ます. O certo é 帰ります.",
+   "Esquecer a mudança de som: 待つ → 待ちます (つ vira ち), 話す → 話します (す vira し)."
+  ],
+  "drill": {"verbo": [["STEM", "ます"]], "adj": [], "sentido": "… (forma polida)",
+   "teste": {"かく": "かきます", "たべる": "たべます", "する": "します", "くる": "きます"}},
+  "detectar": []
+ },
+ {
+  "id": "bp:21",
+  "leitura": "を",
+  "romaji": "o (wo)",
+  "resumo": "marca o objeto direto",
+  "significado": "を marca o objeto direto: aquilo que recebe a ação do verbo (パンを食べる = comer pão).",
+  "liga_a": ["substantivo"],
+  "como_formar": [
+   "Substantivo + を + verbo: パンを食べる, 本を読む",
+   "Lê-se 'o' (às vezes transcrito 'wo').",
+   "Com verbo de movimento, marca o lugar por onde se passa (公園を歩く) ou de onde se sai (家を出る)"
+  ],
+  "uso": "Usado com verbos de ação sobre algo (comer, ler, comprar, estudar). Não vai com ある/いる, 好き, 分かる, 欲しい: esses usam が. Neutro.",
+  "exemplos": [
+   {"jp": "毎朝コーヒーを飲みます。", "pt": "Eu bebo café toda manhã.", "alvo": "を", "erradas": ["が", "に", "で"]},
+   {"jp": "昨日、本を読みました。", "pt": "Ontem eu li um livro.", "alvo": "を", "erradas": ["に", "で", "へ"]},
+   {"jp": "公園を歩きました。", "pt": "Andei pelo parque.", "alvo": "を", "erradas": ["に", "が", "の"]},
+   {"jp": "八時に家を出ます。", "pt": "Saio de casa às oito.", "alvo": "を", "erradas": ["に", "で", "が"]},
+   {"jp": "日本語を勉強しています。", "pt": "Estou estudando japonês.", "alvo": "を", "erradas": ["が", "に", "で"]}
+  ],
+  "parecidos": [
+   {"padrao": "が", "diferenca": "が marca o sujeito; com 好き, 分かる, ある usa-se が, não を."},
+   {"padrao": "で", "diferenca": "公園で遊ぶ = brincar no parque (lugar da ação); 公園を歩く = andar pelo parque (percurso)."}
+  ],
+  "erros_comuns": [
+   "Usar を com 好き ou 分かる: ×日本語を分かります → 日本語が分かります.",
+   "Usar を com 会う porque em português 'encontrar alguém' é direto: o certo é 友達に会う (×友達を会う).",
+   "Pronunciar を como 'wo' na fala normal: hoje soa igual a お."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:1082",
+  "leitura": "ます",
+  "romaji": "masu",
+  "resumo": "forma polida dos verbos",
+  "significado": "ます deixa o verbo educado. Serve para presente e futuro: 行きます = 'vou' ou 'irei'.",
+  "liga_a": ["radical_masu"],
+  "como_formar": [
+   "Grupo 1: o -u vira -i + ます: 書く → 書きます, 飲む → 飲みます",
+   "Grupo 2: tira o る + ます: 食べる → 食べます",
+   "Grupo 3: する → します, 来る → 来ます",
+   "Negativo: ません; passado: ました; passado negativo: ませんでした"
+  ],
+  "uso": "É o jeito educado padrão: com desconhecidos, no trabalho, com professores, em lojas. Entre amigos e família soa distante; aí se usa a forma simples (行く, 行かない).",
+  "exemplos": [
+   {"jp": "毎日日本語を勉強します。", "pt": "Eu estudo japonês todo dia.", "alvo": "します", "erradas": ["するます", "しります", "しました"]},
+   {"jp": "明日、東京に行きます。", "pt": "Amanhã vou a Tóquio.", "alvo": "きます", "erradas": ["くます", "きました", "かます"]},
+   {"jp": "昨日、映画を見ました。", "pt": "Ontem eu vi um filme.", "alvo": "ました", "erradas": ["ます", "ません", "りました"]},
+   {"jp": "私はお酒を飲みません。", "pt": "Eu não bebo álcool.", "alvo": "みません", "erradas": ["みます", "むません", "みませんでした"]},
+   {"jp": "友達が家に来ます。", "pt": "Um amigo vem à minha casa.", "alvo": "来ます", "erradas": ["来るます", "来ります", "来ました"]}
+  ],
+  "parecidos": [
+   {"padrao": "です", "diferenca": "です é o polido de substantivos e adjetivos; ます é o polido dos verbos."},
+   {"padrao": "forma de dicionário", "diferenca": "行く é a versão casual de 行きます."}
+  ],
+  "erros_comuns": [
+   "Juntar ます à forma de dicionário: ×行くます. O certo é 行きます.",
+   "Errar o grupo do verbo: 帰る é grupo 1 → 帰ります (×帰ます).",
+   "Usar ます o tempo todo com amigos próximos: soa frio."
+  ],
+  "drill": {"verbo": [["STEM", "ます"]], "adj": [], "sentido": "… (forma polida)",
+   "teste": {"かく": "かきます", "たべる": "たべます", "する": "します", "くる": "きます"}},
+  "detectar": []
+ },
+ {
+  "id": "bp:51",
+  "leitura": "る",
+  "romaji": "ru-doushi nai",
+  "resumo": "negativo casual dos verbos-る: tira る + ない",
+  "significado": "É a forma negativa casual dos verbos-る (grupo 2): 'não …' ou 'não vai …'. Basta trocar o る por ない.",
+  "liga_a": ["nai"],
+  "como_formar": [
+   "Grupo 2: tira o る e põe ない: 食べる → 食べない, 見る → 見ない",
+   "Compare: grupo 1 書く → 書かない; grupo 3 する → しない, 来る → 来ない (こない)",
+   "Passado negativo: ない → なかった: 食べなかった",
+   "Polido: 食べません"
+  ],
+  "uso": "Vale para presente e futuro. É casual (amigos, família) e também a base de vários padrões (食べないで, 食べなければ). No polido, use ません.",
+  "exemplos": [
+   {"jp": "私は肉を食べない。", "pt": "Eu não como carne.", "alvo": "べない", "erradas": ["べらない", "べるない", "べなかった"]},
+   {"jp": "今日はテレビを見ない。", "pt": "Hoje não vou ver TV.", "alvo": "見ない", "erradas": ["見らない", "見るない", "見なかった"]},
+   {"jp": "日曜日は早く起きない。", "pt": "No domingo eu não acordo cedo.", "alvo": "きない", "erradas": ["きらない", "きるない", "きなかった"]},
+   {"jp": "昨日はあまり寝なかった。", "pt": "Ontem eu não dormi muito.", "alvo": "なかった", "erradas": ["ないだった", "らなかった", "ないでした"]},
+   {"jp": "今日は家を出ない。", "pt": "Hoje não vou sair de casa.", "alvo": "出ない", "erradas": ["出らない", "出るない", "出なかった"]}
+  ],
+  "parecidos": [
+   {"padrao": "う-Verb (Negative)", "diferenca": "No grupo 1 o som final vira -a + ない (書かない); no grupo 2 só se troca る por ない."},
+   {"padrao": "ません", "diferenca": "É o negativo polido: 食べません."}
+  ],
+  "erros_comuns": [
+   "Conjugar como grupo 1: ×食べらない. O certo é 食べない.",
+   "Manter o る: ×食べるない.",
+   "Fazer o passado com だった: ×食べないだった → 食べなかった."
+  ],
+  "drill": {"verbo": [["NAI", ""]], "adj": [], "sentido": "não …",
+   "teste": {"かく": "かかない", "たべる": "たべない", "する": "しない", "くる": "こない"}},
+  "detectar": []
+ },
+ {
+  "id": "bp:888",
+  "leitura": "う",
+  "romaji": "u-doushi nai",
+  "resumo": "negativo casual dos verbos-う: som -a + ない",
+  "significado": "É a forma negativa casual dos verbos-う (grupo 1): 'não …' ou 'não vai …'. O som final -u vira -a e entra ない.",
+  "liga_a": ["nai"],
+  "como_formar": [
+   "Grupo 1: -u → -a + ない: 書く → 書かない, 飲む → 飲まない, 話す → 話さない, 待つ → 待たない",
+   "Verbos em う viram わ: 買う → 買わない, 会う → 会わない",
+   "Exceção: ある → ない (×あらない)",
+   "Compare: grupo 2 食べる → 食べない; grupo 3 する → しない, 来る → 来ない (こない)"
+  ],
+  "uso": "Vale para presente e futuro. É casual (amigos, família) e a base de vários padrões. Passado negativo: 書かなかった. No polido, use ません (書きません).",
+  "exemplos": [
+   {"jp": "私はお酒を飲まない。", "pt": "Eu não bebo álcool.", "alvo": "まない", "erradas": ["みない", "むない", "まなかった"]},
+   {"jp": "明日は学校に行かない。", "pt": "Amanhã não vou à escola.", "alvo": "かない", "erradas": ["きない", "くない", "かなかった"]},
+   {"jp": "田中さんは何も言わない。", "pt": "O Tanaka não diz nada.", "alvo": "わない", "erradas": ["あない", "いない", "わなかった"]},
+   {"jp": "今日は雨が降らない。", "pt": "Hoje não vai chover.", "alvo": "らない", "erradas": ["りない", "ない", "るない"]},
+   {"jp": "時間がない。", "pt": "Não tenho tempo.", "alvo": "ない", "erradas": ["あらない", "ありない", "ないだ"]}
+  ],
+  "parecidos": [
+   {"padrao": "る-Verb (Negative)", "diferenca": "No grupo 2 só se troca る por ない (食べない)."},
+   {"padrao": "ません", "diferenca": "É o negativo polido: 飲みません."}
+  ],
+  "erros_comuns": [
+   "Errar os verbos em う: ×買あない. O certo é 買わない.",
+   "×あらない: o negativo de ある é só ない.",
+   "Tratar 帰る como grupo 2: ×帰ない → 帰らない."
+  ],
+  "drill": {"verbo": [["NAI", ""]], "adj": [], "sentido": "não …",
+   "teste": {"かく": "かかない", "たべる": "たべない", "する": "しない", "くる": "こない"}},
+  "detectar": []
+ },
+ {
+  "id": "bp:15",
+  "leitura": "と",
+  "romaji": "to",
+  "resumo": "e (entre substantivos); com (companhia)",
+  "significado": "と liga substantivos numa lista completa: AとB = 'A e B'. Também quer dizer 'com' (junto de alguém): 友達と行く.",
+  "liga_a": ["substantivo"],
+  "como_formar": [
+   "Substantivo A + と + substantivo B: パンと牛乳 (pão e leite)",
+   "Lista completa: AとBとC = exatamente essas coisas",
+   "Companhia: pessoa + と + verbo: 友達と行く (ir com um amigo)"
+  ],
+  "uso": "Liga só substantivos, nunca verbos, adjetivos ou frases. Indica a lista inteira ('A e B, só isso'). Neutro. Depois de verbo ou frase, と é outro padrão (o condicional 'quando/se').",
+  "exemplos": [
+   {"jp": "パンと牛乳を買いました。", "pt": "Comprei pão e leite.", "alvo": "と", "erradas": ["の", "を", "も"]},
+   {"jp": "友達と映画を見ました。", "pt": "Vi um filme com um amigo.", "alvo": "と", "erradas": ["の", "が", "を"]},
+   {"jp": "私には兄と妹がいます。", "pt": "Eu tenho um irmão mais velho e uma irmã mais nova.", "alvo": "と", "erradas": ["の", "も", "を"]},
+   {"jp": "犬と猫が好きです。", "pt": "Gosto de cachorros e de gatos.", "alvo": "と", "erradas": ["の", "も", "を"]},
+   {"jp": "日曜日に母と買い物をしました。", "pt": "No domingo fiz compras com minha mãe.", "alvo": "と", "erradas": ["の", "が", "を"]}
+  ],
+  "parecidos": [
+   {"padrao": "や", "diferenca": "AやB = 'A, B, entre outros' (lista incompleta); AとB é a lista completa."},
+   {"padrao": "と (condicional)", "diferenca": "Depois de verbo (春になると…), と quer dizer 'quando/sempre que', não 'e'."}
+  ],
+  "erros_comuns": [
+   "Usar と para ligar adjetivos como o 'e' do português: ×安いとおいしい. Use a forma て: 安くておいしい.",
+   "Ligar ações com と: 'comi e dormi' é 食べて寝た, não ×食べたと寝た.",
+   "Usar で para 'com alguém' (×友達で行く). O certo é 友達と行く."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:14",
+  "leitura": "ここ",
+  "romaji": "koko",
+  "resumo": "aqui (lugar perto de quem fala)",
+  "significado": "ここ quer dizer 'aqui': o lugar onde está quem fala, ou bem perto dele. Funciona como substantivo de lugar.",
+  "liga_a": ["sozinho"],
+  "como_formar": [
+   "Usa-se com partícula: ここは…, ここに…, ここで…, ここから…",
+   "Série: ここ (aqui) / そこ (aí) / あそこ (ali) / どこ (onde?)",
+   "Versão polida: こちら"
+  ],
+  "uso": "Indica lugar, não coisa. ここに marca onde algo está ou para onde vai; ここで, onde a ação acontece. Em loja ou recepção, こちら soa mais educado.",
+  "exemplos": [
+   {"jp": "ここは私の学校です。", "pt": "Aqui é a minha escola.", "alvo": "ここ", "erradas": ["この", "そこ", "どこ"]},
+   {"jp": "ここに座ってください。", "pt": "Sente-se aqui, por favor.", "alvo": "ここ", "erradas": ["これ", "この", "あそこ"]},
+   {"jp": "ここで待ってください。", "pt": "Espere aqui, por favor.", "alvo": "ここ", "erradas": ["これ", "この", "そこ"]},
+   {"jp": "トイレはここです。", "pt": "O banheiro é aqui.", "alvo": "ここ", "erradas": ["これ", "この", "あそこ"]},
+   {"jp": "ここから駅まで遠いですか。", "pt": "Daqui até a estação é longe?", "alvo": "ここ", "erradas": ["これ", "この", "どこ"]}
+  ],
+  "parecidos": [
+   {"padrao": "これ", "diferenca": "これ é coisa ('isto'); ここ é lugar ('aqui')."},
+   {"padrao": "こちら", "diferenca": "Versão polida de ここ (e de これ para pessoas)."}
+  ],
+  "erros_comuns": [
+   "Confundir ここ (lugar) com これ (coisa): 'Aqui é a estação' é ここは駅です.",
+   "Usar ここ antes de substantivo: ×ここ店 → この店 (esta loja)."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:20",
+  "leitura": "そこ",
+  "romaji": "soko",
+  "resumo": "aí (lugar perto de quem ouve)",
+  "significado": "そこ quer dizer 'aí': o lugar perto de quem ouve, ou um lugar que acabou de ser mencionado.",
+  "liga_a": ["sozinho"],
+  "como_formar": [
+   "Usa-se com partícula: そこは…, そこに…, そこで…",
+   "Série: ここ / そこ / あそこ / どこ",
+   "Versão polida: そちら"
+  ],
+  "uso": "Indica o lugar onde está o outro (no telefone: そこは寒いですか) ou um lugar já citado na conversa ('lá, nesse lugar'). Neutro.",
+  "exemplos": [
+   {"jp": "そこに座ってください。", "pt": "Sente-se aí, por favor.", "alvo": "そこ", "erradas": ["それ", "その", "ここ"]},
+   {"jp": "そこは私の部屋です。", "pt": "Aí é o meu quarto.", "alvo": "そこ", "erradas": ["それ", "その", "どこ"]},
+   {"jp": "そこで待ってください。", "pt": "Espere aí, por favor.", "alvo": "そこ", "erradas": ["それ", "その", "あそこ"]},
+   {"jp": "そこに何がありますか。", "pt": "O que tem aí?", "alvo": "そこ", "erradas": ["それ", "その", "どこ"]},
+   {"jp": "そこは寒いですか。", "pt": "Aí está frio?", "alvo": "そこ", "erradas": ["それ", "その", "ここ"]}
+  ],
+  "parecidos": [
+   {"padrao": "それ", "diferenca": "それ é coisa ('isso'); そこ é lugar ('aí')."},
+   {"padrao": "あそこ", "diferenca": "あそこ é longe dos dois ('ali'); そこ é perto de quem ouve."}
+  ],
+  "erros_comuns": [
+   "Usar そこ antes de substantivo: ×そこ店 → その店.",
+   "Confundir そこ (lugar) com それ (coisa)."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:29",
+  "leitura": "あそこ",
+  "romaji": "asoko",
+  "resumo": "ali, lá (longe dos dois)",
+  "significado": "あそこ quer dizer 'ali' ou 'lá': um lugar longe de quem fala e de quem ouve.",
+  "liga_a": ["sozinho"],
+  "como_formar": [
+   "Usa-se com partícula: あそこは…, あそこに…, あそこで…, あそこまで…",
+   "Série: ここ / そこ / あそこ / どこ",
+   "Versão polida: あちら"
+  ],
+  "uso": "Aponta um lugar que os dois conseguem ver, mas que está longe. Também pode indicar um lugar que os dois conhecem. Neutro; no polido (loja, recepção) use あちら.",
+  "exemplos": [
+   {"jp": "あそこに銀行があります。", "pt": "Ali tem um banco.", "alvo": "あそこ", "erradas": ["あれ", "あの", "そこ"]},
+   {"jp": "トイレはあそこです。", "pt": "O banheiro é ali.", "alvo": "あそこ", "erradas": ["あれ", "あの", "どこ"]},
+   {"jp": "あそこで昼ご飯を食べました。", "pt": "Almocei ali.", "alvo": "あそこ", "erradas": ["あれ", "あの", "どこ"]},
+   {"jp": "あそこまで歩きます。", "pt": "Vou andar até ali.", "alvo": "あそこ", "erradas": ["あれ", "あの", "ここ"]},
+   {"jp": "あそこにいる人は誰ですか。", "pt": "Quem é aquela pessoa ali?", "alvo": "あそこ", "erradas": ["あれ", "あの", "どこ"]}
+  ],
+  "parecidos": [
+   {"padrao": "あれ", "diferenca": "あれ é coisa ('aquilo'); あそこ é lugar ('ali')."},
+   {"padrao": "そこ", "diferenca": "そこ é perto de quem ouve ('aí'); あそこ é longe dos dois."}
+  ],
+  "erros_comuns": [
+   "Usar あそこ antes de substantivo: ×あそこ店 → あの店.",
+   "Confundir あそこ (lugar) com あれ (coisa): 'Ali tem um banco' é あそこに銀行があります."
+  ],
+  "drill": null,
+  "detectar": []
+ }
+]

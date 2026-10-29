@@ -1,0 +1,2357 @@
+[
+ {
+  "id": "bp:358",
+  "leitura": "って",
+  "romaji": "tte",
+  "resumo": "disse que…; dizem que… (citação casual)",
+  "significado": "って é a versão casual de と na citação: marca o que alguém disse ou pensou. No fim da frase, sozinho, quer dizer 'ele disse que…', 'dizem que…'.",
+  "liga_a": [
+   "frase"
+  ],
+  "como_formar": [
+   "Frase na forma simples + って言った: 行かないって言った",
+   "Substantivo / adjetivo-な + だって: 雨だって (disseram que vai chover)",
+   "No fim da frase, sem verbo: 田中さん、来ないって (o Tanaka disse que não vem)",
+   "Citação direta: 「ありがとう」って言った"
+  ],
+  "uso": "Casual: com amigos e família. Muito comum para passar um recado ('fulano disse que…'). Em situação formal ou por escrito, use と言いました / とのことです.",
+  "exemplos": [
+   {
+    "jp": "田中さんは来ないって。",
+    "pt": "O Tanaka disse que não vem.",
+    "alvo": "って",
+    "erradas": [
+     "と",
+     "を",
+     "に"
+    ]
+   },
+   {
+    "jp": "明日は雨だって。",
+    "pt": "Disseram que amanhã vai chover.",
+    "alvo": "だって",
+    "erradas": [
+     "って",
+     "なって",
+     "だを"
+    ]
+   },
+   {
+    "jp": "友達が「ありがとう」って言ってた。",
+    "pt": "Meu amigo disse \"obrigado\".",
+    "alvo": "って",
+    "erradas": [
+     "に",
+     "が",
+     "で"
+    ]
+   },
+   {
+    "jp": "彼女、行かないって言ってたよ。",
+    "pt": "Ela disse que não vai, viu.",
+    "alvo": "って",
+    "erradas": [
+     "を",
+     "に",
+     "が"
+    ]
+   },
+   {
+    "jp": "先生がテストは来週だって言ってた。",
+    "pt": "O professor disse que a prova é semana que vem.",
+    "alvo": "だって",
+    "erradas": [
+     "って",
+     "なって",
+     "だを"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "と",
+    "diferenca": "Mesma função (citação), mas neutro e formal: と言いました."
+   },
+   {
+    "padrao": "って (tópico)",
+    "diferenca": "Depois de substantivo, って também pode ser tópico casual: 日本語って難しい (japonês é difícil, hein)."
+   }
+  ],
+  "erros_comuns": [
+   "Esquecer o だ com substantivo: ×雨って (sozinho, vira 'chuva é…') → 雨だって.",
+   "Confundir com a forma て de verbos: em 行って o って faz parte do verbo; em 行くって é citação.",
+   "Usar って com chefe ou em e-mail formal. Lá, use と."
+  ],
+  "drill": null,
+  "detectar": [
+   "って言"
+  ]
+ },
+ {
+  "id": "bp:950",
+  "leitura": "どうし",
+  "romaji": "doushi hikako",
+  "resumo": "não-passado: presente, hábito e futuro",
+  "significado": "O japonês não tem tempo futuro separado. A forma não-passada (dicionário ou ます) serve para presente habitual, para estados e para o futuro: 行く = 'vou' ou 'irei'.",
+  "liga_a": [
+   "dicionario",
+   "radical_masu"
+  ],
+  "como_formar": [
+   "Casual: forma de dicionário → 食べる, 書く, する, 来る",
+   "Polido: radical + ます → 食べます, 書きます, します, 来ます",
+   "O contexto ou palavras de tempo (明日, 毎日) mostram se é hábito ou futuro"
+  ],
+  "uso": "Com verbos de ação, a forma não-passada indica hábito (毎日走る) ou futuro (明日走る). Para ação acontecendo agora, use ている. Verbos de estado (ある, いる, 分かる) indicam o presente.",
+  "exemplos": [
+   {
+    "jp": "毎朝コーヒーを飲む。",
+    "pt": "Bebo café toda manhã.",
+    "alvo": "飲む",
+    "erradas": [
+     "飲んだ",
+     "飲みる",
+     "飲まない"
+    ]
+   },
+   {
+    "jp": "明日、東京に行きます。",
+    "pt": "Amanhã vou a Tóquio.",
+    "alvo": "行きます",
+    "erradas": [
+     "行きました",
+     "行くます",
+     "行きません"
+    ]
+   },
+   {
+    "jp": "来週、テストがある。",
+    "pt": "Semana que vem tem prova.",
+    "alvo": "ある",
+    "erradas": [
+     "あった",
+     "ない",
+     "いる"
+    ]
+   },
+   {
+    "jp": "私は毎日日本語を勉強します。",
+    "pt": "Estudo japonês todos os dias.",
+    "alvo": "します",
+    "erradas": [
+     "しました",
+     "するます",
+     "しません"
+    ]
+   },
+   {
+    "jp": "今晩、母に電話する。",
+    "pt": "Hoje à noite vou ligar para minha mãe.",
+    "alvo": "する",
+    "erradas": [
+     "した",
+     "しない",
+     "しる"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "ている①",
+    "diferenca": "Para a ação em andamento agora: 食べている (estou comendo)."
+   },
+   {
+    "padrao": "る-Verb (Past)",
+    "diferenca": "O passado: 食べた / 食べました."
+   }
+  ],
+  "erros_comuns": [
+   "Procurar uma forma de futuro: não existe. 'Vou comer' é só 食べる / 食べます.",
+   "Usar a forma de dicionário para 'estou fazendo agora': ×今食べる → 今食べている."
+  ],
+  "drill": {
+   "verbo": [
+    [
+     "STEM",
+     "ます"
+    ]
+   ],
+   "adj": [],
+   "sentido": "… (presente/futuro polido)",
+   "teste": {
+    "かく": "かきます",
+    "たべる": "たべます",
+    "する": "します",
+    "くる": "きます"
+   }
+  },
+  "detectar": []
+ },
+ {
+  "id": "bp:357",
+  "leitura": "た・ている",
+  "romaji": "ta / te iru + meishi",
+  "resumo": "verbo antes do substantivo (que…)",
+  "significado": "Um verbo na forma simples colocado antes de um substantivo o descreve, como o 'que' do português: 昨日買った本 = 'o livro que comprei ontem'.",
+  "liga_a": [
+   "ta",
+   "te",
+   "forma_simples"
+  ],
+  "como_formar": [
+   "Forma た + substantivo: 買った本 (o livro que comprei)",
+   "Forma ている + substantivo: 読んでいる人 (a pessoa que está lendo)",
+   "Também dicionário e ない: 行く人, 行かない人",
+   "Sem ます e sem の no meio: ×買いました本, ×買ったの本"
+  ],
+  "uso": "Não existe palavra para 'que'; o verbo vai direto antes do substantivo. A ordem é o inverso do português: primeiro a descrição, depois a coisa. ている + substantivo é muito usado para descrever pessoas (眼鏡をかけている人).",
+  "exemplos": [
+   {
+    "jp": "これは昨日買った本です。",
+    "pt": "Este é o livro que comprei ontem.",
+    "alvo": "買った",
+    "erradas": [
+     "買いました",
+     "買ったの",
+     "買うた"
+    ]
+   },
+   {
+    "jp": "眼鏡をかけている人が田中さんです。",
+    "pt": "A pessoa de óculos é o Tanaka.",
+    "alvo": "かけている",
+    "erradas": [
+     "かけています",
+     "かけているの",
+     "かけたいる"
+    ]
+   },
+   {
+    "jp": "先週見た映画はおもしろかったです。",
+    "pt": "O filme que vi semana passada foi interessante.",
+    "alvo": "見た",
+    "erradas": [
+     "見ました",
+     "見たの",
+     "見るた"
+    ]
+   },
+   {
+    "jp": "あそこで本を読んでいる人は誰ですか。",
+    "pt": "Quem é a pessoa lendo um livro ali?",
+    "alvo": "読んでいる",
+    "erradas": [
+     "読んでいます",
+     "読んでいるの",
+     "読みている"
+    ]
+   },
+   {
+    "jp": "母が作った料理はおいしいです。",
+    "pt": "A comida que minha mãe fez é gostosa.",
+    "alvo": "作った",
+    "erradas": [
+     "作りました",
+     "作ったの",
+     "作るた"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "が・の (Subject)",
+    "diferenca": "Dentro dessa oração, o sujeito pode vir com の: 母の作った料理."
+   },
+   {
+    "padrao": "い-Adjective + Noun",
+    "diferenca": "A mesma lógica com adjetivos: 高い本."
+   }
+  ],
+  "erros_comuns": [
+   "Usar a forma ます antes do substantivo: ×買いました本 → 買った本.",
+   "Pôr の entre o verbo e o substantivo: ×見たの映画 → 見た映画.",
+   "Usar は dentro da oração: ×母は作った料理 → 母が作った料理."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:1103",
+  "leitura": "が・の",
+  "romaji": "ga / no (shugo)",
+  "resumo": "sujeito com が ou の dentro de oração",
+  "significado": "Numa oração que descreve um substantivo, o sujeito pode ser marcado com が ou com の: 母が作った料理 = 母の作った料理 (a comida que minha mãe fez).",
+  "liga_a": [
+   "substantivo"
+  ],
+  "como_formar": [
+   "Sujeito + が/の + verbo + substantivo: 友達が書いた手紙 / 友達の書いた手紙",
+   "Também com adjetivos: 背が高い人 / 背の高い人 (pessoa alta)",
+   "Só vale dentro da oração antes do substantivo; no fim da frase, só が"
+  ],
+  "uso": "が é o mais comum na fala; の soa um pouco mais escrito ou literário, mas aparece em expressões fixas (背の高い人, 私の好きな…). Nunca use は dentro dessas orações.",
+  "exemplos": [
+   {
+    "jp": "母の作った料理が好きです。",
+    "pt": "Gosto da comida que minha mãe faz.",
+    "alvo": "の",
+    "erradas": [
+     "は",
+     "を",
+     "で"
+    ]
+   },
+   {
+    "jp": "私の住んでいる町は静かです。",
+    "pt": "A cidade onde eu moro é tranquila.",
+    "alvo": "の",
+    "erradas": [
+     "は",
+     "を",
+     "で"
+    ]
+   },
+   {
+    "jp": "友達が書いた手紙を読みました。",
+    "pt": "Li a carta que meu amigo escreveu.",
+    "alvo": "が",
+    "erradas": [
+     "は",
+     "を",
+     "に"
+    ]
+   },
+   {
+    "jp": "背の高い人が兄です。",
+    "pt": "A pessoa alta é meu irmão mais velho.",
+    "alvo": "の",
+    "erradas": [
+     "は",
+     "を",
+     "に"
+    ]
+   },
+   {
+    "jp": "田中さんの書いた本はおもしろいです。",
+    "pt": "O livro que o Tanaka escreveu é interessante.",
+    "alvo": "の",
+    "erradas": [
+     "は",
+     "を",
+     "で"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "の (posse)",
+    "diferenca": "母の料理 = 'a comida da mãe'; 母の作った料理 = 'a comida que a mãe fez'."
+   },
+   {
+    "padrao": "は",
+    "diferenca": "は marca o tópico da frase toda; não entra na oração que descreve o substantivo."
+   }
+  ],
+  "erros_comuns": [
+   "Usar は na oração: ×母は作った料理が好きです (vira 'a mãe gosta da comida que fez').",
+   "Trocar が por の no fim da frase: ×母の料理を作った (vira 'fez a comida da mãe')."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:720",
+  "leitura": "の",
+  "romaji": "no (shouryaku)",
+  "resumo": "o/a de… (meu, do Tanaka) sem repetir",
+  "significado": "Quando o substantivo já está claro, ele cai e fica só o の: 私のです = 'é meu'. Funciona como 'o meu', 'o do Tanaka'.",
+  "liga_a": [
+   "substantivo"
+  ],
+  "como_formar": [
+   "Pessoa + の (+ です): 私のです (é meu), 田中さんのです (é do Tanaka)",
+   "Pergunta: 誰のですか (de quem é?)",
+   "Com partícula: 私のは黒いです (o meu é preto)"
+  ],
+  "uso": "Evita repetir o substantivo: このかさは私のかさです soa redundante; o natural é このかさは私のです. Neutro, vale em qualquer registro.",
+  "exemplos": [
+   {
+    "jp": "このかさは私のです。",
+    "pt": "Este guarda-chuva é meu.",
+    "alvo": "の",
+    "erradas": [
+     "が",
+     "は",
+     "な"
+    ]
+   },
+   {
+    "jp": "その車は田中さんのですか。",
+    "pt": "Esse carro é do Tanaka?",
+    "alvo": "の",
+    "erradas": [
+     "が",
+     "に",
+     "を"
+    ]
+   },
+   {
+    "jp": "このペンは私のじゃありません。",
+    "pt": "Esta caneta não é minha.",
+    "alvo": "の",
+    "erradas": [
+     "が",
+     "は",
+     "な"
+    ]
+   },
+   {
+    "jp": "これは誰のですか。",
+    "pt": "De quem é isto?",
+    "alvo": "の",
+    "erradas": [
+     "が",
+     "を",
+     "に"
+    ]
+   },
+   {
+    "jp": "その本は先生のだ。",
+    "pt": "Esse livro é do professor.",
+    "alvo": "の",
+    "erradas": [
+     "が",
+     "に",
+     "な"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "の (posse)",
+    "diferenca": "Com o substantivo: 私の本. Sem ele, quando é óbvio: 私の."
+   },
+   {
+    "padrao": "の (nominalização)",
+    "diferenca": "Depois de verbo, の transforma a ação em substantivo: 読むのが好き."
+   }
+  ],
+  "erros_comuns": [
+   "Esquecer o の: ×これは私です significa 'isto sou eu'. 'É meu' é 私のです.",
+   "Usar palavras como 'meu' separadas: em japonês não há; é sempre pessoa + の."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:66",
+  "leitura": "な",
+  "romaji": "na (kinshi)",
+  "resumo": "não …! (proibição direta)",
+  "significado": "Forma de dicionário + な é uma proibição seca: 'não faça!'. 走るな = 'não corra!'.",
+  "liga_a": [
+   "dicionario"
+  ],
+  "como_formar": [
+   "Forma de dicionário + な: 走るな, 行くな, 忘れるな",
+   "Grupo 3: するな, 来るな (くるな)",
+   "Mais suave: ないで (走らないで) / ないでください"
+  ],
+  "uso": "Muito forte e rude: aparece em placas, esportes, ordens de pais ou chefes, e em mangá e anime. Entre amigos, pode soar carinhoso em frases fixas (心配するな). No dia a dia, prefira ないで / ないでください.",
+  "exemplos": [
+   {
+    "jp": "ここでたばこを吸うな。",
+    "pt": "Não fume aqui!",
+    "alvo": "な",
+    "erradas": [
+     "ない",
+     "ね",
+     "なさい"
+    ]
+   },
+   {
+    "jp": "危ない！走るな！",
+    "pt": "Perigo! Não corra!",
+    "alvo": "な",
+    "erradas": [
+     "ない",
+     "なさい",
+     "ね"
+    ]
+   },
+   {
+    "jp": "忘れるな。",
+    "pt": "Não esqueça!",
+    "alvo": "な",
+    "erradas": [
+     "ない",
+     "なさい",
+     "の"
+    ]
+   },
+   {
+    "jp": "心配するな。",
+    "pt": "Não se preocupe!",
+    "alvo": "な",
+    "erradas": [
+     "ない",
+     "なさい",
+     "ね"
+    ]
+   },
+   {
+    "jp": "泣くな。",
+    "pt": "Não chore!",
+    "alvo": "な",
+    "erradas": [
+     "ない",
+     "なさい",
+     "よ"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "ないでください",
+    "diferenca": "Proibição educada: 走らないでください."
+   },
+   {
+    "padrao": "なさい",
+    "diferenca": "なさい é ordem para fazer (食べなさい = coma!), o contrário de な."
+   }
+  ],
+  "erros_comuns": [
+   "Usar com desconhecidos ou superiores: soa muito agressivo. Use ないでください.",
+   "Pôr な no radical: ×食べな (isso é ordem casual de fazer, 'come!'). A proibição é 食べるな.",
+   "Confundir com o な do fim de frase de exclamação: いいな！ = 'que bom!'."
+  ],
+  "drill": {
+   "verbo": [
+    [
+     "DICT",
+     "な"
+    ]
+   ],
+   "adj": [],
+   "sentido": "não …! (proibição)",
+   "teste": {
+    "かく": "かくな",
+    "たべる": "たべるな",
+    "する": "するな",
+    "くる": "くるな"
+   }
+  },
+  "detectar": []
+ },
+ {
+  "id": "bp:43",
+  "leitura": "だけ",
+  "romaji": "dake",
+  "resumo": "só, apenas",
+  "significado": "だけ quer dizer 'só', 'apenas': limita a uma coisa, quantidade ou ação. 水だけ = só água.",
+  "liga_a": [
+   "substantivo",
+   "dicionario",
+   "forma_simples"
+  ],
+  "como_formar": [
+   "Substantivo + だけ: 水だけ, 一つだけ",
+   "Verbo + だけ: 見るだけ (só olhar)",
+   "が e を costumam cair: 水だけ飲んだ (ou 水だけを飲んだ)",
+   "Outras partículas ficam: 日曜日だけに, 友達とだけ"
+  ],
+  "uso": "Neutro e muito comum. A frase com だけ pode ser afirmativa ou negativa. ちょっと見るだけです ('só estou olhando') é a frase clássica para vendedores em loja.",
+  "exemplos": [
+   {
+    "jp": "水だけ飲みました。",
+    "pt": "Bebi só água.",
+    "alvo": "だけ",
+    "erradas": [
+     "しか",
+     "も",
+     "まで"
+    ]
+   },
+   {
+    "jp": "日本語は少しだけ分かります。",
+    "pt": "Entendo só um pouco de japonês.",
+    "alvo": "だけ",
+    "erradas": [
+     "しか",
+     "まで",
+     "も"
+    ]
+   },
+   {
+    "jp": "一つだけください。",
+    "pt": "Me dá só um, por favor.",
+    "alvo": "だけ",
+    "erradas": [
+     "しか",
+     "も",
+     "まで"
+    ]
+   },
+   {
+    "jp": "休みは日曜日だけです。",
+    "pt": "Minha folga é só no domingo.",
+    "alvo": "だけ",
+    "erradas": [
+     "しか",
+     "まで",
+     "も"
+    ]
+   },
+   {
+    "jp": "ちょっと見るだけです。",
+    "pt": "Só estou dando uma olhada.",
+    "alvo": "だけ",
+    "erradas": [
+     "しか",
+     "まで",
+     "ばかり"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "しか～ない",
+    "diferenca": "Também é 'só', mas exige verbo negativo e dá ideia de 'pouco': 水しか飲まなかった."
+   },
+   {
+    "padrao": "ばかり",
+    "diferenca": "ばかり é 'só (e repetidamente)', com tom de crítica: 肉ばかり食べる."
+   }
+  ],
+  "erros_comuns": [
+   "Usar しか com verbo afirmativo: ×水しか飲みました → 水だけ飲みました (ou 水しか飲みませんでした).",
+   "Confundir com だけど ('mas'): em 休みだけど, não há 'só'."
+  ],
+  "drill": null,
+  "detectar": [
+   "だけです",
+   "だけで",
+   "だけを",
+   "だけが",
+   "だけは",
+   "だけの",
+   "だけしか"
+  ]
+ },
+ {
+  "id": "bp:712",
+  "leitura": "どれ",
+  "romaji": "dore",
+  "resumo": "qual (entre três ou mais)",
+  "significado": "どれ quer dizer 'qual?', escolhendo entre três ou mais coisas. Funciona como substantivo: fica sozinho e leva partículas.",
+  "liga_a": [
+   "sozinho"
+  ],
+  "como_formar": [
+   "Como sujeito, sempre com が: どれがいいですか (×どれは)",
+   "Como objeto: どれを買いますか",
+   "No fim: …はどれですか",
+   "Série: これ / それ / あれ / どれ"
+  ],
+  "uso": "Para escolher entre duas coisas, o natural é どちら (polido) ou どっち (casual). どれでも = 'qualquer um'; どれも = 'todos' (ou 'nenhum', com negativo).",
+  "exemplos": [
+   {
+    "jp": "どれがあなたのかばんですか。",
+    "pt": "Qual é a sua bolsa?",
+    "alvo": "どれ",
+    "erradas": [
+     "どの",
+     "どこ",
+     "何"
+    ]
+   },
+   {
+    "jp": "この中でどれが一番好きですか。",
+    "pt": "Qual destes você mais gosta?",
+    "alvo": "どれ",
+    "erradas": [
+     "どの",
+     "どこ",
+     "だれ"
+    ]
+   },
+   {
+    "jp": "どれを買いますか。",
+    "pt": "Qual você vai comprar?",
+    "alvo": "どれ",
+    "erradas": [
+     "どの",
+     "どこ",
+     "どう"
+    ]
+   },
+   {
+    "jp": "どれでもいいです。",
+    "pt": "Qualquer um serve.",
+    "alvo": "どれ",
+    "erradas": [
+     "どの",
+     "どこ",
+     "どう"
+    ]
+   },
+   {
+    "jp": "田中さんのペンはどれですか。",
+    "pt": "Qual é a caneta do Tanaka?",
+    "alvo": "どれ",
+    "erradas": [
+     "どの",
+     "どこ",
+     "どう"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "どの",
+    "diferenca": "どの vem colado a um substantivo (どの本); どれ fica sozinho."
+   },
+   {
+    "padrao": "どちら",
+    "diferenca": "Para escolher entre duas opções."
+   }
+  ],
+  "erros_comuns": [
+   "Usar どれ antes de substantivo: ×どれ本 → どの本.",
+   "Usar は com どれ como sujeito: ×どれはいいですか → どれがいいですか.",
+   "Usar どれ com só duas opções: o natural é どちら/どっち."
+  ],
+  "drill": null,
+  "detectar": [
+   "どれ"
+  ]
+ },
+ {
+  "id": "bp:56",
+  "leitura": "どこ",
+  "romaji": "doko",
+  "resumo": "onde",
+  "significado": "どこ quer dizer 'onde?'. Funciona como substantivo e leva partículas: どこに, どこで, どこへ.",
+  "liga_a": [
+   "sozinho"
+  ],
+  "como_formar": [
+   "X は どこですか (onde fica X?)",
+   "Com partícula: どこに住んでいますか, どこで買いましたか, どこへ行きますか",
+   "De onde: どこの + substantivo → どこの国 (de que país)",
+   "Polido: どちら (どちらにお住まいですか)"
+  ],
+  "uso": "Neutro. A partícula depende do verbo: に para existir e morar, で para ações, へ/に para movimento. どこか = 'algum lugar'; どこも + negativo = 'lugar nenhum'.",
+  "exemplos": [
+   {
+    "jp": "トイレはどこですか。",
+    "pt": "Onde fica o banheiro?",
+    "alvo": "どこ",
+    "erradas": [
+     "どれ",
+     "どの",
+     "どう"
+    ]
+   },
+   {
+    "jp": "どこに住んでいますか。",
+    "pt": "Onde você mora?",
+    "alvo": "どこ",
+    "erradas": [
+     "どれ",
+     "どの",
+     "どう"
+    ]
+   },
+   {
+    "jp": "どこで買いましたか。",
+    "pt": "Onde você comprou?",
+    "alvo": "どこ",
+    "erradas": [
+     "どれ",
+     "どの",
+     "だれ"
+    ]
+   },
+   {
+    "jp": "夏休みはどこへ行きましたか。",
+    "pt": "Aonde você foi nas férias de verão?",
+    "alvo": "どこ",
+    "erradas": [
+     "どれ",
+     "どの",
+     "どう"
+    ]
+   },
+   {
+    "jp": "これはどこの国のお金ですか。",
+    "pt": "Isto é dinheiro de que país?",
+    "alvo": "どこ",
+    "erradas": [
+     "どれ",
+     "どの",
+     "どう"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "どちら",
+    "diferenca": "Versão polida de どこ (e também 'qual dos dois')."
+   },
+   {
+    "padrao": "どれ",
+    "diferenca": "どれ é 'qual (coisa)'; どこ é 'onde (lugar)'."
+   }
+  ],
+  "erros_comuns": [
+   "Errar a partícula: ×どこで住んでいますか → どこに住んでいますか.",
+   "Usar は com どこ como sujeito: ×どこはいいですか → どこがいいですか."
+  ],
+  "drill": null,
+  "detectar": [
+   "どこ"
+  ]
+ },
+ {
+  "id": "bp:713",
+  "leitura": "どの",
+  "romaji": "dono",
+  "resumo": "qual (+ substantivo)",
+  "significado": "どの quer dizer 'qual' e sempre vem colado a um substantivo: どの本 (qual livro). Escolhe entre três ou mais.",
+  "liga_a": [
+   "substantivo"
+  ],
+  "como_formar": [
+   "どの + substantivo: どの人, どの電車, どの店",
+   "Não fica sozinho: 'qual?' sozinho é どれ",
+   "Série: この / その / あの / どの",
+   "Polido para pessoas: どの方 (qual pessoa)"
+  ],
+  "uso": "Use quando for nomear a coisa junto: どの本がいいですか. Para 'que tipo de', o natural é どんな. どのくらい = 'quanto (tempo, distância)'.",
+  "exemplos": [
+   {
+    "jp": "どの人が田中さんですか。",
+    "pt": "Qual pessoa é o Tanaka?",
+    "alvo": "どの",
+    "erradas": [
+     "どれ",
+     "どこ",
+     "何"
+    ]
+   },
+   {
+    "jp": "どの電車に乗りますか。",
+    "pt": "Em qual trem você vai?",
+    "alvo": "どの",
+    "erradas": [
+     "どれ",
+     "どこ",
+     "どう"
+    ]
+   },
+   {
+    "jp": "どの本がいいですか。",
+    "pt": "Qual livro é bom?",
+    "alvo": "どの",
+    "erradas": [
+     "どれ",
+     "どこ",
+     "どう"
+    ]
+   },
+   {
+    "jp": "どの店で買いましたか。",
+    "pt": "Em qual loja você comprou?",
+    "alvo": "どの",
+    "erradas": [
+     "どれ",
+     "どこ",
+     "だれ"
+    ]
+   },
+   {
+    "jp": "先生はどの方ですか。",
+    "pt": "Qual delas é a professora?",
+    "alvo": "どの",
+    "erradas": [
+     "どれ",
+     "どこ",
+     "だれ"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "どれ",
+    "diferenca": "どれ fica sozinho; どの precisa de um substantivo depois."
+   },
+   {
+    "padrao": "どんな",
+    "diferenca": "どんな é 'que tipo de' (どんな本 = que tipo de livro); どの escolhe um entre vários."
+   }
+  ],
+  "erros_comuns": [
+   "Usar どれ antes de substantivo: ×どれ本 → どの本.",
+   "Usar どの sozinho: ×どのがいいですか → どれがいいですか."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:764",
+  "leitura": "ている",
+  "romaji": "te iru (joutai)",
+  "resumo": "estado resultante: está casado, está aberto",
+  "significado": "Com verbos de mudança, ている mostra o estado que ficou depois da ação: 結婚している = 'é casado'; 窓が開いている = 'a janela está aberta'.",
+  "liga_a": [
+   "te"
+  ],
+  "como_formar": [
+   "Forma て + いる: 結婚している, 開いている, 住んでいる",
+   "Grupo 3: 来ている (está aqui, veio e ficou)",
+   "Polido: ています; na fala: てる",
+   "Verbos típicos: 結婚する, 知る, 住む, 開く, 閉まる, 行く, 来る"
+  ],
+  "uso": "Com esses verbos, ている não é '-ndo': 知っている = 'sei', 行っている = 'foi e está lá'. O negativo de 知っている é 知らない (×知っていない, em geral). Casual: ている/てる; polido: ています.",
+  "exemplos": [
+   {
+    "jp": "田中さんは結婚しています。",
+    "pt": "O Tanaka é casado.",
+    "alvo": "しています",
+    "erradas": [
+     "します",
+     "しました",
+     "しっています"
+    ]
+   },
+   {
+    "jp": "私は田中さんの電話番号を知っています。",
+    "pt": "Eu sei o número de telefone do Tanaka.",
+    "alvo": "っています",
+    "erradas": [
+     "ります",
+     "りています",
+     "ってあります"
+    ]
+   },
+   {
+    "jp": "窓が開いています。",
+    "pt": "A janela está aberta.",
+    "alvo": "いています",
+    "erradas": [
+     "けています",
+     "きます",
+     "いてあります"
+    ]
+   },
+   {
+    "jp": "姉は東京に住んでいます。",
+    "pt": "Minha irmã mais velha mora em Tóquio.",
+    "alvo": "んでいます",
+    "erradas": [
+     "みます",
+     "みています",
+     "んであります"
+    ]
+   },
+   {
+    "jp": "父は今、ブラジルに行っています。",
+    "pt": "Meu pai está no Brasil agora.",
+    "alvo": "っています",
+    "erradas": [
+     "きます",
+     "きています",
+     "ってあります"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "ている①",
+    "diferenca": "Com verbos de ação que duram, ている é '-ndo': 食べている."
+   },
+   {
+    "padrao": "てある",
+    "diferenca": "てある (N4) mostra um estado deixado de propósito por alguém: 窓が開けてある."
+   }
+  ],
+  "erros_comuns": [
+   "Traduzir como '-ndo': 結婚している não é 'está casando', é 'é casado'.",
+   "Dizer ×知ります para 'eu sei'. O certo é 知っています.",
+   "Usar 住みます para 'moro': o natural é 住んでいます."
+  ],
+  "drill": {
+   "verbo": [
+    [
+     "TE",
+     "いる"
+    ]
+   ],
+   "adj": [],
+   "sentido": "estar … (estado resultante)",
+   "teste": {
+    "かく": "かいている",
+    "たべる": "たべている",
+    "する": "している",
+    "くる": "きている"
+   }
+  },
+  "detectar": [
+   "ている",
+   "ています",
+   "でいる",
+   "でいます"
+  ]
+ },
+ {
+  "id": "bp:64",
+  "leitura": "てから",
+  "romaji": "te kara",
+  "resumo": "depois de …; desde que …",
+  "significado": "Forma て + から quer dizer 'depois de fazer A, (faço) B'. Põe ênfase na ordem: só depois de A. Também: 'desde que' (日本に来てから = desde que vim ao Japão).",
+  "liga_a": [
+   "te"
+  ],
+  "como_formar": [
+   "Forma て + から: 食べてから, 書いてから, 読んでから",
+   "Grupo 3: してから, 来てから (きてから)",
+   "O tempo da frase fica no último verbo: 見てから、食べました"
+  ],
+  "uso": "Use quando a ordem importa: 'primeiro A, depois B'. Com tempo decorrido, indica 'desde': 来てから三年. Neutro, vale em qualquer registro.",
+  "exemplos": [
+   {
+    "jp": "手を洗ってから、ご飯を食べます。",
+    "pt": "Lavo as mãos e depois como.",
+    "alvo": "てから",
+    "erradas": [
+     "たから",
+     "うから",
+     "てまで"
+    ]
+   },
+   {
+    "jp": "宿題をしてから、遊びに行きます。",
+    "pt": "Vou brincar depois de fazer a lição.",
+    "alvo": "てから",
+    "erradas": [
+     "たから",
+     "るから",
+     "てまで"
+    ]
+   },
+   {
+    "jp": "日本に来てから、三年になります。",
+    "pt": "Já faz três anos que vim ao Japão.",
+    "alvo": "てから",
+    "erradas": [
+     "たから",
+     "るから",
+     "ってから"
+    ]
+   },
+   {
+    "jp": "映画を見てから、晩ご飯を食べました。",
+    "pt": "Depois de ver o filme, jantei.",
+    "alvo": "てから",
+    "erradas": [
+     "たから",
+     "るから",
+     "てまで"
+    ]
+   },
+   {
+    "jp": "毎晩、歯をみがいてから寝ます。",
+    "pt": "Toda noite escovo os dentes antes de dormir.",
+    "alvo": "てから",
+    "erradas": [
+     "たから",
+     "くから",
+     "てまで"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "たあとで",
+    "diferenca": "食べたあとで: também 'depois de', com menos ênfase na ordem imediata."
+   },
+   {
+    "padrao": "から (porque)",
+    "diferenca": "Forma た + から é 'porque': 食べたから = 'porque comi'."
+   }
+  ],
+  "erros_comuns": [
+   "Usar a forma た: ×食べたから寝る vira 'porque comi, vou dormir'. 'Depois de comer' é 食べてから.",
+   "Usar a forma de dicionário: ×食べるから → 食べてから."
+  ],
+  "drill": {
+   "verbo": [
+    [
+     "TE",
+     "から"
+    ]
+   ],
+   "adj": [],
+   "sentido": "depois de …",
+   "teste": {
+    "かく": "かいてから",
+    "たべる": "たべてから",
+    "する": "してから",
+    "くる": "きてから"
+   }
+  },
+  "detectar": [
+   "てから",
+   "んでから",
+   "いでから"
+  ]
+ },
+ {
+  "id": "bp:770",
+  "leitura": "て",
+  "romaji": "te (junjo)",
+  "resumo": "e então… (sequência de ações)",
+  "significado": "Várias formas て em fila contam ações na ordem em que acontecem: 'faço A, depois B, depois C'. O último verbo dá o tempo de tudo.",
+  "liga_a": [
+   "te"
+  ],
+  "como_formar": [
+   "Verbo A (forma て) + verbo B (forma て) + … + último verbo: 帰って、浴びて、寝た",
+   "Grupo 1: 行く → 行って, 読む → 読んで; grupo 2: 食べる → 食べて; grupo 3: して, 来て",
+   "O último verbo diz o tempo e o registro: 食べて、行きます / 食べて、行きました"
+  ],
+  "uso": "É o jeito natural de narrar uma rotina ou um dia. As ações seguem a ordem real. Para frisar 'só depois de A', use てから. Neutro, vale em qualquer registro.",
+  "exemplos": [
+   {
+    "jp": "駅まで歩いて、電車に乗って、会社に行きます。",
+    "pt": "Ando até a estação, pego o trem e vou para a empresa.",
+    "alvo": "いて",
+    "erradas": [
+     "きて",
+     "った",
+     "くて"
+    ]
+   },
+   {
+    "jp": "家に帰って、シャワーを浴びて、寝ました。",
+    "pt": "Voltei para casa, tomei banho e dormi.",
+    "alvo": "って",
+    "erradas": [
+     "りて",
+     "った",
+     "いて"
+    ]
+   },
+   {
+    "jp": "スーパーに行って、肉を買いました。",
+    "pt": "Fui ao supermercado e comprei carne.",
+    "alvo": "行って",
+    "erradas": [
+     "行いて",
+     "行きて",
+     "行った"
+    ]
+   },
+   {
+    "jp": "窓を開けて、部屋を掃除しました。",
+    "pt": "Abri a janela e limpei o quarto.",
+    "alvo": "けて",
+    "erradas": [
+     "けった",
+     "けるて",
+     "けた"
+    ]
+   },
+   {
+    "jp": "朝ご飯を食べて、学校へ行きます。",
+    "pt": "Tomo café da manhã e vou para a escola.",
+    "alvo": "べて",
+    "erradas": [
+     "べた",
+     "べって",
+     "べるて"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "てから",
+    "diferenca": "てから frisa a ordem ('só depois de A'); a forma て só enumera."
+   },
+   {
+    "padrao": "たり～たりする",
+    "diferenca": "たり lista exemplos de ações, sem ordem certa."
+   }
+  ],
+  "erros_comuns": [
+   "Pôr cada verbo no passado: ×帰った、浴びた、寝ました. Só o último leva o tempo: 帰って、浴びて、寝ました.",
+   "Usar o radical da ます: ×買いて, ×行きて → 買って, 行って."
+  ],
+  "drill": {
+   "verbo": [
+    [
+     "TE",
+     ""
+    ]
+   ],
+   "adj": [],
+   "sentido": "… e então (forma て)",
+   "teste": {
+    "かく": "かいて",
+    "たべる": "たべて",
+    "する": "して",
+    "くる": "きて"
+   }
+  },
+  "detectar": []
+ },
+ {
+  "id": "bp:42",
+  "leitura": "もう",
+  "romaji": "mou",
+  "resumo": "já; (com negativo) não… mais",
+  "significado": "もう com verbo afirmativo quer dizer 'já' (もう食べた = já comi). Com negativo, quer dizer 'não… mais' (もう住んでいない = não mora mais).",
+  "liga_a": [
+   "sozinho"
+  ],
+  "como_formar": [
+   "もう + passado: もう食べました (já comi)",
+   "もう + negativo: もう時間がない (não tem mais tempo)",
+   "Resposta curta: もう食べましたか → はい、もう食べました / いいえ、まだです"
+  ],
+  "uso": "Neutro. Na pergunta もう…ましたか ('já…?'), a resposta negativa é まだです ou まだ…ていません, nunca ×いいえ、食べませんでした. Atenção: もう一度 = 'mais uma vez' e もうすぐ = 'logo', outros sentidos.",
+  "exemplos": [
+   {
+    "jp": "もう昼ご飯を食べました。",
+    "pt": "Já almocei.",
+    "alvo": "もう",
+    "erradas": [
+     "まだ",
+     "また",
+     "もっと"
+    ]
+   },
+   {
+    "jp": "宿題はもう終わった。",
+    "pt": "A lição de casa já acabou.",
+    "alvo": "もう",
+    "erradas": [
+     "まだ",
+     "また",
+     "もっと"
+    ]
+   },
+   {
+    "jp": "もう時間がありません。",
+    "pt": "Já não temos mais tempo.",
+    "alvo": "もう",
+    "erradas": [
+     "まだ",
+     "また",
+     "もっと"
+    ]
+   },
+   {
+    "jp": "もうお腹がいっぱいです。",
+    "pt": "Já estou satisfeito.",
+    "alvo": "もう",
+    "erradas": [
+     "まだ",
+     "また",
+     "もっと"
+    ]
+   },
+   {
+    "jp": "彼はもうここに住んでいません。",
+    "pt": "Ele não mora mais aqui.",
+    "alvo": "もう",
+    "erradas": [
+     "まだ",
+     "また",
+     "もっと"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "まだ",
+    "diferenca": "まだ é 'ainda'; com negativo, 'ainda não'."
+   },
+   {
+    "padrao": "また",
+    "diferenca": "また é 'de novo', 'outra vez'."
+   }
+  ],
+  "erros_comuns": [
+   "Responder 'ainda não' com passado negativo: ×いいえ、食べませんでした. O certo é まだです / まだ食べていません.",
+   "Confundir もう e また pelo som: もう = 'já'; また = 'de novo'."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:72",
+  "leitura": "まだ",
+  "romaji": "mada",
+  "resumo": "ainda",
+  "significado": "まだ quer dizer 'ainda': algo continua igual. Com negativo, 'ainda não'. Sozinho, まだです = 'ainda não'.",
+  "liga_a": [
+   "sozinho"
+  ],
+  "como_formar": [
+   "まだ + ている: まだ寝ている (ainda está dormindo)",
+   "まだ + adjetivo / substantivo: まだ若い, まだ学生です",
+   "Resposta curta: まだです (ainda não)",
+   "Ainda não fez: まだ + ていない (ver まだ～ていません)"
+  ],
+  "uso": "Neutro. É o oposto de もう. Muito usado com ている e ある: まだ時間がある (ainda há tempo).",
+  "exemplos": [
+   {
+    "jp": "まだ雨が降っています。",
+    "pt": "Ainda está chovendo.",
+    "alvo": "まだ",
+    "erradas": [
+     "もう",
+     "また",
+     "もっと"
+    ]
+   },
+   {
+    "jp": "弟はまだ寝ている。",
+    "pt": "Meu irmão mais novo ainda está dormindo.",
+    "alvo": "まだ",
+    "erradas": [
+     "もう",
+     "また",
+     "もっと"
+    ]
+   },
+   {
+    "jp": "まだ時間がありますよ。",
+    "pt": "Ainda temos tempo.",
+    "alvo": "まだ",
+    "erradas": [
+     "もう",
+     "また",
+     "もっと"
+    ]
+   },
+   {
+    "jp": "父はまだ若いです。",
+    "pt": "Meu pai ainda é jovem.",
+    "alvo": "まだ",
+    "erradas": [
+     "もう",
+     "また",
+     "もっと"
+    ]
+   },
+   {
+    "jp": "宿題はまだです。",
+    "pt": "A lição ainda não está feita.",
+    "alvo": "まだ",
+    "erradas": [
+     "もう",
+     "また",
+     "もっと"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "もう",
+    "diferenca": "もう é 'já'; com negativo, 'não… mais'."
+   },
+   {
+    "padrao": "また",
+    "diferenca": "また é 'de novo'. Som parecido, sentido diferente."
+   }
+  ],
+  "erros_comuns": [
+   "Confundir まだ e また: まだ = 'ainda'; また = 'de novo'.",
+   "Usar まだ com passado negativo para 'ainda não': ×まだ食べませんでした → まだ食べていません."
+  ],
+  "drill": null,
+  "detectar": [
+   "まだ"
+  ]
+ },
+ {
+  "id": "bp:83",
+  "leitura": "まだ～ていません",
+  "romaji": "mada ~te imasen",
+  "resumo": "ainda não fiz (mas pretendo)",
+  "significado": "まだ + ていません quer dizer 'ainda não fiz', algo que ainda vai ou pode acontecer. Casual: まだ～ていない.",
+  "liga_a": [
+   "te"
+  ],
+  "como_formar": [
+   "まだ + forma て + いません: まだ食べていません",
+   "Casual: まだ + ていない / てない: まだ食べてない",
+   "Grupo 3: まだしていません, まだ来ていません (きていません)"
+  ],
+  "uso": "É a resposta natural para もう…ましたか ('já…?'): いいえ、まだ食べていません, ou só まだです. Diz que o estado de 'não feito' continua até agora. Polido: ていません; casual: ていない / てない.",
+  "exemplos": [
+   {
+    "jp": "まだ昼ご飯を食べていません。",
+    "pt": "Ainda não almocei.",
+    "alvo": "ていません",
+    "erradas": [
+     "ませんでした",
+     "ていました",
+     "ません"
+    ]
+   },
+   {
+    "jp": "宿題はまだ終わっていない。",
+    "pt": "A lição ainda não terminou.",
+    "alvo": "っていない",
+    "erradas": [
+     "らなかった",
+     "っていた",
+     "っている"
+    ]
+   },
+   {
+    "jp": "田中さんはまだ来ていません。",
+    "pt": "O Tanaka ainda não chegou.",
+    "alvo": "ていません",
+    "erradas": [
+     "ませんでした",
+     "ています",
+     "ていました"
+    ]
+   },
+   {
+    "jp": "その映画はまだ見ていません。",
+    "pt": "Ainda não vi esse filme.",
+    "alvo": "ていません",
+    "erradas": [
+     "ませんでした",
+     "ています",
+     "ていました"
+    ]
+   },
+   {
+    "jp": "手紙はまだ書いていない。",
+    "pt": "Ainda não escrevi a carta.",
+    "alvo": "いていない",
+    "erradas": [
+     "かなかった",
+     "いている",
+     "きていない"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "ませんでした",
+    "diferenca": "Passado negativo: 'não fiz' (e acabou). まだ…ていません é 'ainda não fiz'."
+   },
+   {
+    "padrao": "もう",
+    "diferenca": "もう…ました é 'já fiz', o contrário."
+   }
+  ],
+  "erros_comuns": [
+   "Traduzir 'ainda não comi' com o passado: ×まだ食べませんでした → まだ食べていません.",
+   "Esquecer o ている: ×まだ食べません soa como 'ainda não vou comer'."
+  ],
+  "drill": {
+   "verbo": [
+    [
+     "TE",
+     "いません"
+    ]
+   ],
+   "adj": [],
+   "sentido": "(まだ) ainda não …",
+   "teste": {
+    "かく": "かいていません",
+    "たべる": "たべていません",
+    "する": "していません",
+    "くる": "きていません"
+   }
+  },
+  "detectar": [
+   "ていません",
+   "ていない",
+   "でいません",
+   "でいない"
+  ]
+ },
+ {
+  "id": "bp:46",
+  "leitura": "てもいい",
+  "romaji": "te mo ii",
+  "resumo": "pode…; tudo bem se…",
+  "significado": "Forma て + もいい quer dizer 'pode fazer', 'tudo bem fazer'. Na pergunta, pede permissão: 'posso…?'.",
+  "liga_a": [
+   "te",
+   "adjetivo_i"
+  ],
+  "como_formar": [
+   "Verbo na forma て + もいい: 食べてもいい, 書いてもいい, 読んでもいい",
+   "Grupo 3: してもいい, 来てもいい (きてもいい)",
+   "Não precisa: なくてもいい → 来なくてもいい",
+   "Adjetivo-い: くてもいい → 高くてもいい; pergunta polida: てもいいですか"
+  ],
+  "uso": "てもいいですか é o jeito comum e educado de pedir permissão. Casual: てもいい？. Mais formal: てもよろしいですか. Para negar permissão, a resposta é てはいけません ou すみません、ちょっと….",
+  "exemplos": [
+   {
+    "jp": "ここで写真を撮ってもいいですか。",
+    "pt": "Posso tirar foto aqui?",
+    "alvo": "てもいい",
+    "erradas": [
+     "てはいけない",
+     "たもいい",
+     "てもいけない"
+    ]
+   },
+   {
+    "jp": "窓を開けてもいいですか。",
+    "pt": "Posso abrir a janela?",
+    "alvo": "てもいい",
+    "erradas": [
+     "てはいけない",
+     "ってもいい",
+     "るもいい"
+    ]
+   },
+   {
+    "jp": "明日は来なくてもいいです。",
+    "pt": "Amanhã você não precisa vir.",
+    "alvo": "なくてもいい",
+    "erradas": [
+     "なくてはいけない",
+     "ないてもいい",
+     "なくもいい"
+    ]
+   },
+   {
+    "jp": "このペンを使ってもいい？",
+    "pt": "Posso usar esta caneta?",
+    "alvo": "てもいい",
+    "erradas": [
+     "てはいけない",
+     "たもいい",
+     "てもだめ"
+    ]
+   },
+   {
+    "jp": "高くてもいいです。",
+    "pt": "Tudo bem se for caro.",
+    "alvo": "くてもいい",
+    "erradas": [
+     "いてもいい",
+     "いでもいい",
+     "かってもいい"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "てはいけない",
+    "diferenca": "O contrário: 'não pode'."
+   },
+   {
+    "padrao": "なくてもいい",
+    "diferenca": "'Não precisa': 来なくてもいい."
+   }
+  ],
+  "erros_comuns": [
+   "Usar o radical da ます: ×食べもいい, ×書きてもいい → 食べてもいい, 書いてもいい.",
+   "Responder a てもいいですか com só いいえ: soa duro. Melhor すみません、ちょっと…."
+  ],
+  "drill": {
+   "verbo": [
+    [
+     "TE",
+     "もいい"
+    ]
+   ],
+   "adj": [
+    [
+     "KUTE",
+     "もいい"
+    ]
+   ],
+   "sentido": "pode … / tudo bem …",
+   "teste": {
+    "かく": "かいてもいい",
+    "たべる": "たべてもいい",
+    "する": "してもいい",
+    "くる": "きてもいい",
+    "たかい": "たかくてもいい"
+   }
+  },
+  "detectar": [
+   "てもいい",
+   "でもいい"
+  ]
+ },
+ {
+  "id": "bp:59",
+  "leitura": "たい",
+  "romaji": "tai",
+  "resumo": "querer fazer",
+  "significado": "Radical da ます + たい quer dizer 'quero fazer…'. O resultado se conjuga como um adjetivo-い: 行きたい, 行きたくない, 行きたかった.",
+  "liga_a": [
+   "radical_masu"
+  ],
+  "como_formar": [
+   "Radical da ます + たい: 食べる → 食べたい, 行く → 行きたい",
+   "Grupo 3: する → したい, 来る → 来たい (きたい)",
+   "Como adjetivo-い: たくない (não quero), たかった (queria), polido: たいです",
+   "O objeto pode levar を ou が: 水を飲みたい / 水が飲みたい"
+  ],
+  "uso": "Fala do desejo de quem fala (ou pergunta do ouvinte). Para terceiros, usa-se たがっている (N4) ou たいそうです. Perguntar 飲みたいですか a um superior soa direto demais; ofereça com いかがですか.",
+  "exemplos": [
+   {
+    "jp": "日本に行きたいです。",
+    "pt": "Quero ir ao Japão.",
+    "alvo": "行きたい",
+    "erradas": [
+     "行くたい",
+     "行ったい",
+     "行きたいだ"
+    ]
+   },
+   {
+    "jp": "冷たい水が飲みたい。",
+    "pt": "Quero beber água gelada.",
+    "alvo": "みたい",
+    "erradas": [
+     "むたい",
+     "んたい",
+     "みたいだ"
+    ]
+   },
+   {
+    "jp": "今日は何も食べたくない。",
+    "pt": "Hoje não quero comer nada.",
+    "alvo": "たくない",
+    "erradas": [
+     "たいじゃない",
+     "たいない",
+     "たいくない"
+    ]
+   },
+   {
+    "jp": "子どもの時、先生になりたかったです。",
+    "pt": "Quando criança, eu queria ser professor.",
+    "alvo": "たかった",
+    "erradas": [
+     "たいでした",
+     "たいだった",
+     "たかったでした"
+    ]
+   },
+   {
+    "jp": "何がしたいですか。",
+    "pt": "O que você quer fazer?",
+    "alvo": "したい",
+    "erradas": [
+     "するたい",
+     "しったい",
+     "したいだ"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "ほしい",
+    "diferenca": "ほしい é 'querer uma coisa' (車がほしい); たい é 'querer fazer'."
+   },
+   {
+    "padrao": "たがる",
+    "diferenca": "Para o desejo de outra pessoa: 弟は行きたがっている."
+   }
+  ],
+  "erros_comuns": [
+   "Usar a forma de dicionário: ×行くたい → 行きたい.",
+   "Conjugar com だ/です como substantivo: ×行きたいでした → 行きたかったです; ×行きたいじゃない → 行きたくない.",
+   "Dizer o desejo de outra pessoa com たい: ×田中さんは行きたいです → 行きたがっています / 行きたいそうです."
+  ],
+  "drill": {
+   "verbo": [
+    [
+     "STEM",
+     "たい"
+    ]
+   ],
+   "adj": [],
+   "sentido": "querer …",
+   "teste": {
+    "かく": "かきたい",
+    "たべる": "たべたい",
+    "する": "したい",
+    "くる": "きたい"
+   }
+  },
+  "detectar": []
+ },
+ {
+  "id": "bp:79",
+  "leitura": "たり～たりする",
+  "romaji": "tari ~ tari suru",
+  "resumo": "fazer coisas como A e B",
+  "significado": "たり～たりする lista algumas ações como exemplo, sem ordem e sem dizer que são as únicas: 'leio, vejo filme, essas coisas'.",
+  "liga_a": [
+   "ta"
+  ],
+  "como_formar": [
+   "Forma た + り, forma た + り + する: 読んだり、見たりする",
+   "Grupo 1: 書いたり, 読んだり, 行ったり; grupo 2: 食べたり; grupo 3: したり, 来たり (きたり)",
+   "O tempo e o registro ficam no する final: したり、行ったりしました",
+   "Ações opostas que se alternam: 出たり入ったりする (ficar entrando e saindo)"
+  ],
+  "uso": "Muito usado para falar de rotinas, fins de semana e férias, porque soa natural e não 'fecha' a lista. Também pode ter um só たり: 本を読んだりします (leio livros, por exemplo). Neutro.",
+  "exemplos": [
+   {
+    "jp": "週末は本を読んだり、映画を見たりします。",
+    "pt": "No fim de semana leio livros, vejo filmes, essas coisas.",
+    "alvo": "たりします",
+    "erradas": [
+     "てします",
+     "たします",
+     "たりです"
+    ]
+   },
+   {
+    "jp": "休みの日は買い物をしたり、料理をしたりする。",
+    "pt": "Nos dias de folga, faço compras, cozinho…",
+    "alvo": "たりする",
+    "erradas": [
+     "てする",
+     "たする",
+     "たりだ"
+    ]
+   },
+   {
+    "jp": "昨日は友達と歌ったり、話したりしました。",
+    "pt": "Ontem cantei e conversei com amigos.",
+    "alvo": "ったり",
+    "erradas": [
+     "いたり",
+     "って",
+     "うたり"
+    ]
+   },
+   {
+    "jp": "夏休みは海で泳いだり、遊んだりしたいです。",
+    "pt": "Nas férias de verão quero nadar no mar, me divertir…",
+    "alvo": "いだり",
+    "erradas": [
+     "いたり",
+     "ぎたり",
+     "いで"
+    ]
+   },
+   {
+    "jp": "部屋を出たり入ったりしないでください。",
+    "pt": "Não fique entrando e saindo do quarto, por favor.",
+    "alvo": "たり",
+    "erradas": [
+     "て",
+     "たら",
+     "たし"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "Verb + て+ B",
+    "diferenca": "A forma て narra ações em ordem; たり só dá exemplos, sem ordem."
+   },
+   {
+    "padrao": "や",
+    "diferenca": "や faz a mesma coisa com substantivos: 本や雑誌 (livros, revistas…)."
+   }
+  ],
+  "erros_comuns": [
+   "Esquecer o する no final: ×読んだり、見たり. O certo é 読んだり、見たりします.",
+   "Usar o radical da ます: ×読みたり → 読んだり.",
+   "Colocar o tempo no primeiro verbo: o passado fica só no する final (たりしました)."
+  ],
+  "drill": {
+   "verbo": [
+    [
+     "TA",
+     "り"
+    ]
+   ],
+   "adj": [],
+   "sentido": "coisas como … (たり)",
+   "teste": {
+    "かく": "かいたり",
+    "たべる": "たべたり",
+    "する": "したり",
+    "くる": "きたり"
+   }
+  },
+  "detectar": [
+   "たりする",
+   "たりし",
+   "だりする",
+   "だりし"
+  ]
+ },
+ {
+  "id": "bp:359",
+  "leitura": "けっこう",
+  "romaji": "kekkou",
+  "resumo": "bem, bastante (mais do que se esperava)",
+  "significado": "けっこう quer dizer 'bem', 'bastante', 'razoavelmente'. Muitas vezes traz a ideia de 'mais do que eu esperava'.",
+  "liga_a": [
+   "adjetivo_i",
+   "adjetivo_na",
+   "sozinho"
+  ],
+  "como_formar": [
+   "けっこう + adjetivo: けっこうおいしい, けっこう上手",
+   "けっこう + verbo: けっこう寝た (dormi bastante)",
+   "Em kanji: 結構"
+  ],
+  "uso": "Comum na fala, casual ou polida. Mais fraco que とても e com tom de surpresa positiva: このラーメン、けっこうおいしい (até que é bem gostoso). Outro sentido: 結構です = 'não, obrigado' ou 'está ótimo', dependendo do contexto.",
+  "exemplos": [
+   {
+    "jp": "この店はけっこうおいしいです。",
+    "pt": "Esta loja é bem gostosa.",
+    "alvo": "けっこう",
+    "erradas": [
+     "あまり",
+     "ぜんぜん",
+     "たくさん"
+    ]
+   },
+   {
+    "jp": "日本語の試験はけっこう難しかった。",
+    "pt": "A prova de japonês foi bem difícil.",
+    "alvo": "けっこう",
+    "erradas": [
+     "あまり",
+     "ぜんぜん",
+     "たくさん"
+    ]
+   },
+   {
+    "jp": "駅から家までけっこう遠いですよ。",
+    "pt": "Da estação até em casa é bem longe, viu.",
+    "alvo": "けっこう",
+    "erradas": [
+     "あまり",
+     "ぜんぜん",
+     "たくさん"
+    ]
+   },
+   {
+    "jp": "昨日はけっこう寝ました。",
+    "pt": "Ontem dormi bastante.",
+    "alvo": "けっこう",
+    "erradas": [
+     "あまり",
+     "ぜんぜん",
+     "もう"
+    ]
+   },
+   {
+    "jp": "田中さんは英語がけっこう上手です。",
+    "pt": "O Tanaka é bem bom de inglês.",
+    "alvo": "けっこう",
+    "erradas": [
+     "あまり",
+     "ぜんぜん",
+     "たくさん"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "とても",
+    "diferenca": "とても é 'muito', sem a nuance de surpresa."
+   },
+   {
+    "padrao": "たくさん",
+    "diferenca": "たくさん é quantidade ('muitos'); não modifica adjetivos."
+   }
+  ],
+  "erros_comuns": [
+   "Entender 結構です sempre como 'ótimo': quando alguém oferece algo, quase sempre é 'não, obrigado'.",
+   "Elogiar um superior com けっこう (けっこう上手ですね): pode soar como 'até que não é mau'."
+  ],
+  "drill": null,
+  "detectar": [
+   "けっこう",
+   "結構"
+  ]
+ },
+ {
+  "id": "bp:715",
+  "leitura": "たくさん",
+  "romaji": "takusan",
+  "resumo": "muito(s), bastante (quantidade)",
+  "significado": "たくさん quer dizer 'muito', 'muitos', 'bastante', falando de quantidade.",
+  "liga_a": [
+   "sozinho",
+   "substantivo"
+  ],
+  "como_formar": [
+   "Como advérbio, antes do verbo: たくさん食べる, 本をたくさん読む",
+   "Antes de substantivo, com の: たくさんの人",
+   "Com ある/いる: 人がたくさんいる"
+  ],
+  "uso": "Neutro e muito comum. Só para quantidade: para 'muito' com adjetivos (muito caro), use とても. Mais formal: 多くの人.",
+  "exemplos": [
+   {
+    "jp": "本をたくさん読みました。",
+    "pt": "Li muitos livros.",
+    "alvo": "たくさん",
+    "erradas": [
+     "とても",
+     "あまり",
+     "ぜんぜん"
+    ]
+   },
+   {
+    "jp": "公園に人がたくさんいます。",
+    "pt": "Tem muita gente no parque.",
+    "alvo": "たくさん",
+    "erradas": [
+     "とても",
+     "あまり",
+     "ぜんぜん"
+    ]
+   },
+   {
+    "jp": "たくさんの人が来ました。",
+    "pt": "Muitas pessoas vieram.",
+    "alvo": "たくさん",
+    "erradas": [
+     "とても",
+     "多い",
+     "あまり"
+    ]
+   },
+   {
+    "jp": "野菜をたくさん食べてください。",
+    "pt": "Coma bastante verdura, por favor.",
+    "alvo": "たくさん",
+    "erradas": [
+     "とても",
+     "あまり",
+     "ぜんぜん"
+    ]
+   },
+   {
+    "jp": "宿題がたくさんあります。",
+    "pt": "Tenho muita lição de casa.",
+    "alvo": "たくさん",
+    "erradas": [
+     "とても",
+     "あまり",
+     "ぜんぜん"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "とても",
+    "diferenca": "とても intensifica adjetivos (とても高い); たくさん é quantidade."
+   },
+   {
+    "padrao": "多い",
+    "diferenca": "多い é adjetivo ('ser muitos'): 人が多い. Antes de substantivo, prefira たくさんの (×多い人)."
+   }
+  ],
+  "erros_comuns": [
+   "Usar たくさん com adjetivo: ×たくさん高い → とても高い.",
+   "Esquecer o の antes do substantivo: ×たくさん人 → たくさんの人."
+  ],
+  "drill": null,
+  "detectar": [
+   "たくさん"
+  ]
+ },
+ {
+  "id": "bp:53",
+  "leitura": "まえに",
+  "romaji": "mae ni",
+  "resumo": "antes de; em frente a; há (tempo)",
+  "significado": "前に quer dizer 'antes de' (寝る前に = antes de dormir). Com lugar, 'em frente a' (駅の前に); com tempo decorrido, 'há…' (三年前に = há três anos).",
+  "liga_a": [
+   "dicionario",
+   "substantivo"
+  ],
+  "como_formar": [
+   "Verbo na forma de dicionário + 前に: 寝る前に, 行く前に",
+   "Substantivo + の前に: ご飯の前に, 駅の前に",
+   "Tempo + 前に (sem の): 三年前に, 一週間前に",
+   "O verbo fica na forma de dicionário mesmo no passado: 来る前に勉強した"
+  ],
+  "uso": "Neutro, vale em qualquer registro. Para 'em frente a', com ある/いる use 前に; com verbos de ação, 前で (駅の前で待つ).",
+  "exemplos": [
+   {
+    "jp": "寝る前に、歯をみがきます。",
+    "pt": "Antes de dormir, escovo os dentes.",
+    "alvo": "前に",
+    "erradas": [
+     "後で",
+     "間に",
+     "から"
+    ]
+   },
+   {
+    "jp": "ご飯の前に手を洗いましょう。",
+    "pt": "Vamos lavar as mãos antes de comer.",
+    "alvo": "の前に",
+    "erradas": [
+     "に前に",
+     "の後に",
+     "で前に"
+    ]
+   },
+   {
+    "jp": "駅の前に銀行があります。",
+    "pt": "Há um banco em frente à estação.",
+    "alvo": "の前に",
+    "erradas": [
+     "の前で",
+     "の後ろに",
+     "に前に"
+    ]
+   },
+   {
+    "jp": "日本に来る前に、日本語を勉強しました。",
+    "pt": "Antes de vir ao Japão, estudei japonês.",
+    "alvo": "前に",
+    "erradas": [
+     "後で",
+     "前で",
+     "から"
+    ]
+   },
+   {
+    "jp": "三年前に日本に来ました。",
+    "pt": "Vim ao Japão há três anos.",
+    "alvo": "前に",
+    "erradas": [
+     "後に",
+     "前で",
+     "前を"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "たあとで",
+    "diferenca": "O contrário: 'depois de' (食べたあとで)."
+   },
+   {
+    "padrao": "てから",
+    "diferenca": "てから é 'depois de', com foco na ordem."
+   }
+  ],
+  "erros_comuns": [
+   "Pôr o verbo no passado: ×来た前に → 来る前に.",
+   "Esquecer o の com substantivo: ×ご飯前に (coloquial) → ご飯の前に.",
+   "Usar 前に com verbo de ação para 'em frente': ×駅の前に待つ → 駅の前で待つ."
+  ],
+  "drill": {
+   "verbo": [
+    [
+     "DICT",
+     "まえに"
+    ]
+   ],
+   "adj": [],
+   "sentido": "antes de …",
+   "teste": {
+    "かく": "かくまえに",
+    "たべる": "たべるまえに",
+    "する": "するまえに",
+    "くる": "くるまえに"
+   }
+  },
+  "detectar": [
+   "る前に",
+   "く前に",
+   "の前に",
+   "む前に",
+   "う前に",
+   "す前に"
+  ]
+ },
+ {
+  "id": "bp:61",
+  "leitura": "くらい",
+  "romaji": "kurai / gurai",
+  "resumo": "mais ou menos, cerca de (quantidade)",
+  "significado": "くらい (ou ぐらい) depois de uma quantidade quer dizer 'mais ou menos', 'cerca de': 十分くらい = uns dez minutos.",
+  "liga_a": [
+   "substantivo"
+  ],
+  "como_formar": [
+   "Número + contador + くらい/ぐらい: 十分くらい, 百人ぐらい",
+   "Pergunta: どのくらい / どれくらい (quanto? quanto tempo?)",
+   "くらい e ぐらい são quase sempre intercambiáveis"
+  ],
+  "uso": "Para quantidades, durações, preços e distâncias. Para um ponto no tempo (às três e pouco), o natural é ごろ: 三時ごろ. Neutro; ほど é parecido, mais formal.",
+  "exemplos": [
+   {
+    "jp": "駅まで十分くらいです。",
+    "pt": "Até a estação são uns dez minutos.",
+    "alvo": "くらい",
+    "erradas": [
+     "ごろ",
+     "まで",
+     "だけ"
+    ]
+   },
+   {
+    "jp": "毎日二時間ぐらい勉強します。",
+    "pt": "Estudo umas duas horas por dia.",
+    "alvo": "ぐらい",
+    "erradas": [
+     "ごろ",
+     "まで",
+     "から"
+    ]
+   },
+   {
+    "jp": "百人くらい来ました。",
+    "pt": "Vieram umas cem pessoas.",
+    "alvo": "くらい",
+    "erradas": [
+     "ごろ",
+     "まで",
+     "だけ"
+    ]
+   },
+   {
+    "jp": "このかばんは一万円ぐらいでした。",
+    "pt": "Esta bolsa custou uns dez mil ienes.",
+    "alvo": "ぐらい",
+    "erradas": [
+     "ごろ",
+     "まで",
+     "から"
+    ]
+   },
+   {
+    "jp": "東京から大阪までどのくらいかかりますか。",
+    "pt": "Quanto tempo leva de Tóquio a Osaka?",
+    "alvo": "くらい",
+    "erradas": [
+     "ごろ",
+     "まで",
+     "だけ"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "ごろ",
+    "diferenca": "ごろ é para um ponto no tempo (三時ごろ); くらい é para quantidade e duração."
+   },
+   {
+    "padrao": "ほど",
+    "diferenca": "Mesmo sentido de 'cerca de', mais formal."
+   }
+  ],
+  "erros_comuns": [
+   "Usar ごろ para duração: ×二時間ごろ勉強した → 二時間ぐらい勉強した. ごろ é só para horário e data.",
+   "Pôr くらい antes do número, como o 'cerca de' do português: ×くらい十分. Vem depois: 十分くらい."
+  ],
+  "drill": null,
+  "detectar": [
+   "くらい",
+   "ぐらい"
+  ]
+ },
+ {
+  "id": "bp:58",
+  "leitura": "まで",
+  "romaji": "made",
+  "resumo": "até (lugar ou tempo)",
+  "significado": "まで depois de um substantivo marca o limite final: 'até'. Vale para lugar (駅まで) e tempo (五時まで).",
+  "liga_a": [
+   "substantivo"
+  ],
+  "como_formar": [
+   "Lugar + まで: 駅まで歩く (andar até a estação)",
+   "Tempo + まで: 五時まで働く (trabalhar até as cinco)",
+   "De… até…: AからBまで → 九時から五時まで",
+   "Pergunta: 何時まで (até que horas)"
+  ],
+  "uso": "Indica que a ação continua até aquele ponto. Para prazo ('até tal dia, entregue'), o certo é までに: 金曜日までに出す. Neutro, vale em qualquer registro.",
+  "exemplos": [
+   {
+    "jp": "駅まで歩きます。",
+    "pt": "Vou a pé até a estação.",
+    "alvo": "まで",
+    "erradas": [
+     "から",
+     "で",
+     "を"
+    ]
+   },
+   {
+    "jp": "毎日五時まで働きます。",
+    "pt": "Trabalho até as cinco todo dia.",
+    "alvo": "まで",
+    "erradas": [
+     "までに",
+     "から",
+     "に"
+    ]
+   },
+   {
+    "jp": "東京から大阪まで新幹線で行きました。",
+    "pt": "Fui de Tóquio até Osaka de shinkansen.",
+    "alvo": "まで",
+    "erradas": [
+     "から",
+     "で",
+     "を"
+    ]
+   },
+   {
+    "jp": "夏休みは八月までです。",
+    "pt": "As férias de verão vão até agosto.",
+    "alvo": "まで",
+    "erradas": [
+     "から",
+     "までに",
+     "に"
+    ]
+   },
+   {
+    "jp": "何時まで開いていますか。",
+    "pt": "Até que horas está aberto?",
+    "alvo": "まで",
+    "erradas": [
+     "までに",
+     "から",
+     "に"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "から",
+    "diferenca": "から é o ponto de partida ('de', 'a partir de'); まで é o ponto final."
+   },
+   {
+    "padrao": "までに",
+    "diferenca": "までに é prazo ('até tal hora, no máximo'); まで é duração contínua."
+   }
+  ],
+  "erros_comuns": [
+   "Usar まで para prazo: ×金曜日まで宿題を出してください → 金曜日までに出してください.",
+   "Trocar まで por に com duração: ×五時に働きます muda para 'trabalho às cinco'."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:360",
+  "leitura": "まで",
+  "romaji": "made (doushi)",
+  "resumo": "até (que algo aconteça)",
+  "significado": "Verbo na forma de dicionário + まで quer dizer 'até que…': a primeira ação continua até a segunda acontecer. 母が帰るまで待つ = esperar até a mãe voltar.",
+  "liga_a": [
+   "dicionario"
+  ],
+  "como_formar": [
+   "Forma de dicionário + まで: 帰るまで, 来るまで, 分かるまで",
+   "Grupo 3: するまで, 来るまで (くるまで)",
+   "Mesmo no passado, o verbo antes de まで fica no dicionário: バスが来るまで待った"
+  ],
+  "uso": "A ação principal dura todo o tempo, até o ponto final. Para 'antes que algo aconteça (prazo)', use までに. Neutro, vale em qualquer registro.",
+  "exemplos": [
+   {
+    "jp": "母が帰るまで、家で待ちます。",
+    "pt": "Espero em casa até minha mãe voltar.",
+    "alvo": "まで",
+    "erradas": [
+     "までに",
+     "から",
+     "ので"
+    ]
+   },
+   {
+    "jp": "バスが来るまで、本を読みました。",
+    "pt": "Li um livro até o ônibus chegar.",
+    "alvo": "まで",
+    "erradas": [
+     "までに",
+     "から",
+     "ので"
+    ]
+   },
+   {
+    "jp": "分かるまで、何回も聞いてください。",
+    "pt": "Pergunte quantas vezes precisar, até entender.",
+    "alvo": "まで",
+    "erradas": [
+     "までに",
+     "から",
+     "ので"
+    ]
+   },
+   {
+    "jp": "死ぬまで日本に住みたい。",
+    "pt": "Quero morar no Japão até morrer.",
+    "alvo": "まで",
+    "erradas": [
+     "までに",
+     "から",
+     "ので"
+    ]
+   },
+   {
+    "jp": "宿題が終わるまで、テレビを見てはいけません。",
+    "pt": "Não pode ver TV até terminar a lição.",
+    "alvo": "まで",
+    "erradas": [
+     "までに",
+     "から",
+     "ので"
+    ]
+   }
+  ],
+  "parecidos": [
+   {
+    "padrao": "Noun + まで",
+    "diferenca": "Mesmo sentido de 'até', mas com lugar ou horário: 五時まで."
+   },
+   {
+    "padrao": "前に",
+    "diferenca": "前に é 'antes de' (um momento); まで é 'durante todo o tempo, até'."
+   }
+  ],
+  "erros_comuns": [
+   "Pôr o verbo no passado: ×バスが来たまで待った → バスが来るまで待った.",
+   "Usar a forma ます: ×帰りますまで → 帰るまで."
+  ],
+  "drill": {
+   "verbo": [
+    [
+     "DICT",
+     "まで"
+    ]
+   ],
+   "adj": [],
+   "sentido": "até …",
+   "teste": {
+    "かく": "かくまで",
+    "たべる": "たべるまで",
+    "する": "するまで",
+    "くる": "くるまで"
+   }
+  },
+  "detectar": []
+ }
+]

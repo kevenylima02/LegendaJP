@@ -15,6 +15,17 @@ dados de exercício foram escritos para o Michi.
 4. `python -X utf8 tools/grammar/check.py tools/grammar/parts/batch_XX.json` confere um lote.
 5. `python -X utf8 tools/grammar/merge.py` junta tudo no asset do app.
 
+Onde fica cada coisa:
+
+- `app/src/main/assets/grammar_bank.json`: o banco pronto, no git. Toda build usa este arquivo; nada
+  é gerado de novo na build nem no celular.
+- `tools/grammar/parts/`: os lotes escritos (fonte do banco), no git. `drills_extra.json` tem os
+  exercícios de conjugação completados depois.
+- `tools/grammar/in/`: as entradas com dados do Bunpro, fora do git. Saem de novo com `prep.py`.
+
+O `merge.py` não grava um banco menor que o atual, para não apagar o material por engano (use
+`--forcar` se for de propósito).
+
 ## Um lote (`parts/batch_XX.json`)
 
 Uma lista JSON, um objeto por ponto do lote de entrada, na mesma ordem, com estes campos:

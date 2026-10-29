@@ -1,0 +1,796 @@
+[
+ {
+  "id": "bp:346",
+  "leitura": "ものだから",
+  "romaji": "mono da kara",
+  "resumo": "é que…, porque… (justificativa, desculpa)",
+  "significado": "ものだから dá a razão de algo, quase sempre para se justificar ou se desculpar: 'é que…, por isso…'. Mostra que a situação fugiu um pouco do controle de quem fala.",
+  "liga_a": ["forma_simples", "adjetivo_i", "adjetivo_na", "substantivo"],
+  "como_formar": [
+   "Verbo na forma simples + ものだから: 遅れたものだから, 知らなかったものだから",
+   "Adjetivo-い + ものだから: 安いものだから",
+   "Adjetivo-な / substantivo + な + ものだから: 下手なものだから, 病気なものだから",
+   "Na fala casual: もんだから"
+  ],
+  "uso": "Usado para explicar por que algo aconteceu, com tom de desculpa ('não deu para evitar'). A segunda parte não pode ser ordem, pedido ou convite. É casual ou neutro; com chefe ou cliente, use ものですから ou もので.",
+  "exemplos": [
+   {"jp": "道が込んでいたものだから、遅れてしまいました。", "pt": "É que o trânsito estava ruim, então me atrasei.", "alvo": "ものだから", "erradas": ["ものの", "ものなら", "ものか"]},
+   {"jp": "安かったものだから、たくさん買ってしまった。", "pt": "Estava barato, então acabei comprando um monte.", "alvo": "ものだから", "erradas": ["ものの", "ものなら", "ものを"]},
+   {"jp": "母が病気なものだから、今日は早く帰ります。", "pt": "É que minha mãe está doente, então hoje vou embora cedo.", "alvo": "ものだから", "erradas": ["ものの", "ものなら", "ことだから"]},
+   {"jp": "急いでいたものだから、傘を忘れてしまった。", "pt": "Eu estava com pressa, por isso esqueci o guarda-chuva.", "alvo": "ものだから", "erradas": ["ものの", "ことだから", "ものなら"]},
+   {"jp": "子供がまだ小さいもんだから、旅行にはなかなか行けない。", "pt": "As crianças ainda são pequenas, então quase não dá para viajar.", "alvo": "もんだから", "erradas": ["もんか", "ものの", "ものなら"]}
+  ],
+  "parecidos": [
+   {"padrao": "から", "diferenca": "から serve para qualquer razão e aceita pedidos depois. ものだから soa como justificativa pessoal e não vai com pedido ou ordem."},
+   {"padrao": "ものですから・もので", "diferenca": "Mesmo sentido, mas polido. Bom para se desculpar com superiores."}
+  ],
+  "erros_comuns": [
+   "Pôr pedido ou ordem na segunda parte: ×暑いものだから、窓を開けてください. Use から ou ので.",
+   "Esquecer o な depois de substantivo ou adjetivo-な: ×病気ものだから → 病気なものだから.",
+   "Usar para razões objetivas e neutras (explicação técnica, notícia): aí soa como desculpa sem motivo."
+  ],
+  "drill": null,
+  "detectar": ["ものだから", "もんだから"]
+ },
+ {
+  "id": "bp:415",
+  "leitura": "ものですから・もので",
+  "romaji": "mono desu kara / mono de",
+  "resumo": "é que… (desculpa ou explicação polida)",
+  "significado": "Versão polida de ものだから: explica com educação o motivo de algo, quase sempre ao se desculpar. もので é mais curto e também polido.",
+  "liga_a": ["forma_simples", "adjetivo_i", "adjetivo_na", "substantivo"],
+  "como_formar": [
+   "Verbo na forma simples + ものですから / もので: 寝坊したものですから",
+   "Adjetivo-い + ものですから / もので: 遠いもので",
+   "Adjetivo-な / substantivo + な + ものですから / もので: 初めてなもので",
+   "Na fala: もんですから, もんで"
+  ],
+  "uso": "Muito usado com chefe, cliente ou desconhecidos para explicar um atraso ou uma falha de forma humilde. Muitas vezes a frase termina na própria razão (…ものですから。) e o pedido de desculpas fica subentendido. A segunda parte não pode ser ordem.",
+  "exemplos": [
+   {"jp": "電車が遅れたものですから、遅くなってすみません。", "pt": "É que o trem atrasou; desculpe a demora.", "alvo": "ものですから", "erradas": ["ものの", "ものなら", "ことですから"]},
+   {"jp": "日本語がまだ下手なもので、うまく説明できません。", "pt": "É que meu japonês ainda é fraco, então não consigo explicar direito.", "alvo": "もので", "erradas": ["ものの", "ものを", "ものなら"]},
+   {"jp": "道に迷ったもので、少し遅れました。", "pt": "É que me perdi no caminho, por isso cheguei um pouco atrasado.", "alvo": "もので", "erradas": ["ものに", "ものの", "ものなら"]},
+   {"jp": "すみません、急いでいたものですから。", "pt": "Desculpe, é que eu estava com pressa.", "alvo": "ものですから", "erradas": ["ものか", "ものなら", "ものの"]},
+   {"jp": "初めてなもので、よく分からないんです。", "pt": "É que é a primeira vez, então não entendo bem.", "alvo": "もので", "erradas": ["ものの", "ものに", "ことで"]}
+  ],
+  "parecidos": [
+   {"padrao": "ものだから", "diferenca": "Mesmo sentido, mas casual ou neutro."},
+   {"padrao": "ので", "diferenca": "ので é neutro e explica sem tom de desculpa; ものですから deixa claro que você está se justificando."}
+  ],
+  "erros_comuns": [
+   "Esquecer o な: ×初めてもので → 初めてなもので.",
+   "Usar para dar ordem: ×忙しいものですから、手伝いなさい.",
+   "Confundir もので ('é que…') com ものの ('embora…')."
+  ],
+  "drill": null,
+  "detectar": ["ものですから", "もんですから"]
+ },
+ {
+  "id": "bp:406",
+  "leitura": "ものがある",
+  "romaji": "mono ga aru",
+  "resumo": "tem algo de… (impressão forte)",
+  "significado": "Expressa uma impressão forte de quem fala: 'há algo de X em…', 'é realmente X'. Não fala de um objeto concreto, mas de uma qualidade que se sente.",
+  "liga_a": ["dicionario", "nai", "adjetivo_i", "adjetivo_na"],
+  "como_formar": [
+   "Verbo no dicionário + ものがある: 心を動かすものがある",
+   "Adjetivo-い + ものがある: 懐かしいものがある",
+   "Adjetivo-な + な + ものがある: 見事なものがある",
+   "Passado: ものがあった. Comum com には: 彼の歌には…ものがある"
+  ],
+  "uso": "Típico de textos, críticas, comentários e falas mais sérias. Mostra a emoção ou avaliação de quem fala ('é mesmo…', 'dá para sentir…'). Costuma vir com 〜には, indicando onde se sente essa qualidade.",
+  "exemplos": [
+   {"jp": "彼の歌には人の心を動かすものがある。", "pt": "A música dele tem algo que mexe com o coração das pessoas.", "alvo": "ものがある", "erradas": ["ことがある", "ものだ", "はずがある"]},
+   {"jp": "この町の景色には懐かしいものがある。", "pt": "A paisagem desta cidade tem algo de nostálgico.", "alvo": "ものがある", "erradas": ["ことがある", "ものだ", "わけがある"]},
+   {"jp": "外国での一人暮らしには寂しいものがある。", "pt": "Morar sozinho no exterior tem algo de solitário.", "alvo": "ものがある", "erradas": ["ことがある", "ものか", "はずだ"]},
+   {"jp": "彼女の努力には見事なものがあった。", "pt": "O esforço dela foi algo realmente admirável.", "alvo": "ものがあった", "erradas": ["ことがあった", "ものだった", "わけがあった"]},
+   {"jp": "毎日三時間の練習は、子供にはきついものがある。", "pt": "Três horas de treino por dia é algo bem pesado para uma criança.", "alvo": "ものがある", "erradas": ["ことがある", "ものか", "わけがない"]}
+  ],
+  "parecidos": [
+   {"padrao": "ことがある", "diferenca": "ことがある é 'às vezes acontece' ou 'já aconteceu'. ものがある é uma impressão sobre uma qualidade."},
+   {"padrao": "ものだ", "diferenca": "ものだ fala de verdades gerais ou lembranças; ものがある fala do que se sente em algo específico."}
+  ],
+  "erros_comuns": [
+   "Traduzir ao pé da letra como 'existe uma coisa': aqui não há objeto, é uma impressão.",
+   "Confundir com ことがある: 動かすことがある = 'às vezes move', não 'tem algo que comove'."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:641",
+  "leitura": "けいこうがある",
+  "romaji": "keikou ga aru",
+  "resumo": "ter tendência a…",
+  "significado": "Diz que algo costuma acontecer ou que alguém tende a agir de certo jeito. É uma tendência geral, muitas vezes observada em grupos ou em dados.",
+  "liga_a": ["dicionario", "nai", "substantivo"],
+  "como_formar": [
+   "Verbo no dicionário + 傾向がある: 増える傾向がある",
+   "Verbo na forma ない + 傾向がある: 買わない傾向がある",
+   "Substantivo + の + 傾向がある: 減少の傾向がある",
+   "Variantes: 傾向にある (estar numa tendência de), 傾向が強い (tendência forte)"
+  ],
+  "uso": "Comum em notícias, relatórios e textos analíticos; é neutro a formal. Fala de algo que se repete, não de um ato único. Para criticar um mau hábito de alguém, きらいがある é mais forte.",
+  "exemplos": [
+   {"jp": "最近、若い人は車を買わない傾向がある。", "pt": "Ultimamente, os jovens tendem a não comprar carro.", "alvo": "傾向がある", "erradas": ["つもりがある", "必要がある", "ばかりだ"]},
+   {"jp": "日本では、子供の数が減る傾向がある。", "pt": "No Japão, o número de crianças tende a diminuir.", "alvo": "傾向がある", "erradas": ["予定がある", "必要がある", "はずがある"]},
+   {"jp": "兄は疲れると、甘いものを食べる傾向がある。", "pt": "Meu irmão tende a comer doce quando está cansado.", "alvo": "傾向がある", "erradas": ["予定がある", "はずがある", "わけがある"]},
+   {"jp": "物価は上がる傾向にある。", "pt": "Os preços estão em tendência de alta.", "alvo": "傾向にある", "erradas": ["傾向をある", "傾向でいる", "傾向がする"]},
+   {"jp": "女性の方が男性より長生きする傾向があります。", "pt": "As mulheres tendem a viver mais que os homens.", "alvo": "傾向があります", "erradas": ["予定があります", "つもりがあります", "必要があります"]}
+  ],
+  "parecidos": [
+   {"padrao": "がち", "diferenca": "がち é mais coloquial e quase sempre fala de algo ruim (忘れがち)."},
+   {"padrao": "きらいがある", "diferenca": "N1, escrito, para tendências ruins de uma pessoa, com tom de crítica."}
+  ],
+  "erros_comuns": [
+   "Usar para um fato único: ×昨日は早く寝る傾向があった. Tendência é algo que se repete.",
+   "Errar a partícula: ×傾向をある. O certo é 傾向がある ou 傾向にある."
+  ],
+  "drill": null,
+  "detectar": ["傾向がある", "傾向があります", "傾向があった", "傾向にある"]
+ },
+ {
+  "id": "bp:1093",
+  "leitura": "にあたいする",
+  "romaji": "ni atai suru",
+  "resumo": "merecer…, valer a pena…",
+  "significado": "Diz que algo merece certa ação ou avaliação: 'digno de…', 'vale a pena…'. No negativo, に値しない = 'não merece'.",
+  "liga_a": ["substantivo", "dicionario"],
+  "como_formar": [
+   "Substantivo + に値する: 尊敬に値する (digno de respeito)",
+   "Verbo no dicionário + に値する: 読むに値する (vale a pena ler)",
+   "Negativo: に値しない",
+   "Antes de substantivo: 見るに値する映画"
+  ],
+  "uso": "Formal, típico de escrita, críticas e discursos. Vem com palavras como 尊敬, 注目, 評価, 見る, 読む. Na conversa do dia a dia, 〜価値がある soa mais natural.",
+  "exemplos": [
+   {"jp": "彼の行動は尊敬に値する。", "pt": "A atitude dele é digna de respeito.", "alvo": "に値する", "erradas": ["を値する", "が値する", "で値する"]},
+   {"jp": "この本は一度読むに値する。", "pt": "Este livro vale a pena ser lido pelo menos uma vez.", "alvo": "に値する", "erradas": ["を値する", "に値して", "と値する"]},
+   {"jp": "そんな意見は聞くに値しない。", "pt": "Uma opinião dessas não merece ser ouvida.", "alvo": "に値しない", "erradas": ["に値する", "を値しない", "で値しない"]},
+   {"jp": "この問題は注目に値する。", "pt": "Este problema merece atenção.", "alvo": "に値する", "erradas": ["を値する", "が値する", "に値しない"]},
+   {"jp": "これは見るに値する映画だ。", "pt": "Este é um filme que vale a pena ver.", "alvo": "に値する", "erradas": ["に値しない", "を値する", "に値して"]}
+  ],
+  "parecidos": [
+   {"padrao": "価値がある", "diferenca": "Mais comum na fala: 行く価値がある (vale a pena ir)."},
+   {"padrao": "に足る", "diferenca": "N1, também formal: 'suficiente para', 'digno de' (信頼に足る)."}
+  ],
+  "erros_comuns": [
+   "Trocar a partícula: ×尊敬を値する. É sempre に値する.",
+   "Usar em conversa casual: soa pesado. Prefira 〜価値がある."
+  ],
+  "drill": null,
+  "detectar": ["に値する", "に値しない", "に値します"]
+ },
+ {
+  "id": "bp:432",
+  "leitura": "てしょうがない",
+  "romaji": "te shou ga nai",
+  "resumo": "… demais, não aguento de tanto…",
+  "significado": "Mostra um sentimento ou sensação tão forte que a pessoa não consegue controlar: 'estou morrendo de…', 'não aguento de tanto…'.",
+  "liga_a": ["te", "adjetivo_i", "adjetivo_na"],
+  "como_formar": [
+   "Adjetivo-い: 眠い → 眠くてしょうがない",
+   "Adjetivo-な: 心配 → 心配でしょうがない",
+   "Verbo na forma て: 気になる → 気になってしょうがない; 会いたい → 会いたくてしょうがない",
+   "Mais formal: てしかたがない"
+  ],
+  "uso": "Coloquial, muito comum na fala. Serve para sentimentos e sensações de quem fala (calor, sono, vontade, preocupação). Para outra pessoa, junte らしい ou ようだ. Com verbo, geralmente é de sentimento ou desejo (〜たくて, 気になって).",
+  "exemplos": [
+   {"jp": "今日は暑くてしょうがない。", "pt": "Hoje está um calor insuportável.", "alvo": "てしょうがない", "erradas": ["てもしょうがない", "てはしょうがない", "でしょうがない"]},
+   {"jp": "試験の結果が心配でしょうがない。", "pt": "Estou morrendo de preocupação com o resultado da prova.", "alvo": "でしょうがない", "erradas": ["てしょうがない", "なしょうがない", "にしょうがない"]},
+   {"jp": "昨日あまり寝なかったので、眠くてしょうがない。", "pt": "Dormi pouco ontem, então estou morrendo de sono.", "alvo": "てしょうがない", "erradas": ["てもしょうがない", "でしょうがない", "からしょうがない"]},
+   {"jp": "彼の言ったことが気になってしょうがない。", "pt": "Não consigo parar de pensar no que ele disse.", "alvo": "てしょうがない", "erradas": ["てもしょうがない", "でしょうがない", "てはいけない"]},
+   {"jp": "夏休みが楽しみでしょうがない。", "pt": "Estou ansioso demais pelas férias de verão.", "alvo": "でしょうがない", "erradas": ["てしょうがない", "でもしょうがない", "にしょうがない"]}
+  ],
+  "parecidos": [
+   {"padrao": "てたまらない", "diferenca": "Quase igual; てたまらない é bem usado para sensações físicas e desejos fortes."},
+   {"padrao": "てならない", "diferenca": "Mais formal e escrito; sentimento que surge sozinho (気がしてならない)."},
+   {"padrao": "しょうがない", "diferenca": "Sozinho quer dizer 'não tem jeito'. Com て antes, vira intensidade."}
+  ],
+  "erros_comuns": [
+   "Confundir com しょうがない sozinho ('não tem jeito') ou com てもしょうがない ('não adianta…').",
+   "Usar て com adjetivo-な: ×心配てしょうがない → 心配でしょうがない.",
+   "Descrever o sentimento de outra pessoa sem らしい ou ようだ."
+  ],
+  "drill": {"verbo": [["TE", "しょうがない"]], "adj": [["KUTE", "しょうがない"]], "sentido": "… demais (não aguento)", "teste": {"かく": "かいてしょうがない", "たべる": "たべてしょうがない", "する": "してしょうがない", "くる": "きてしょうがない", "たかい": "たかくてしょうがない"}},
+  "detectar": ["てしょうがない", "でしょうがない", "てしょうがありません", "てしようがない"]
+ },
+ {
+  "id": "bp:419",
+  "leitura": "だけましだ",
+  "romaji": "dake mashi da",
+  "resumo": "pelo menos…, já é menos pior",
+  "significado": "Diz que a situação é ruim, mas pelo menos um ponto é bom: 'ainda bem que pelo menos…'. まし quer dizer 'menos pior'.",
+  "liga_a": ["forma_simples", "adjetivo_i", "adjetivo_na", "substantivo"],
+  "como_formar": [
+   "Verbo na forma simples + だけましだ: 仕事があるだけましだ",
+   "Adjetivo-い + だけましだ: 寒くないだけましだ",
+   "Adjetivo-な / substantivo + な + だけましだ: 元気なだけましだ",
+   "Variantes: だけまし (sem だ), だけましです, だけでもましだ"
+  ],
+  "uso": "Coloquial e neutro, usado para se consolar ou consolar alguém diante de algo ruim. A primeira parte costuma reconhecer o problema (〜けど, 〜が) e a segunda mostra o lado 'menos pior'.",
+  "exemplos": [
+   {"jp": "給料は安いが、仕事があるだけましだ。", "pt": "O salário é baixo, mas pelo menos tenho emprego.", "alvo": "だけましだ", "erradas": ["しかましだ", "ばかりましだ", "だけではない"]},
+   {"jp": "財布を落としたけど、中にお金がなかっただけましだ。", "pt": "Perdi a carteira, mas pelo menos não tinha dinheiro dentro.", "alvo": "だけましだ", "erradas": ["しかましだ", "ばかりだ", "だけのことはある"]},
+   {"jp": "熱はあるが、せきが出ないだけましだ。", "pt": "Estou com febre, mas pelo menos não estou tossindo.", "alvo": "だけましだ", "erradas": ["しかましだ", "ばかりましだ", "だけに"]},
+   {"jp": "狭い部屋だけど、駅から近いだけましです。", "pt": "O quarto é apertado, mas pelo menos é perto da estação.", "alvo": "だけましです", "erradas": ["しかましです", "ほどましです", "だけでしょう"]},
+   {"jp": "事故で車は壊れたが、けががなかっただけましだった。", "pt": "O carro quebrou no acidente, mas pelo menos ninguém se machucou.", "alvo": "だけましだった", "erradas": ["しかましだった", "ばかりだった", "だけだった"]}
+  ],
+  "parecidos": [
+   {"padrao": "せめて", "diferenca": "せめて expressa um desejo mínimo ('pelo menos queria…'): せめて一日休みたい."},
+   {"padrao": "だけでも", "diferenca": "'Só isso já…': 来てくれただけでもうれしい. Foca no lado bom, sem a ideia de 'menos pior'."}
+  ],
+  "erros_comuns": [
+   "Achar que まし quer dizer 'bom'. É 'menos pior', sempre em comparação com algo pior.",
+   "Trocar だけ por しか: ×仕事があるしかましだ."
+  ],
+  "drill": null,
+  "detectar": ["だけまし"]
+ },
+ {
+  "id": "bp:694",
+  "leitura": "さいわい・さいわいなことに",
+  "romaji": "saiwai / saiwai na koto ni",
+  "resumo": "felizmente, por sorte",
+  "significado": "Abre a frase dizendo que, por sorte, algo bom aconteceu, muitas vezes no meio de algo ruim: 'felizmente…'.",
+  "liga_a": ["inicio_de_frase"],
+  "como_formar": [
+   "No começo da frase: 幸い、…",
+   "Mais enfático: 幸いなことに、…",
+   "Também: 幸いにも、…",
+   "Mesmo molde: 残念なことに (infelizmente), 驚いたことに (para minha surpresa)"
+  ],
+  "uso": "Neutro a formal; aparece em notícias, relatos e conversas sérias. É comum logo depois de contar um problema: 事故があったが、幸い…. Não confunda com 〜と幸いです no fim da frase, que quer dizer 'ficaria grato se…'.",
+  "exemplos": [
+   {"jp": "事故があったが、幸いけが人はいなかった。", "pt": "Houve um acidente, mas felizmente ninguém se feriu.", "alvo": "幸い", "erradas": ["残念ながら", "あいにく", "さすが"]},
+   {"jp": "幸いなことに、雨はすぐに止んだ。", "pt": "Felizmente, a chuva parou logo.", "alvo": "幸いなことに", "erradas": ["残念なことに", "あいにく", "困ったことに"]},
+   {"jp": "幸い、財布は見つかりました。", "pt": "Por sorte, a carteira foi encontrada.", "alvo": "幸い", "erradas": ["あいにく", "残念ながら", "まさか"]},
+   {"jp": "幸いにも、電車には間に合った。", "pt": "Por sorte, consegui pegar o trem a tempo.", "alvo": "幸いにも", "erradas": ["あいにく", "残念ながら", "困ったことに"]},
+   {"jp": "幸いなことに、家族はみんな元気です。", "pt": "Felizmente, a família toda está bem.", "alvo": "幸いなことに", "erradas": ["残念なことに", "あいにく", "驚いたことに"]}
+  ],
+  "parecidos": [
+   {"padrao": "あいにく", "diferenca": "O contrário: 'infelizmente', 'por azar'."},
+   {"padrao": "おかげで", "diferenca": "Dá a causa do resultado bom ('graças a…'); 幸い só diz que foi sorte."}
+  ],
+  "erros_comuns": [
+   "Confundir 幸い no começo da frase com 〜と幸いです no fim ('ficaria grato se…').",
+   "Usar para algo que você conseguiu pelo próprio esforço: 幸い indica sorte."
+  ],
+  "drill": null,
+  "detectar": ["幸いなことに", "幸いにも"]
+ },
+ {
+  "id": "bp:414",
+  "leitura": "ようでは・ようじゃ",
+  "romaji": "you de wa / you ja",
+  "resumo": "se for assim…, (aí) não dá",
+  "significado": "'Se (continuar) assim…' seguido de um resultado negativo. Serve para criticar ou alertar sobre uma situação ou atitude.",
+  "liga_a": ["dicionario", "nai"],
+  "como_formar": [
+   "Verbo no dicionário + ようでは: 遅刻するようでは",
+   "Verbo na forma ない + ようでは: 勉強しないようでは",
+   "Com ている: 文句ばかり言っているようでは",
+   "Na fala: ようじゃ (遅れるようじゃ…)"
+  ],
+  "uso": "A segunda parte é sempre negativa: だめだ, 困る, 無理だ, できない. Tem tom de crítica ou advertência, típico de professor, chefe ou pais. ようじゃ é a versão falada.",
+  "exemplos": [
+   {"jp": "こんな簡単な問題が分からないようでは、試験に合格できないよ。", "pt": "Se você não entende nem um problema simples assim, não vai passar na prova.", "alvo": "ようでは", "erradas": ["ように", "ようにも", "ようと"]},
+   {"jp": "毎朝遅刻するようでは、社会人として困る。", "pt": "Chegar atrasado toda manhã não dá, como profissional.", "alvo": "ようでは", "erradas": ["ように", "ようでも", "ようとは"]},
+   {"jp": "人のアドバイスを聞かないようじゃ、成長しないね。", "pt": "Se você não ouve conselhos, não vai crescer.", "alvo": "ようじゃ", "erradas": ["ようでも", "ように", "ようと"]},
+   {"jp": "この程度で疲れるようでは、山登りは無理だ。", "pt": "Se você já se cansa com isso, subir montanha é impossível.", "alvo": "ようでは", "erradas": ["ように", "ようと", "ようでも"]},
+   {"jp": "人の話を聞かないようでは、いい先生にはなれない。", "pt": "Quem não ouve os outros não consegue ser um bom professor.", "alvo": "ようでは", "erradas": ["ように", "ようにも", "ようとも"]}
+  ],
+  "parecidos": [
+   {"padrao": "ては", "diferenca": "Também 'se…' com resultado ruim (そんなに食べては太る), mas sem o tom de avaliação crítica de ようでは."},
+   {"padrao": "ように", "diferenca": "ように é 'para que…' ou 'como…'; não é condição."}
+  ],
+  "erros_comuns": [
+   "Pôr um resultado positivo na segunda parte: ×早く起きるようでは、成功する. O resultado é sempre ruim.",
+   "Confundir com ように ('para que', 'como')."
+  ],
+  "drill": null,
+  "detectar": ["ようでは"]
+ },
+ {
+  "id": "bp:496",
+  "leitura": "さすが",
+  "romaji": "sasuga",
+  "resumo": "como era de se esperar (admiração)",
+  "significado": "Expressa admiração quando algo confirma a fama ou a expectativa: 'como era de se esperar de…', 'não é à toa'. さすがに também é 'como seria natural, até…'.",
+  "liga_a": ["sozinho", "substantivo", "inicio_de_frase"],
+  "como_formar": [
+   "Sozinho: さすが！ / さすがですね",
+   "さすが + substantivo + だ: さすがプロだ",
+   "さすがに + frase: さすがに疲れた (até eu cansei, como seria natural)",
+   "さすがの + substantivo + も: さすがの彼も… (até ele, que é tão bom…)"
+  ],
+  "uso": "Muito comum na fala para elogiar. Com superiores, さすがですね é um elogio natural. さすがに e さすがの〜も mostram que até alguém forte ou algo esperado tem limite.",
+  "exemplos": [
+   {"jp": "さすがプロの料理人だ。とてもおいしい。", "pt": "Como era de se esperar de um chef profissional. Está muito gostoso.", "alvo": "さすが", "erradas": ["まさか", "せっかく", "わざわざ"]},
+   {"jp": "一回で合格したの？さすがですね。", "pt": "Passou de primeira? Você é demais, hein.", "alvo": "さすが", "erradas": ["まさか", "せっかく", "やっと"]},
+   {"jp": "十時間も歩いたら、さすがに疲れた。", "pt": "Depois de andar dez horas, naturalmente fiquei cansado.", "alvo": "さすがに", "erradas": ["まさかに", "わざわざ", "せっかく"]},
+   {"jp": "さすがの彼も、この問題は解けなかった。", "pt": "Até ele, que é tão bom, não conseguiu resolver este problema.", "alvo": "さすがの", "erradas": ["まさかの", "せっかくの", "わざわざの"]},
+   {"jp": "東京はさすがに人が多いね。", "pt": "Tóquio tem muita gente mesmo, como era de se esperar.", "alvo": "さすがに", "erradas": ["まさかに", "せっかく", "わざと"]}
+  ],
+  "parecidos": [
+   {"padrao": "やはり・やっぱり", "diferenca": "Confirma algo esperado, bom ou ruim, sem elogio."},
+   {"padrao": "だけあって", "diferenca": "Dá a razão do resultado: 'por ser X, é natural que…'. Muitas vezes aparece junto: さすがプロだけあって."}
+  ],
+  "erros_comuns": [
+   "Usar さすが para um erro de alguém ('como esperado, errou'): soa irônico. Para isso, use やっぱり.",
+   "Confundir さすが ('como esperado') com まさか ('não pode ser!')."
+  ],
+  "drill": null,
+  "detectar": ["さすが", "流石"]
+ },
+ {
+  "id": "bp:502",
+  "leitura": "ことは…が",
+  "romaji": "koto wa ... ga",
+  "resumo": "até que…, sim, mas…",
+  "significado": "Repete a mesma palavra para admitir que algo é verdade, mas com uma ressalva: 'X, até X, mas…'.",
+  "liga_a": ["dicionario", "ta", "adjetivo_i", "adjetivo_na"],
+  "como_formar": [
+   "Verbo + ことは + o mesmo verbo + が: 行くことは行くが",
+   "Passado: 読んだことは読んだが",
+   "Adjetivo-い: 高いことは高いが",
+   "Adjetivo-な: きれいなことはきれいだが. No casual, けど no lugar de が"
+  ],
+  "uso": "Neutro, comum na fala. Diz 'sim, mas não totalmente' ou 'sim, mas não do jeito que você imagina'. Depois de が/けど vem sempre a ressalva.",
+  "exemplos": [
+   {"jp": "日本語は話せることは話せるが、まだ下手です。", "pt": "Até que eu falo japonês, mas ainda mal.", "alvo": "ことは", "erradas": ["ことが", "ものは", "ことも"]},
+   {"jp": "このかばんは高いことは高いけど、とても丈夫だ。", "pt": "Esta bolsa é cara, sim, mas é muito resistente.", "alvo": "ことは", "erradas": ["ことが", "ものの", "ことに"]},
+   {"jp": "本は読んだことは読んだが、内容は覚えていない。", "pt": "Ler o livro eu li, mas não lembro do conteúdo.", "alvo": "ことは", "erradas": ["ことが", "ことも", "ことで"]},
+   {"jp": "彼の部屋はきれいなことはきれいだが、少し狭い。", "pt": "O quarto dele até é bonito, mas é meio apertado.", "alvo": "ことは", "erradas": ["ことが", "ことに", "ものは"]},
+   {"jp": "パーティーには行くことは行くけど、すぐ帰るよ。", "pt": "À festa eu vou, sim, mas volto logo.", "alvo": "ことは", "erradas": ["ことが", "ことに", "ことも"]}
+  ],
+  "parecidos": [
+   {"padrao": "ものの", "diferenca": "'Embora…', mais escrito e sem repetir a palavra."},
+   {"padrao": "には…が", "diferenca": "行くには行くが: mesmo sentido, com には no lugar de ことは."}
+  ],
+  "erros_comuns": [
+   "Não repetir a mesma palavra: ×高いことは安いが. O verbo ou adjetivo se repete igual.",
+   "Esquecer a ressalva: depois de が/けど precisa vir o 'porém'."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:505",
+  "leitura": "さらに",
+  "romaji": "sara ni",
+  "resumo": "ainda mais; além disso",
+  "significado": "'Ainda mais' (aumenta um grau que já existia) ou 'além disso' (acrescenta mais um fato).",
+  "liga_a": ["sozinho", "inicio_de_frase"],
+  "como_formar": [
+   "Antes de verbo ou adjetivo: さらに寒くなる (fica ainda mais frio)",
+   "Com comparação: 昨日よりさらに暑い",
+   "No começo da frase: さらに、… (além disso, …)",
+   "Costuma ser escrito em hiragana: さらに"
+  ],
+  "uso": "Neutro a formal; muito usado em notícias e textos. Na conversa casual, もっと (grau) e それに (acréscimo) são mais comuns. Como conjunção, acrescenta um ponto extra a uma lista.",
+  "exemplos": [
+   {"jp": "午後から雨はさらに強くなるでしょう。", "pt": "A partir da tarde, a chuva deve ficar ainda mais forte.", "alvo": "さらに", "erradas": ["あまり", "ほとんど", "せっかく"]},
+   {"jp": "この店は安い。さらに、味もいい。", "pt": "Esta loja é barata. Além disso, a comida é boa.", "alvo": "さらに", "erradas": ["しかし", "だから", "つまり"]},
+   {"jp": "彼は去年より、さらに上手になった。", "pt": "Ele ficou ainda melhor do que no ano passado.", "alvo": "さらに", "erradas": ["あまり", "なかなか", "まだ"]},
+   {"jp": "問題を解決するには、さらに時間が必要だ。", "pt": "Para resolver o problema, é preciso ainda mais tempo.", "alvo": "さらに", "erradas": ["あまり", "ほとんど", "たまに"]},
+   {"jp": "値段が上がり、さらに品質も下がった。", "pt": "O preço subiu e, além disso, a qualidade também caiu.", "alvo": "さらに", "erradas": ["それで", "つまり", "ところが"]}
+  ],
+  "parecidos": [
+   {"padrao": "もっと", "diferenca": "Mais coloquial e só fala de grau ('mais')."},
+   {"padrao": "それに・しかも", "diferenca": "'Além disso' na fala; しかも costuma surpreender."}
+  ],
+  "erros_comuns": [
+   "Usar さらに o tempo todo na conversa com amigos; ali もっと soa mais natural.",
+   "Esquecer que さらに pressupõe que algo já era X: さらに高い = 'ainda mais caro' (já era caro)."
+  ],
+  "drill": null,
+  "detectar": ["さらに", "更に"]
+ },
+ {
+  "id": "bp:606",
+  "leitura": "せいぜい",
+  "romaji": "seizei",
+  "resumo": "no máximo, quando muito",
+  "significado": "'No máximo', 'quando muito': dá um limite de cima, geralmente pequeno ('não passa disso').",
+  "liga_a": ["sozinho"],
+  "como_formar": [
+   "せいぜい + quantidade: せいぜい千円 (no máximo mil ienes)",
+   "せいぜい + quantidade + ぐらい/だ: せいぜい十人ぐらいだ",
+   "せいぜい + frase: せいぜい週に一回行く程度だ",
+   "Kanji (raro): 精々"
+  ],
+  "uso": "Neutro, comum na fala. Sugere que o número é pequeno. Também se usa como 'faça o melhor possível' (せいぜい頑張って), mas isso pode soar irônico.",
+  "exemplos": [
+   {"jp": "この仕事は、せいぜい二時間で終わるよ。", "pt": "Este trabalho termina em duas horas, no máximo.", "alvo": "せいぜい", "erradas": ["少なくとも", "やっと", "ほとんど"]},
+   {"jp": "パーティーに来るのは、せいぜい十人ぐらいだろう。", "pt": "Devem vir no máximo umas dez pessoas à festa.", "alvo": "せいぜい", "erradas": ["少なくとも", "せめて", "ちょうど"]},
+   {"jp": "私の給料では、旅行はせいぜい年に一回だ。", "pt": "Com meu salário, viajo no máximo uma vez por ano.", "alvo": "せいぜい", "erradas": ["少なくとも", "せめて", "たまに"]},
+   {"jp": "歩いても、せいぜい十五分です。", "pt": "Mesmo a pé, são no máximo quinze minutos.", "alvo": "せいぜい", "erradas": ["少なくとも", "やっと", "とうとう"]},
+   {"jp": "安い店なら、せいぜい千円で食べられる。", "pt": "Num restaurante barato, dá para comer com no máximo mil ienes.", "alvo": "せいぜい", "erradas": ["少なくとも", "せめて", "せっかく"]}
+  ],
+  "parecidos": [
+   {"padrao": "せめて", "diferenca": "'Pelo menos' (desejo mínimo): せめて一日休みたい. É quase o contrário."},
+   {"padrao": "多くても", "diferenca": "'No máximo' de forma literal e neutra, sem a ideia de 'é pouco'."}
+  ],
+  "erros_comuns": [
+   "Confundir せいぜい ('no máximo') com せめて ('pelo menos').",
+   "Dizer せいぜい頑張って a um superior: pode soar irônico."
+  ],
+  "drill": null,
+  "detectar": ["せいぜい", "精々"]
+ },
+ {
+  "id": "bp:696",
+  "leitura": "わずかに",
+  "romaji": "wazuka ni",
+  "resumo": "ligeiramente, só um pouquinho",
+  "significado": "'Ligeiramente', 'só um pouco': indica uma quantidade ou diferença bem pequena.",
+  "liga_a": ["sozinho"],
+  "como_formar": [
+   "わずかに + verbo: わずかに上がった (subiu ligeiramente)",
+   "わずかに + adjetivo: わずかに甘い",
+   "Antes de substantivo: わずかな + substantivo (わずかなお金)",
+   "わずか + número: わずか三日 (apenas três dias)"
+  ],
+  "uso": "Neutro a formal; frequente em notícias e descrições. Na fala, ちょっと e 少し são mais comuns. わずかに destaca que a diferença é mínima.",
+  "exemplos": [
+   {"jp": "気温がわずかに上がった。", "pt": "A temperatura subiu ligeiramente.", "alvo": "わずかに", "erradas": ["わずかな", "ずいぶん", "かなり"]},
+   {"jp": "窓からわずかに光が入ってくる。", "pt": "Entra um pouquinho de luz pela janela.", "alvo": "わずかに", "erradas": ["わずかな", "たくさん", "すっかり"]},
+   {"jp": "彼はわずか一点の差で負けた。", "pt": "Ele perdeu por apenas um ponto de diferença.", "alvo": "わずか", "erradas": ["たくさん", "かなり", "ずいぶん"]},
+   {"jp": "このスープはわずかに塩の味がする。", "pt": "Esta sopa tem um leve gosto de sal.", "alvo": "わずかに", "erradas": ["わずかな", "とても", "しっかり"]},
+   {"jp": "売り上げは去年よりわずかに増えた。", "pt": "As vendas aumentaram ligeiramente em relação ao ano passado.", "alvo": "わずかに", "erradas": ["わずかな", "大きく", "ずいぶん"]}
+  ],
+  "parecidos": [
+   {"padrao": "少し・ちょっと", "diferenca": "Mais coloquiais, para qualquer 'um pouco'."},
+   {"padrao": "かすかに", "diferenca": "Algo que mal se percebe pelos sentidos (som, cheiro, luz)."}
+  ],
+  "erros_comuns": [
+   "Usar わずかに antes de substantivo: ×わずかにお金 → わずかなお金.",
+   "Usar わずかに na conversa casual do dia a dia; ali ちょっと soa mais natural."
+  ],
+  "drill": null,
+  "detectar": ["わずかに", "僅かに"]
+ },
+ {
+  "id": "bp:1107",
+  "leitura": "じゃく",
+  "romaji": "jaku",
+  "resumo": "um pouco menos de… (depois de número)",
+  "significado": "Sufixo que vai depois de um número: 'um pouco menos de X'. 三時間弱 = quase três horas.",
+  "liga_a": ["substantivo"],
+  "como_formar": [
+   "Número + 弱: 三時間弱 (quase três horas)",
+   "Número + 弱 + の + substantivo: 一万人弱の観客",
+   "Oposto: 強 (um pouco mais de)"
+  ],
+  "uso": "Neutro a formal; comum em notícias, estatísticas e no trabalho. Aqui 弱 não quer dizer 'fraco'. Tem a mesma ideia de 〜近く ou do escrito 〜足らず.",
+  "exemplos": [
+   {"jp": "駅まで歩いて十分弱です。", "pt": "Até a estação são quase dez minutos a pé.", "alvo": "弱", "erradas": ["強", "以上", "過ぎ"]},
+   {"jp": "会議には百人弱が参加した。", "pt": "Pouco menos de cem pessoas participaram da reunião.", "alvo": "弱", "erradas": ["強", "以上", "余り"]},
+   {"jp": "東京から大阪まで新幹線で三時間弱かかる。", "pt": "De Tóquio a Osaka leva quase três horas de shinkansen.", "alvo": "弱", "erradas": ["強", "以上", "過ぎ"]},
+   {"jp": "このかばんの重さは一キロ弱だ。", "pt": "Esta bolsa pesa um pouco menos de um quilo.", "alvo": "弱", "erradas": ["強", "以上", "余り"]},
+   {"jp": "参加者の半分弱が学生だった。", "pt": "Pouco menos da metade dos participantes eram estudantes.", "alvo": "弱", "erradas": ["強", "以上", "過ぎ"]}
+  ],
+  "parecidos": [
+   {"padrao": "強", "diferenca": "O oposto: 'um pouco mais de'."},
+   {"padrao": "近く", "diferenca": "'Quase', mais coloquial: 三時間近く."}
+  ],
+  "erros_comuns": [
+   "Ler como よわい ('fraco'). Depois de número, é じゃく = 'um pouco menos de'.",
+   "Achar que 十分弱 é 'mais de dez minutos'. É menos; 'mais' é 強."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:1108",
+  "leitura": "きょう",
+  "romaji": "kyou",
+  "resumo": "um pouco mais de… (depois de número)",
+  "significado": "Sufixo que vai depois de um número: 'um pouco mais de X'. 千人強 = pouco mais de mil pessoas.",
+  "liga_a": ["substantivo"],
+  "como_formar": [
+   "Número + 強: 一時間強 (pouco mais de uma hora)",
+   "Número + 強 + の + substantivo: 三割強の人",
+   "Oposto: 弱 (um pouco menos de)"
+  ],
+  "uso": "Neutro a formal; comum em notícias, estatísticas e no trabalho. Aqui 強 não quer dizer 'forte'. Na fala, 〜ちょっと ('e pouco') é mais comum: 一時間ちょっと.",
+  "exemplos": [
+   {"jp": "会場には千人強が集まった。", "pt": "Pouco mais de mil pessoas se reuniram no local.", "alvo": "強", "erradas": ["弱", "未満", "以下"]},
+   {"jp": "家から会社まで一時間強かかる。", "pt": "De casa até a empresa leva pouco mais de uma hora.", "alvo": "強", "erradas": ["弱", "前", "以下"]},
+   {"jp": "このプロジェクトには半年強かかった。", "pt": "Este projeto levou pouco mais de meio ano.", "alvo": "強", "erradas": ["弱", "未満", "以内"]},
+   {"jp": "日本の人口の三割強が六十歳以上だ。", "pt": "Pouco mais de 30% da população do Japão tem 60 anos ou mais.", "alvo": "強", "erradas": ["弱", "未満", "以下"]},
+   {"jp": "箱の重さは五キロ強だった。", "pt": "A caixa pesava pouco mais de cinco quilos.", "alvo": "強", "erradas": ["弱", "以下", "未満"]}
+  ],
+  "parecidos": [
+   {"padrao": "弱", "diferenca": "O oposto: 'um pouco menos de'."},
+   {"padrao": "以上", "diferenca": "'X ou mais', sem dizer se é só um pouco mais."}
+  ],
+  "erros_comuns": [
+   "Ler como つよい ('forte'). Depois de número, é きょう = 'um pouco mais de'.",
+   "Confundir 強 com 以上: 以上 inclui o próprio número e não diz se passa só um pouco."
+  ],
+  "drill": null,
+  "detectar": []
+ },
+ {
+  "id": "bp:697",
+  "leitura": "および",
+  "romaji": "oyobi",
+  "resumo": "e; bem como (formal, entre substantivos)",
+  "significado": "Liga substantivos: 'A e B', 'A bem como B'. É o 'e' formal de documentos e avisos.",
+  "liga_a": ["substantivo"],
+  "como_formar": [
+   "Substantivo + および + substantivo: 東京および大阪",
+   "Lista maior: A、B および C",
+   "Escrita: および ou 及び"
+  ],
+  "uso": "Formal e escrito: regulamentos, avisos oficiais, notícias, contratos, formulários. Na fala comum, use と. Liga substantivos, não verbos nem orações.",
+  "exemplos": [
+   {"jp": "東京および大阪で会議が開かれる。", "pt": "Serão realizadas reuniões em Tóquio e em Osaka.", "alvo": "および", "erradas": ["または", "あるいは", "それとも"]},
+   {"jp": "名前および住所を書いてください。", "pt": "Escreva o nome e o endereço.", "alvo": "および", "erradas": ["または", "か", "それとも"]},
+   {"jp": "館内での飲食および喫煙は禁止です。", "pt": "É proibido comer, beber e fumar dentro do prédio.", "alvo": "および", "erradas": ["それとも", "しかし", "だから"]},
+   {"jp": "学生および教員は、この部屋を使うことができる。", "pt": "Alunos e professores podem usar esta sala.", "alvo": "および", "erradas": ["それとも", "ただし", "しかし"]},
+   {"jp": "申し込みは電話およびメールで受け付けます。", "pt": "As inscrições são aceitas por telefone e por e-mail.", "alvo": "および", "erradas": ["それとも", "だから", "ところが"]}
+  ],
+  "parecidos": [
+   {"padrao": "と", "diferenca": "O 'e' de todo dia, para fala e escrita comum."},
+   {"padrao": "または", "diferenca": "'Ou' formal. および é 'e'."}
+  ],
+  "erros_comuns": [
+   "Usar および para ligar verbos ou orações: ×食べおよび飲む. Ele liga substantivos.",
+   "Usar na conversa casual: soa como documento oficial. Use と."
+  ],
+  "drill": null,
+  "detectar": ["および", "及び"]
+ },
+ {
+  "id": "bp:698",
+  "leitura": "たちまち",
+  "romaji": "tachimachi",
+  "resumo": "num instante, rapidinho",
+  "significado": "'Num instante', 'imediatamente': algo muda ou acontece muito rápido.",
+  "liga_a": ["sozinho"],
+  "como_formar": [
+   "たちまち + verbo: たちまち売り切れた",
+   "Comum com mudança de estado: たちまち〜になった",
+   "Kanji (raro): 忽ち"
+  ],
+  "uso": "Um pouco escrito, mas também aparece em notícias e na fala. Descreve uma mudança rápida (encheu, esvaziou, ficou famoso, sumiu). Para pedidos ('venha já'), use すぐ.",
+  "exemplos": [
+   {"jp": "新しいゲームはたちまち売り切れた。", "pt": "O jogo novo esgotou num instante.", "alvo": "たちまち", "erradas": ["だんだん", "ゆっくり", "そろそろ"]},
+   {"jp": "その歌はたちまち有名になった。", "pt": "A música ficou famosa num piscar de olhos.", "alvo": "たちまち", "erradas": ["だんだん", "やっと", "なかなか"]},
+   {"jp": "空が暗くなり、たちまち雨が降り出した。", "pt": "O céu escureceu e, num instante, começou a chover.", "alvo": "たちまち", "erradas": ["だんだん", "ようやく", "そろそろ"]},
+   {"jp": "彼の冗談で、教室はたちまち笑い声でいっぱいになった。", "pt": "Com a piada dele, a sala se encheu de risadas num instante.", "alvo": "たちまち", "erradas": ["だんだん", "ようやく", "しばらく"]},
+   {"jp": "薬を飲むと、痛みはたちまち消えた。", "pt": "Quando tomei o remédio, a dor sumiu na hora.", "alvo": "たちまち", "erradas": ["ゆっくり", "しばらく", "だんだん"]}
+  ],
+  "parecidos": [
+   {"padrao": "すぐ", "diferenca": "Coloquial e serve também para pedidos: すぐ来て."},
+   {"padrao": "いきなり", "diferenca": "'De repente, sem aviso': foca na surpresa, não na velocidade."}
+  ],
+  "erros_comuns": [
+   "Usar em pedido ou ordem: ×たちまち来てください → すぐ来てください.",
+   "Usar para algo que demorou: たちまち é sempre mudança rápida."
+  ],
+  "drill": null,
+  "detectar": ["たちまち"]
+ },
+ {
+  "id": "bp:500",
+  "leitura": "いきなり",
+  "romaji": "ikinari",
+  "resumo": "de repente, do nada, sem aviso",
+  "significado": "'De repente', 'do nada': algo acontece sem aviso ou sem as etapas normais, pegando a pessoa de surpresa.",
+  "liga_a": ["sozinho"],
+  "como_formar": [
+   "いきなり + verbo: いきなり怒り出した",
+   "いきなりの + substantivo: いきなりの質問",
+   "いきなり + etapa final: いきなり本番 (direto para o 'pra valer', sem ensaio)"
+  ],
+  "uso": "Coloquial e muito comum na fala. Tem tom de 'sem aviso, sem preparo' e às vezes de reclamação. Diferente de 急に, foca no fato de pular os passos esperados.",
+  "exemplos": [
+   {"jp": "彼はいきなり大きな声で泣き出した。", "pt": "Ele começou a chorar alto do nada.", "alvo": "いきなり", "erradas": ["だんだん", "ゆっくり", "やっと"]},
+   {"jp": "いきなり知らない人に話しかけられた。", "pt": "Do nada, um desconhecido veio falar comigo.", "alvo": "いきなり", "erradas": ["だんだん", "そろそろ", "ようやく"]},
+   {"jp": "練習なしで、いきなり試合に出るのは無理だ。", "pt": "Entrar direto no jogo sem treinar é impossível.", "alvo": "いきなり", "erradas": ["だんだん", "少しずつ", "ゆっくり"]},
+   {"jp": "いきなりの電話でびっくりしました。", "pt": "Levei um susto com a ligação inesperada.", "alvo": "いきなりの", "erradas": ["いきなりな", "だんだんの", "ゆっくりの"]},
+   {"jp": "部屋に入ると、犬がいきなり飛びついてきた。", "pt": "Quando entrei no quarto, o cachorro pulou em mim de repente.", "alvo": "いきなり", "erradas": ["だんだん", "少しずつ", "そろそろ"]}
+  ],
+  "parecidos": [
+   {"padrao": "急に", "diferenca": "Mudança brusca, mais neutro: 急に寒くなった."},
+   {"padrao": "突然", "diferenca": "'Repentinamente', mais formal e comum em notícias."}
+  ],
+  "erros_comuns": [
+   "Usar いきなりな antes de substantivo: o certo é いきなりの.",
+   "Para mudanças naturais, como o tempo esfriar, 急に costuma soar mais natural que いきなり."
+  ],
+  "drill": null,
+  "detectar": ["いきなり"]
+ },
+ {
+  "id": "bp:412",
+  "leitura": "といった",
+  "romaji": "to itta",
+  "resumo": "como…, tais como… (exemplos)",
+  "significado": "Dá exemplos de uma categoria: 'A, B e coisas do tipo', 'tais como A e B'. Depois vem o substantivo que resume a categoria.",
+  "liga_a": ["substantivo"],
+  "como_formar": [
+   "A や B といった + substantivo: 寿司や天ぷらといった日本料理",
+   "A、B といった + substantivo",
+   "Negativo fixo: これといった〜はない (não há nenhum X em especial)"
+  ],
+  "uso": "Neutro a formal; comum em textos, notícias e apresentações. Os itens são exemplos, não a lista completa. Na fala casual, 〜とか〜みたいな é mais comum.",
+  "exemplos": [
+   {"jp": "寿司や天ぷらといった日本料理が好きです。", "pt": "Gosto de comida japonesa, como sushi e tempurá.", "alvo": "といった", "erradas": ["といって", "として", "と言われ"]},
+   {"jp": "京都や奈良といった古い町を旅行した。", "pt": "Viajei por cidades antigas, como Kyoto e Nara.", "alvo": "といった", "erradas": ["といって", "として", "とともに"]},
+   {"jp": "サッカーや野球といったスポーツが人気だ。", "pt": "Esportes como futebol e beisebol são populares.", "alvo": "といった", "erradas": ["といって", "とすれば", "として"]},
+   {"jp": "最近、これといった趣味がない。", "pt": "Ultimamente não tenho nenhum hobby em especial.", "alvo": "といった", "erradas": ["といって", "として", "とする"]},
+   {"jp": "英語や中国語といった外国語を勉強している。", "pt": "Estudo línguas estrangeiras como inglês e chinês.", "alvo": "といった", "erradas": ["といって", "として", "とか言って"]}
+  ],
+  "parecidos": [
+   {"padrao": "など", "diferenca": "'Etc., e outros': lista exemplos de forma mais geral e pode fechar a lista sozinho."},
+   {"padrao": "のような", "diferenca": "'Como…' de comparação ou exemplo, mais neutro e falado."}
+  ],
+  "erros_comuns": [
+   "Confundir com と言った ('disse'). O 'disse' costuma vir com kanji (言った); o de exemplos vem em hiragana.",
+   "Esquecer o substantivo que resume a categoria: ×寿司や天ぷらといったが好き."
+  ],
+  "drill": null,
+  "detectar": ["といった"]
+ },
+ {
+  "id": "bp:533",
+  "leitura": "をこめて",
+  "romaji": "o komete",
+  "resumo": "com (um sentimento), cheio de…",
+  "significado": "'Com…', 'cheio de…': colocar um sentimento (amor, gratidão, desejo) numa ação ou num objeto.",
+  "liga_a": ["substantivo"],
+  "como_formar": [
+   "Substantivo (sentimento) + を込めて + verbo: 心を込めて作る",
+   "Antes de substantivo: を込めた + substantivo (愛を込めた手紙)",
+   "Palavras comuns: 心, 愛, 感謝, 願い, 思い"
+  ],
+  "uso": "Neutro; muito usado em cartas, discursos, presentes e propagandas. O substantivo é quase sempre um sentimento. 心を込めて = 'de coração, com carinho'.",
+  "exemplos": [
+   {"jp": "母のために、心を込めて料理を作った。", "pt": "Fiz a comida com todo o carinho para minha mãe.", "alvo": "を込めて", "erradas": ["に込めて", "が込めて", "で込めて"]},
+   {"jp": "感謝の気持ちを込めて、手紙を書きました。", "pt": "Escrevi uma carta cheia de gratidão.", "alvo": "を込めて", "erradas": ["に込めて", "が込めて", "を込んで"]},
+   {"jp": "愛を込めた歌を歌った。", "pt": "Cantei uma canção cheia de amor.", "alvo": "を込めた", "erradas": ["に込めた", "を込んだ", "が込めた"]},
+   {"jp": "平和への願いを込めて、鐘を鳴らした。", "pt": "Tocamos o sino com um desejo de paz.", "alvo": "を込めて", "erradas": ["に込めて", "を込んで", "で込めて"]},
+   {"jp": "心を込めて、お客様をお迎えします。", "pt": "Recebemos os clientes de todo o coração.", "alvo": "を込めて", "erradas": ["に込めて", "を込んで", "が込めて"]}
+  ],
+  "parecidos": [
+   {"padrao": "に込める", "diferenca": "Mostra onde se põe o sentimento: 手紙に思いを込める. を込めて fala do sentimento com que se faz algo."}
+  ],
+  "erros_comuns": [
+   "Usar com coisa concreta que não é sentimento: ×砂糖を込めてケーキを作る.",
+   "Confundir 込めて (pôr sentimento) com 込んで (estar lotado)."
+  ],
+  "drill": null,
+  "detectar": ["を込めて", "をこめて", "を込めた"]
+ },
+ {
+  "id": "bp:558",
+  "leitura": "にくわえて",
+  "romaji": "ni kuwaete",
+  "resumo": "além de…; somado a…",
+  "significado": "'Além de X, também Y': acrescenta mais um elemento, geralmente do mesmo tipo (bom com bom, ruim com ruim).",
+  "liga_a": ["substantivo", "forma_simples"],
+  "como_formar": [
+   "Substantivo + に加えて: 雨に加えて風も強い",
+   "Verbo / adjetivo + の + に加えて: 忙しいのに加えて",
+   "Escrito: に加え、 (sem て)"
+  ],
+  "uso": "Neutro a formal; frequente em notícias e textos explicativos. Na fala casual, それに ou 〜だけじゃなく são mais comuns. A segunda parte costuma ter も.",
+  "exemplos": [
+   {"jp": "雨に加えて、風も強くなってきた。", "pt": "Além da chuva, o vento também começou a ficar forte.", "alvo": "に加えて", "erradas": ["に対して", "によって", "について"]},
+   {"jp": "英語に加えて、中国語も話せます。", "pt": "Além de inglês, também falo chinês.", "alvo": "に加えて", "erradas": ["に対して", "にとって", "によって"]},
+   {"jp": "仕事が忙しいのに加えて、子供が病気になった。", "pt": "Além de o trabalho estar corrido, meu filho ficou doente.", "alvo": "に加えて", "erradas": ["に対して", "にとって", "によって"]},
+   {"jp": "授業料に加え、教科書代もかかる。", "pt": "Além da mensalidade, também tem o custo dos livros.", "alvo": "に加え", "erradas": ["に対し", "にとって", "により"]},
+   {"jp": "彼は頭がいいのに加えて、とても優しい。", "pt": "Além de ser inteligente, ele é muito gentil.", "alvo": "に加えて", "erradas": ["に対して", "にとって", "について"]}
+  ],
+  "parecidos": [
+   {"padrao": "だけでなく", "diferenca": "'Não só… mas também', mais comum na fala."},
+   {"padrao": "上に", "diferenca": "'Além de…', liga orações direto (安い上においしい), sem の."}
+  ],
+  "erros_comuns": [
+   "Usar を: ×雨を加えて (isso é 'acrescentar chuva'). O padrão é に加えて.",
+   "Ligar verbo ou adjetivo direto, sem の: ×忙しいに加えて → 忙しいのに加えて."
+  ],
+  "drill": null,
+  "detectar": ["に加えて", "に加え、"]
+ },
+ {
+  "id": "bp:680",
+  "leitura": "なにからなにまで",
+  "romaji": "nani kara nani made",
+  "resumo": "tudo, de A a Z",
+  "significado": "'Tudo, sem exceção', 'de A a Z'. Enfatiza que cobre absolutamente tudo.",
+  "liga_a": ["sozinho"],
+  "como_formar": [
+   "Como advérbio: 何から何まで + verbo (何から何まで知っている)",
+   "Agradecimento fixo: 何から何までお世話になりました",
+   "Com adjetivo: 何から何まで新しい"
+  ],
+  "uso": "Neutro, comum na fala. Muito usado para agradecer: 何から何までありがとうございました ('obrigado por tudo'). Também aparece em reclamações: 何から何まで自分でやる.",
+  "exemplos": [
+   {"jp": "何から何までお世話になりました。", "pt": "Muito obrigado por tudo o que fez por mim.", "alvo": "何から何まで", "erradas": ["何か", "何も", "どこかで"]},
+   {"jp": "引っ越しの準備は、何から何まで自分でやった。", "pt": "Fiz tudo da mudança sozinho, do começo ao fim.", "alvo": "何から何まで", "erradas": ["何か", "何も", "いつから"]},
+   {"jp": "彼は町のことを何から何まで知っている。", "pt": "Ele sabe tudo sobre a cidade, de A a Z.", "alvo": "何から何まで", "erradas": ["何か", "何も", "どれから"]},
+   {"jp": "この部屋は何から何まで新しい。", "pt": "Neste quarto, tudo é novo.", "alvo": "何から何まで", "erradas": ["何か", "何も", "どこまで"]},
+   {"jp": "何から何まで教えていただいて、ありがとうございます。", "pt": "Obrigado por me ensinar tudo.", "alvo": "何から何まで", "erradas": ["何か", "何も", "何で"]}
+  ],
+  "parecidos": [
+   {"padrao": "全部・すべて", "diferenca": "'Tudo', neutro e sem a ênfase de 'sem faltar nada'."},
+   {"padrao": "一から十まで", "diferenca": "Mesma ideia: 'do começo ao fim, tudo'."}
+  ],
+  "erros_comuns": [
+   "Ler 何 como なん: aqui é なにからなにまで.",
+   "Achar que é pergunta ('de onde até onde?'). É uma expressão fixa = tudo."
+  ],
+  "drill": null,
+  "detectar": ["何から何まで", "なにからなにまで"]
+ },
+ {
+  "id": "bp:610",
+  "leitura": "はべつとして",
+  "romaji": "wa betsu to shite",
+  "resumo": "deixando… de lado; tirando…",
+  "significado": "'Deixando X de lado', 'tirando X': tira um ponto da discussão para falar do resto. Com 〜かどうかは別として = 'quer seja… ou não'.",
+  "liga_a": ["substantivo", "frase"],
+  "como_formar": [
+   "Substantivo + は別として: 値段は別として",
+   "Pergunta + かどうかは別として: できるかどうかは別として",
+   "Variante: は別にして",
+   "Pessoa como exceção: 田中さんは別として (tirando o Tanaka)"
+  ],
+  "uso": "Neutro, na fala e na escrita. Mostra que o ponto deixado de lado não importa agora ou é uma exceção. Parecido com はともかく.",
+  "exemplos": [
+   {"jp": "値段は別として、このレストランの料理はおいしい。", "pt": "Deixando o preço de lado, a comida deste restaurante é gostosa.", "alvo": "は別として", "erradas": ["によって", "にとって", "に加えて"]},
+   {"jp": "上手かどうかは別として、歌うのは楽しい。", "pt": "Cantando bem ou não, cantar é divertido.", "alvo": "は別として", "erradas": ["によって", "に対して", "に関して"]},
+   {"jp": "田中さんは別として、みんな賛成した。", "pt": "Tirando o Tanaka, todos concordaram.", "alvo": "は別として", "erradas": ["に加えて", "をはじめ", "によって"]},
+   {"jp": "冗談は別として、本当にありがとう。", "pt": "Brincadeiras à parte, muito obrigado mesmo.", "alvo": "は別として", "erradas": ["に加えて", "について", "にとって"]},
+   {"jp": "結果は別にして、よく頑張ったと思う。", "pt": "Independentemente do resultado, acho que você se esforçou muito.", "alvo": "は別にして", "erradas": ["に加えて", "によって", "について"]}
+  ],
+  "parecidos": [
+   {"padrao": "はともかく", "diferenca": "Mesma ideia, um pouco mais coloquial."},
+   {"padrao": "を除いて", "diferenca": "'Exceto', exclusão literal de uma lista."}
+  ],
+  "erros_comuns": [
+   "Confundir com によって ('dependendo de'): 値段によって = 'dependendo do preço'.",
+   "Esquecer o か: ×上手どうかは別として → 上手かどうかは別として."
+  ],
+  "drill": null,
+  "detectar": ["は別として", "は別にして"]
+ },
+ {
+  "id": "bp:320",
+  "leitura": "だけに",
+  "romaji": "dake ni",
+  "resumo": "justamente por ser…; não é à toa que…",
+  "significado": "'Justamente por ser X, (naturalmente / ainda mais) Y'. A razão leva a um resultado esperado ou mais intenso que o normal.",
+  "liga_a": ["forma_simples", "adjetivo_i", "adjetivo_na", "substantivo"],
+  "como_formar": [
+   "Verbo na forma simples + だけに: 期待していただけに",
+   "Adjetivo-い + だけに: 高いだけに",
+   "Adjetivo-な + な + だけに: 有名なだけに",
+   "Substantivo + だけに: プロだけに"
+  ],
+  "uso": "Neutro a formal. Dois usos: resultado esperado ('por ser X, é natural que…') e decepção maior ('justamente porque esperava muito, foi pior': 期待していただけに残念だ). A segunda parte não pode ser ordem nem pedido.",
+  "exemplos": [
+   {"jp": "一生懸命練習しただけに、負けて本当に悔しい。", "pt": "Justamente por ter treinado tanto, perder dói ainda mais.", "alvo": "だけに", "erradas": ["だけで", "だけは", "だけしか"]},
+   {"jp": "彼は留学していただけに、英語がうまい。", "pt": "Como ele fez intercâmbio, não é à toa que fala bem inglês.", "alvo": "だけに", "erradas": ["だけで", "だけしか", "ばかりに"]},
+   {"jp": "期待していただけに、がっかりした。", "pt": "Justamente porque eu esperava muito, fiquei decepcionado.", "alvo": "だけに", "erradas": ["だけで", "だけは", "ばかりで"]},
+   {"jp": "この店は有名なだけに、いつも込んでいる。", "pt": "Por ser famosa, esta loja vive cheia, como era de se esperar.", "alvo": "だけに", "erradas": ["だけで", "だけしか", "だけは"]},
+   {"jp": "子供のころから住んでいる町だけに、引っ越すのは寂しい。", "pt": "Justamente por ser a cidade onde moro desde criança, mudar é triste.", "alvo": "だけに", "erradas": ["だけで", "だけしか", "だけは"]}
+  ],
+  "parecidos": [
+   {"padrao": "だけあって", "diferenca": "Só para resultado positivo esperado, como elogio. だけに também serve para decepção."},
+   {"padrao": "ばかりに", "diferenca": "'Só porque…', com resultado ruim que não se queria."}
+  ],
+  "erros_comuns": [
+   "Esquecer que だけに também pode ser só だけ + に (私だけに教えて = 'conte só para mim'); o contexto decide.",
+   "Pôr pedido ou ordem depois: ×有名なだけに、行ってください."
+  ],
+  "drill": null,
+  "detectar": []
+ }
+]

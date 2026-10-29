@@ -1,0 +1,503 @@
+[
+{"id": "bp:725", "leitura": "しか…ない", "romaji": "suuji + shika ~ nai", "resumo": "número + しか〜ない: só (achando pouco)",
+ "significado": "Número + しか + negativo quer dizer 'só', 'apenas', com a ideia de que é pouco: 千円しかない = 'só tenho mil ienes'.",
+ "liga_a": ["substantivo"],
+ "como_formar": ["Número + contador + しか + verbo no negativo: 千円しかない, 三時間しか寝なかった", "しか substitui は, が e を: ×千円がしかない → 千円しかない", "O verbo fica sempre no negativo, mas o sentido é afirmativo ('só tenho')."],
+ "uso": "Neutro, muito comum. Mostra insatisfação: é menos do que se queria. Para 'só' neutro, sem queixa, use だけ com afirmativo (千円だけある).",
+ "exemplos": [
+  {"jp": "財布に千円しかない。", "pt": "Só tenho mil ienes na carteira.", "alvo": "しか", "erradas": ["だけ", "が", "を"]},
+  {"jp": "昨日は三時間しか寝なかった。", "pt": "Ontem só dormi três horas.", "alvo": "しか", "erradas": ["だけ", "を", "が"]},
+  {"jp": "クラスに学生が五人しかいません。", "pt": "Só tem cinco alunos na turma.", "alvo": "しか", "erradas": ["だけ", "が", "を"]},
+  {"jp": "日本には一回しか行ったことがない。", "pt": "Só fui ao Japão uma vez.", "alvo": "しか", "erradas": ["だけ", "を", "が"]},
+  {"jp": "卵が二つしか残っていない。", "pt": "Só sobraram dois ovos.", "alvo": "しか", "erradas": ["だけ", "が", "を"]}
+ ],
+ "parecidos": [
+  {"padrao": "だけ", "diferenca": "だけ = 'só', neutro e com afirmativo; しか〜ない enfatiza que é pouco."},
+  {"padrao": "Número + も", "diferenca": "も é o contrário: 'tudo isso!', achando muito."}
+ ],
+ "erros_comuns": ["Usar o verbo no afirmativo: ×千円しかある. しか sempre pede negativo.", "Usar だけ com negativo achando que é igual: 千円だけない não quer dizer 'só tenho mil'.", "Deixar a partícula: ×千円がしかない."],
+ "drill": null,
+ "detectar": []},
+
+{"id": "bp:391", "leitura": "は…のひとつだ", "romaji": "wa ~ no hitotsu da", "resumo": "X é um dos/uma das…",
+ "significado": "AはBの一つだ quer dizer 'A é um(a) dos/das B': 寿司は日本料理の一つです = 'sushi é um dos pratos japoneses'.",
+ "liga_a": ["substantivo"],
+ "como_formar": ["A + は + B (grupo) + の一つだ / の一つです", "O grupo costuma ter um adjetivo: 有名な料理の一つ, 一番好きな町の一つ", "Para pessoas, usa-se 一人: 大切な友達の一人です"],
+ "uso": "Neutro, comum na fala e na escrita, especialmente para apresentar algo. Com 一番 + adjetivo, fica 'um dos mais…': 一番好きな町の一つ = 'uma das cidades de que mais gosto'.",
+ "exemplos": [
+  {"jp": "寿司は日本の有名な料理の一つです。", "pt": "Sushi é um dos pratos famosos do Japão.", "alvo": "の一つです", "erradas": ["の一人です", "が一つです", "の一本です"]},
+  {"jp": "京都は私が一番好きな町の一つだ。", "pt": "Kyoto é uma das cidades de que mais gosto.", "alvo": "の一つだ", "erradas": ["の一人だ", "が一つだ", "の一個だ"]},
+  {"jp": "田中さんは私の大切な友達の一人です。", "pt": "O Tanaka é um dos meus amigos mais queridos.", "alvo": "の一人です", "erradas": ["の一つです", "が一人です", "の一匹です"]},
+  {"jp": "健康は一番大切なことの一つだと思う。", "pt": "Acho que a saúde é uma das coisas mais importantes.", "alvo": "の一つだ", "erradas": ["の一人だ", "が一つだ", "の一個だ"]},
+  {"jp": "これは日本語の難しいところの一つです。", "pt": "Esta é uma das partes difíceis do japonês.", "alvo": "の一つです", "erradas": ["の一人です", "が一つです", "の一枚です"]}
+ ],
+ "parecidos": [
+  {"padrao": "の中で一番", "diferenca": "の中で一番 escolhe o primeiro do grupo; の一つ diz só que faz parte dele."}
+ ],
+ "erros_comuns": ["Traduzir palavra por palavra: ×一つの有名な料理です. Em japonês, o 'um dos' vem no fim: 有名な料理の一つです.", "Usar 一つ para pessoas: com gente, é の一人."],
+ "drill": null,
+ "detectar": ["の一つだ", "の一つです", "の一つで", "の一人です", "の一人だ"]},
+
+{"id": "bp:378", "leitura": "ない…はない", "romaji": "nai ~ wa nai", "resumo": "não existe… que não… (= todos)",
+ "significado": "Verbo no negativo + substantivo + はない (ou はいない para pessoas) é uma dupla negação: 'não existe X que não…'. Na prática, quer dizer 'todo X…', com ênfase.",
+ "liga_a": ["nai"],
+ "como_formar": ["Verbo (ない) + substantivo + はない: 母が作れない料理はない", "Para pessoas e animais: はいない / はいません: 彼を知らない人はいない", "Também com たことのない: 読んだことのない本はない"],
+ "uso": "Neutro, com tom enfático. É mais forte que dizer 'todos': 彼を知らない人はいない = 'não há quem não o conheça'. Comum em conversas, elogios e textos.",
+ "exemplos": [
+  {"jp": "この町に彼を知らない人はいない。", "pt": "Nesta cidade não existe quem não o conheça.", "alvo": "はいない", "erradas": ["がいる", "はある", "もいる"]},
+  {"jp": "このクラスに日本語が話せない学生はいません。", "pt": "Nesta turma não há aluno que não fale japonês.", "alvo": "はいません", "erradas": ["がいます", "はありません", "もいます"]},
+  {"jp": "母が作れない料理はない。", "pt": "Não existe prato que minha mãe não saiba fazer.", "alvo": "はない", "erradas": ["がある", "はいない", "もある"]},
+  {"jp": "彼が読んだことのない本はない。", "pt": "Não há livro que ele não tenha lido.", "alvo": "はない", "erradas": ["がある", "はいない", "もある"]},
+  {"jp": "やればできないことはない。", "pt": "Se você tentar, não há nada que não consiga.", "alvo": "はない", "erradas": ["がある", "はいない", "もある"]}
+ ],
+ "parecidos": [
+  {"padrao": "みんな・全部", "diferenca": "Dizem 'todos' de forma direta; a dupla negação dá mais ênfase."},
+  {"padrao": "ないことはない", "diferenca": "ないことはない = 'não é que não…' (dá, mas com ressalvas); é mais fraco."}
+ ],
+ "erros_comuns": ["Achar que é negativo: 知らない人はいない significa que todos conhecem.", "Usar ない para pessoas: ×知らない人はない. Com gente, é いない."],
+ "drill": null,
+ "detectar": []},
+
+{"id": "bp:381", "leitura": "すこしも…ない", "romaji": "sukoshi mo ~ nai", "resumo": "nem um pouco",
+ "significado": "少しも + negativo quer dizer 'nem um pouco', 'nada'. Nega totalmente.",
+ "liga_a": ["nai"],
+ "como_formar": ["少しも + verbo no negativo: 少しもわからない", "少しも + adjetivo no negativo: 少しも怖くない", "Polido: 少しもわかりません"],
+ "uso": "Neutro, um pouco mais formal que 全然 e ちっとも. Muito usado para negar com força sentimentos e estados: 少しも疲れていない.",
+ "exemplos": [
+  {"jp": "まだ少しも疲れていない。", "pt": "Ainda não estou nem um pouco cansado.", "alvo": "少しも", "erradas": ["少し", "少しだけ", "とても"]},
+  {"jp": "この映画は少しもおもしろくなかった。", "pt": "Este filme não teve graça nenhuma.", "alvo": "少しも", "erradas": ["少し", "とても", "少しだけ"]},
+  {"jp": "彼の話は少しもわからなかった。", "pt": "Não entendi nem um pouco o que ele disse.", "alvo": "少しも", "erradas": ["少し", "とても", "少しだけ"]},
+  {"jp": "私は少しも怖くない。", "pt": "Não tenho nem um pouco de medo.", "alvo": "少しも", "erradas": ["少し", "とても", "たくさん"]},
+  {"jp": "お金は少しも残っていない。", "pt": "Não sobrou nem um pouco de dinheiro.", "alvo": "少しも", "erradas": ["少し", "とても", "たくさん"]}
+ ],
+ "parecidos": [
+  {"padrao": "全然〜ない", "diferenca": "Mesmo sentido, mais falado."},
+  {"padrao": "ちっとも〜ない", "diferenca": "Mesmo sentido, mais casual e emocional."},
+  {"padrao": "少し", "diferenca": "Sem も, 少し é 'um pouco' e vai com afirmativo."}
+ ],
+ "erros_comuns": ["Esquecer o も: 少しわからない não é 'não entendo nada'.", "Usar com afirmativo: ×少しも疲れた. 少しも pede negativo."],
+ "drill": null,
+ "detectar": ["少しも", "すこしも"]},
+
+{"id": "bp:650", "leitura": "すくなくない", "romaji": "sukunakunai", "resumo": "não são poucos; bastante",
+ "significado": "少なくない quer dizer 'não é pouco', 'não são poucos', ou seja, 'bastante'. É um jeito indireto de dizer que há muitos.",
+ "liga_a": ["substantivo"],
+ "como_formar": ["Substantivo + は / も + 少なくない: 〜人は少なくない", "Polido: 少なくないです / 少なくありません", "É o negativo do adjetivo 少ない: 少ない → 少なくない"],
+ "uso": "Um pouco formal; comum em notícias, textos e discursos. Soa mais cuidadoso que 多い. Na conversa do dia a dia, 結構多い ou けっこういる é mais comum.",
+ "exemplos": [
+  {"jp": "日本語を勉強している外国人は少なくない。", "pt": "Não são poucos os estrangeiros que estudam japonês.", "alvo": "少なくない", "erradas": ["少しない", "少ないない", "少なくなる"]},
+  {"jp": "この仕事をやめたい人は少なくないです。", "pt": "Não são poucas as pessoas que querem largar esse trabalho.", "alvo": "少なくない", "erradas": ["少しない", "少ないない", "少なくなる"]},
+  {"jp": "朝ごはんを食べない学生も少なくない。", "pt": "Também não são poucos os alunos que não tomam café da manhã.", "alvo": "少なくない", "erradas": ["少しない", "少ないない", "少なくなる"]},
+  {"jp": "同じ問題で困っている人は少なくありません。", "pt": "Não são poucas as pessoas com o mesmo problema.", "alvo": "少なくありません", "erradas": ["少ないありません", "少しありません", "少なくいません"]},
+  {"jp": "こういう失敗は少なくない。", "pt": "Esse tipo de erro não é raro.", "alvo": "少なくない", "erradas": ["少しない", "少ないない", "少なくなる"]}
+ ],
+ "parecidos": [
+  {"padrao": "多い", "diferenca": "多い diz 'muitos' de forma direta; 少なくない é mais indireto e cuidadoso."},
+  {"padrao": "少なくとも", "diferenca": "少なくとも = 'pelo menos'; é outra expressão."}
+ ],
+ "erros_comuns": ["Confundir 少ない (poucos) com 少し (um pouco): ×少しない.", "Manter o い: ×少ないない. O negativo de adjetivo-い troca い por くない."],
+ "drill": null,
+ "detectar": ["少なくない", "少なくありません", "すくなくない"]},
+
+{"id": "bp:133", "leitura": "ばあいは", "romaji": "baai wa", "resumo": "em caso de…, caso…",
+ "significado": "場合は quer dizer 'em caso de', 'caso…'. Apresenta uma situação possível e diz o que fazer nela.",
+ "liga_a": ["forma_simples", "substantivo", "adjetivo_na", "adjetivo_i"],
+ "como_formar": ["Verbo (forma simples) + 場合は: 遅れる場合は, 遅れた場合は, わからない場合は", "Substantivo + の + 場合は: 雨の場合は", "Adjetivo-な + な + 場合は: 必要な場合は", "Adjetivo-い + 場合は: 熱が高い場合は"],
+ "uso": "Um pouco formal: comum em avisos, regras, manuais e no trabalho. Na conversa do dia a dia, たら ou 時は soam mais naturais. Não se usa para algo que com certeza vai acontecer.",
+ "exemplos": [
+  {"jp": "雨の場合は、試合は中止です。", "pt": "Em caso de chuva, o jogo é cancelado.", "alvo": "の場合は", "erradas": ["な場合は", "場合は", "の場合で"]},
+  {"jp": "遅れる場合は、電話してください。", "pt": "Caso se atrase, ligue, por favor.", "alvo": "場合は", "erradas": ["の場合は", "な場合は", "場合を"]},
+  {"jp": "わからない場合は、先生に聞いてください。", "pt": "Caso não entenda, pergunte ao professor.", "alvo": "場合は", "erradas": ["の場合は", "な場合は", "場合が"]},
+  {"jp": "熱がある場合は、学校を休んでください。", "pt": "Caso esteja com febre, falte à escola.", "alvo": "場合は", "erradas": ["の場合は", "な場合は", "場合を"]},
+  {"jp": "必要な場合は、また連絡します。", "pt": "Se for necessário, entro em contato de novo.", "alvo": "な場合は", "erradas": ["の場合は", "場合は", "だ場合は"]}
+ ],
+ "parecidos": [
+  {"padrao": "たら", "diferenca": "たら é o 'se/quando' do dia a dia; 場合は é mais formal, de avisos e regras."},
+  {"padrao": "時は", "diferenca": "時は fala de um momento; 場合は, de uma situação hipotética."}
+ ],
+ "erros_comuns": ["Esquecer o の depois de substantivo: ×雨場合は → 雨の場合は.", "Usar para algo certo: ×明日になった場合は. Para algo que vai acontecer, use たら ou 時."],
+ "drill": null,
+ "detectar": ["場合は", "場合には", "ばあいは"]},
+
+{"id": "bp:777", "leitura": "て", "romaji": "te (pedido casual)", "resumo": "forma て: faz… (pedido casual)",
+ "significado": "A forma て sozinha no fim da frase é um pedido casual: 待って = 'espera', 見て = 'olha'. É um てください sem o ください.",
+ "liga_a": ["te"],
+ "como_formar": ["Grupo 1: 待つ → 待って, 取る → 取って, 読む → 読んで, 書く → 書いて", "Grupo 2: 見る → 見て, 開ける → 開けて", "Grupo 3: する → して, 来る → 来て (きて)", "Negativo: ないで: 行かないで (não vai)"],
+ "uso": "Casual: com amigos, família, pessoas próximas. Com ね ou よ fica mais suave ou insistente: 待ってね, 見てよ. Com desconhecidos ou superiores, use てください ou てくれませんか.",
+ "exemplos": [
+  {"jp": "ちょっと待って。", "pt": "Espera um pouco.", "alvo": "待って", "erradas": ["待ちて", "待つて", "待てて"]},
+  {"jp": "これ、見て。", "pt": "Olha isso.", "alvo": "見て", "erradas": ["見って", "見るて", "見た"]},
+  {"jp": "暑いから、窓を開けて。", "pt": "Está quente, abre a janela.", "alvo": "開けて", "erradas": ["開けって", "開けるて", "開けた"]},
+  {"jp": "明日は早く来て。", "pt": "Amanhã vem cedo.", "alvo": "来て", "erradas": ["来って", "来るて", "来た"]},
+  {"jp": "ねえ、塩を取って。", "pt": "Ei, me passa o sal.", "alvo": "取って", "erradas": ["取りて", "取て", "取んで"]}
+ ],
+ "parecidos": [
+  {"padrao": "てください", "diferenca": "Versão educada do mesmo pedido."},
+  {"padrao": "て (ligação)", "diferenca": "No meio da frase, a forma て liga ações ('e'); no fim, é pedido."},
+  {"padrao": "なさい", "diferenca": "なさい é ordem de pai, mãe ou professor; て é pedido entre próximos."}
+ ],
+ "erros_comuns": ["Errar a forma て do grupo 1: ×待ちて, ×取りて. O certo é 待って, 取って.", "Usar com chefe ou desconhecidos: soa íntimo demais; use てください."],
+ "drill": {"verbo": [["TE", ""]], "adj": [], "sentido": "faz … (pedido casual)", "teste": {"かく": "かいて", "たべる": "たべて", "する": "して", "くる": "きて"}},
+ "detectar": []},
+
+{"id": "bp:140", "leitura": "てよかった", "romaji": "te yokatta", "resumo": "que bom que…, ainda bem que…",
+ "significado": "てよかった expressa alívio ou alegria por algo que aconteceu: 'que bom que…', 'ainda bem que…'.",
+ "liga_a": ["te", "nai"],
+ "como_formar": ["Forma て + よかった: 来る → 来てよかった, 会う → 会えてよかった", "Grupo 3: する → してよかった", "Negativo: なくて + よかった: 行かなくてよかった (ainda bem que não fui)", "Polido: てよかったです"],
+ "uso": "Neutro, muito comum na conversa. Com ね, comemora algo do outro: 合格してよかったね. Para arrependimento ('devia ter…'), o padrão é outro: ばよかった.",
+ "exemplos": [
+  {"jp": "日本に来てよかった。", "pt": "Que bom que eu vim ao Japão.", "alvo": "てよかった", "erradas": ["ていいだった", "てよいかった", "たよかった"]},
+  {"jp": "会えてよかったです。", "pt": "Que bom que pudemos nos encontrar.", "alvo": "てよかったです", "erradas": ["ていいでした", "てよかったでした", "てよいでした"]},
+  {"jp": "傘を持ってきてよかった。", "pt": "Ainda bem que trouxe o guarda-chuva.", "alvo": "てよかった", "erradas": ["たらよかった", "ていいだった", "てよくて"]},
+  {"jp": "試験に合格してよかったね。", "pt": "Que bom que você passou na prova!", "alvo": "してよかった", "erradas": ["したらよかった", "していいだった", "するよかった"]},
+  {"jp": "間に合ってよかった。", "pt": "Ainda bem que deu tempo.", "alvo": "ってよかった", "erradas": ["ったらよかった", "っていいだった", "いてよかった"]}
+ ],
+ "parecidos": [
+  {"padrao": "ばよかった・たらよかった", "diferenca": "Arrependimento: 行けばよかった = 'devia ter ido'. てよかった = 'que bom que fui'."}
+ ],
+ "erros_comuns": ["Fazer o passado de いい com だった: ×いいだった. O passado é よかった.", "Confundir com たらよかった: 持ってきたらよかった é 'devia ter trazido' (não trouxe)."],
+ "drill": {"verbo": [["TE", "よかった"]], "adj": [], "sentido": "que bom que …", "teste": {"かく": "かいてよかった", "たべる": "たべてよかった", "する": "してよかった", "くる": "きてよかった"}},
+ "detectar": ["てよかった", "でよかった"]},
+
+{"id": "bp:153", "leitura": "せる・させる", "romaji": "seru / saseru (causativo)", "resumo": "fazer (alguém) fazer; deixar (alguém) fazer",
+ "significado": "O causativo diz que alguém faz ou deixa outra pessoa fazer algo: 食べさせる = 'fazer comer' ou 'deixar comer'. O contexto mostra se é obrigação ou permissão.",
+ "liga_a": ["causativa"],
+ "como_formar": ["Grupo 1: som -a + せる: 書く → 書かせる, 行く → 行かせる, 待つ → 待たせる", "Grupo 2: tira o る + させる: 食べる → 食べさせる", "Grupo 3: する → させる, 来る → 来させる (こさせる)", "Quem faz a ação: に (com objeto: 子供に野菜を食べさせる) ou を (sem objeto: 弟を泣かせる)"],
+ "uso": "Usado de cima para baixo (pais, professores, chefes) ou para permissão. させてください = 'deixe-me…', um jeito muito educado de se oferecer ou pedir permissão. Dizer que você fez um superior fazer algo soa rude.",
+ "exemplos": [
+  {"jp": "母は子供に野菜を食べさせた。", "pt": "A mãe fez a criança comer verduras.", "alvo": "させた", "erradas": ["られた", "せた", "させられた"]},
+  {"jp": "先生は学生に作文を書かせました。", "pt": "O professor fez os alunos escreverem uma redação.", "alvo": "かせました", "erradas": ["かれました", "かさせました", "きさせました"]},
+  {"jp": "会社は私を大阪に行かせた。", "pt": "A empresa me mandou para Osaka.", "alvo": "かせた", "erradas": ["かれた", "かさせた", "きさせた"]},
+  {"jp": "少し考えさせてください。", "pt": "Deixe-me pensar um pouco.", "alvo": "させてください", "erradas": ["られてください", "せてください", "させられてください"]},
+  {"jp": "弟を泣かせてしまった。", "pt": "Acabei fazendo meu irmão chorar.", "alvo": "かせて", "erradas": ["かれて", "かさせて", "きさせて"]}
+ ],
+ "parecidos": [
+  {"padrao": "受け身 (られる)", "diferenca": "Passiva: algo é feito a alguém. Causativo: alguém faz outro fazer."},
+  {"padrao": "させられる", "diferenca": "Causativo-passivo: 'ser obrigado a fazer'."}
+ ],
+ "erros_comuns": ["Pôr させる no grupo 1: ×書かさせる, ×行かさせる. O certo é 書かせる, 行かせる.", "Confundir com a passiva: 食べられた ('foi comido') ≠ 食べさせた ('fiz comer').", "Usar を para quem faz quando já há objeto: ×子供を野菜を食べさせる → 子供に野菜を食べさせる."],
+ "drill": {"verbo": [["CAUS", ""]], "adj": [], "sentido": "fazer/deixar (alguém) …", "teste": {"かく": "かかせる", "たべる": "たべさせる", "する": "させる", "くる": "こさせる"}},
+ "detectar": []},
+
+{"id": "bp:147", "leitura": "といってもいい", "romaji": "to itte mo ii", "resumo": "pode-se dizer que…",
+ "significado": "と言ってもいい quer dizer 'pode-se dizer que…', 'dá para dizer que…'. Faz uma afirmação forte, mas com um pouco de cuidado.",
+ "liga_a": ["frase"],
+ "como_formar": ["Frase (forma simples) + と言ってもいい: 終わったと言ってもいい", "Substantivo / adjetivo-な: com ou sem だ: 日本一の歌手(だ)と言ってもいい", "Mais suave: と言ってもいいでしょう / と言ってもいいかもしれない"],
+ "uso": "Neutro, comum em opiniões, textos e discursos. Suaviza uma afirmação exagerada: 'não é exatamente, mas quase'. Com でしょう, fica ainda mais cuidadoso.",
+ "exemplos": [
+  {"jp": "彼は日本一の歌手だと言ってもいい。", "pt": "Pode-se dizer que ele é o melhor cantor do Japão.", "alvo": "と言ってもいい", "erradas": ["と言わなくてもいい", "を言ってもいい", "と言ってはいけない"]},
+  {"jp": "ここは私の第二のふるさとと言ってもいい。", "pt": "Dá para dizer que aqui é minha segunda terra natal.", "alvo": "と言ってもいい", "erradas": ["を言ってもいい", "と言わなくてもいい", "と言うてもいい"]},
+  {"jp": "東京は世界で一番便利な町と言ってもいいでしょう。", "pt": "Pode-se dizer que Tóquio é a cidade mais prática do mundo.", "alvo": "と言ってもいい", "erradas": ["と言いてもいい", "を言ってもいい", "と言わなくてもいい"]},
+  {"jp": "今年は人生で一番忙しい年だったと言ってもいい。", "pt": "Pode-se dizer que este ano foi o mais corrido da minha vida.", "alvo": "と言ってもいい", "erradas": ["と言ってはいけない", "と言いてもいい", "を言ってもいい"]},
+  {"jp": "宿題はもう終わったと言ってもいい。", "pt": "Dá para dizer que a lição já está terminada.", "alvo": "と言ってもいい", "erradas": ["と言わなくてもいい", "と言うてもいい", "を言ってもいい"]}
+ ],
+ "parecidos": [
+  {"padrao": "てもいい (permissão)", "diferenca": "Literalmente 'pode dizer'; aqui o sentido é 'dá para afirmar que…'."},
+  {"padrao": "と言える", "diferenca": "と言える = 'pode-se dizer', um pouco mais formal e firme."}
+ ],
+ "erros_comuns": ["Usar を: ×日本一の歌手を言ってもいい. Para citar, é と.", "Errar a forma て de 言う: ×言いて, ×言うて. O certo é 言って."],
+ "drill": null,
+ "detectar": ["と言ってもいい", "といってもいい", "と言ってもよい"]},
+
+{"id": "bp:174", "leitura": "ても・でも", "romaji": "temo / demo", "resumo": "mesmo que…, por mais que…",
+ "significado": "ても quer dizer 'mesmo que', 'ainda que': o resultado não muda, apesar da condição. Com いくら / 何回, vira 'por mais que…'.",
+ "liga_a": ["te", "adjetivo_i", "adjetivo_na", "substantivo"],
+ "como_formar": ["Verbo (forma て) + も: 降る → 降っても, 食べる → 食べても, する → しても, 来る → 来ても", "Adjetivo-い: い → くても: 高い → 高くても", "Substantivo / adjetivo-な + でも: 日曜日でも, 暇でも", "Negativo: なくても: 行かなくても"],
+ "uso": "Neutro, muito comum. Com いくら, どんなに ou 何回 enfatiza 'por mais que': いくら食べても太らない. Não confunda com でも no começo da frase ('mas').",
+ "exemplos": [
+  {"jp": "雨が降っても、行きます。", "pt": "Mesmo que chova, eu vou.", "alvo": "っても", "erradas": ["ったら", "るても", "りても"]},
+  {"jp": "いくら食べても、太らない。", "pt": "Por mais que eu coma, não engordo.", "alvo": "べても", "erradas": ["べたら", "べるても", "べれば"]},
+  {"jp": "高くても、買いたい。", "pt": "Mesmo que seja caro, quero comprar.", "alvo": "くても", "erradas": ["いても", "かったら", "くて"]},
+  {"jp": "日曜日でも、仕事があります。", "pt": "Mesmo sendo domingo, tenho trabalho.", "alvo": "でも", "erradas": ["だっても", "なら", "ても"]},
+  {"jp": "何回聞いても、わからない。", "pt": "Por mais que eu pergunte, não entendo.", "alvo": "いても", "erradas": ["いたら", "くても", "きても"]}
+ ],
+ "parecidos": [
+  {"padrao": "たら", "diferenca": "たら = 'se' (o resultado depende); ても = 'mesmo que' (o resultado não muda)."},
+  {"padrao": "のに", "diferenca": "のに = 'apesar de' sobre fatos reais, com frustração; ても é muitas vezes hipotético."}
+ ],
+ "erros_comuns": ["Manter o い do adjetivo: ×高いても. O certo é 高くても.", "Usar ても com substantivo: ×日曜日ても. Com substantivo é でも.", "Errar a forma て: ×降りても → 降っても."],
+ "drill": {"verbo": [["TE", "も"]], "adj": [["KUTE", "も"]], "sentido": "mesmo que …", "teste": {"かく": "かいても", "たべる": "たべても", "する": "しても", "くる": "きても", "たかい": "たかくても"}},
+ "detectar": []},
+
+{"id": "bp:172", "leitura": "てしまう・ちゃう", "romaji": "te shimau / chau", "resumo": "acabar fazendo (sem querer); fazer por completo",
+ "significado": "てしまう tem dois sentidos: terminar algo por completo, ou fazer algo sem querer, com arrependimento ('acabei…'). Na fala, vira ちゃう / じゃう.",
+ "liga_a": ["te"],
+ "como_formar": ["Forma て + しまう: 食べる → 食べてしまう, 忘れる → 忘れてしまう", "Grupo 1 e 3: 書いてしまう, してしまう, 来てしまう", "Casual: てしまう → ちゃう (食べちゃう), でしまう → じゃう (飲んじゃう)", "Passado: てしまった / ちゃった / じゃった"],
+ "uso": "てしまう é neutro; ちゃう / じゃう é casual e muito comum entre amigos. O tom de arrependimento é forte: 財布をなくしてしまった = 'perdi a carteira (que pena)'.",
+ "exemplos": [
+  {"jp": "宿題を全部やってしまった。", "pt": "Terminei a lição toda.", "alvo": "ってしまった", "erradas": ["っておいた", "ってみた", "りてしまった"]},
+  {"jp": "電車の中に傘を忘れてしまった。", "pt": "Acabei esquecendo o guarda-chuva no trem.", "alvo": "てしまった", "erradas": ["ておいた", "てあった", "てしまいた"]},
+  {"jp": "ケーキを全部食べちゃった。", "pt": "Comi o bolo todo.", "alvo": "ちゃった", "erradas": ["じゃった", "ちゃいた", "てちゃった"]},
+  {"jp": "財布をなくしてしまいました。", "pt": "Perdi a carteira.", "alvo": "してしまいました", "erradas": ["しておきました", "してしまえました", "してしまりました"]},
+  {"jp": "疲れていて、電車で寝てしまった。", "pt": "Estava cansado e acabei dormindo no trem.", "alvo": "てしまった", "erradas": ["ておいた", "てみた", "てあった"]}
+ ],
+ "parecidos": [
+  {"padrao": "ておく", "diferenca": "ておく é fazer de propósito, como preparação; てしまう é terminar ou fazer sem querer."},
+  {"padrao": "終わる", "diferenca": "食べ終わる = 'terminar de comer', neutro; てしまう traz o tom de 'por completo' ou de pena."}
+ ],
+ "erros_comuns": ["Errar a contração: 飲んでしまう vira 飲んじゃう (com じ), não ×飲んちゃう.", "Conjugar しまう errado: ×しまいた. O passado é しまった."],
+ "drill": {"verbo": [["TE", "しまう"]], "adj": [], "sentido": "acabar … (sem querer / por completo)", "teste": {"かく": "かいてしまう", "たべる": "たべてしまう", "する": "してしまう", "くる": "きてしまう"}},
+ "detectar": ["てしまう", "てしまった", "てしまい", "でしまう", "でしまった", "ちゃった", "じゃった"]},
+
+{"id": "bp:772", "leitura": "て", "romaji": "te (causa)", "resumo": "forma て: …, e por isso… (causa)",
+ "significado": "A forma て também liga causa e efeito: 風邪をひいて、休んだ = 'peguei um resfriado e (por isso) faltei'. A primeira parte é o motivo da segunda.",
+ "liga_a": ["te", "adjetivo_i", "adjetivo_na"],
+ "como_formar": ["Verbo (forma て): 風邪をひいて, 雨が降って", "Adjetivo-い: い → くて: 難しくて", "Adjetivo-な / substantivo + で: 静かで, 病気で", "Negativo: なくて: わからなくて"],
+ "uso": "Neutro, muito comum. A segunda parte costuma ser um sentimento ou algo fora de controle (びっくりした, 休んだ, 眠れた). Não serve para pedido, ordem ou vontade: ×遅れて、待ってください. Nesses casos, use から ou ので.",
+ "exemplos": [
+  {"jp": "風邪をひいて、学校を休みました。", "pt": "Peguei um resfriado e faltei à escola.", "alvo": "いて", "erradas": ["いたら", "くて", "いても"]},
+  {"jp": "そのニュースを聞いて、びっくりしました。", "pt": "Fiquei surpreso ao ouvir essa notícia.", "alvo": "いて", "erradas": ["くて", "いても", "きて"]},
+  {"jp": "この問題は難しくて、わかりません。", "pt": "Este problema é difícil e (por isso) não entendo.", "alvo": "くて", "erradas": ["いて", "くても", "かったで"]},
+  {"jp": "雨が降って、試合が中止になった。", "pt": "Choveu e o jogo foi cancelado.", "alvo": "って", "erradas": ["っても", "りて", "るて"]},
+  {"jp": "部屋が静かで、よく眠れました。", "pt": "O quarto era silencioso e consegui dormir bem.", "alvo": "で", "erradas": ["に", "な", "だ"]}
+ ],
+ "parecidos": [
+  {"padrao": "から・ので", "diferenca": "から / ので deixam a causa explícita e aceitam pedido ou vontade depois."},
+  {"padrao": "て (sequência)", "diferenca": "A mesma forma て também liga ações em ordem ('e depois'); o contexto mostra o sentido."}
+ ],
+ "erros_comuns": ["Pôr pedido depois: ×遅れて、すみませんが待ってください. Com pedido, use ので.", "Manter o い: ×難しいて → 難しくて.", "Usar て com adjetivo-な: ×静かて → 静かで."],
+ "drill": null,
+ "detectar": []},
+
+{"id": "bp:164", "leitura": "させられる", "romaji": "saserareru (causativo-passivo)", "resumo": "ser obrigado a…, ter que (contra a vontade)",
+ "significado": "O causativo-passivo diz que alguém foi obrigado a fazer algo: 食べさせられた = 'me fizeram comer', 'fui obrigado a comer'. Quem obriga leva に.",
+ "liga_a": ["causativa", "passiva"],
+ "como_formar": ["Grupo 1: som -a + せられる, ou a forma curta -a + される: 飲む → 飲ませられる / 飲まされる, 待つ → 待たされる", "Grupo 1 em す: só せられる: 話す → 話させられる", "Grupo 2: tira o る + させられる: 食べる → 食べさせられる", "Grupo 3: する → させられる, 来る → 来させられる (こさせられる)"],
+ "uso": "Mostra que a pessoa não queria: tom de queixa. Na fala, o grupo 1 usa muito a forma curta (飲まされた, 待たされた). Quem obriga: pessoa + に.",
+ "exemplos": [
+  {"jp": "子供の頃、母に野菜を食べさせられた。", "pt": "Na infância, minha mãe me obrigava a comer verduras.", "alvo": "させられた", "erradas": ["させた", "られた", "させれた"]},
+  {"jp": "先輩にお酒を飲まされた。", "pt": "Fui obrigado pelo veterano a beber.", "alvo": "まされた", "erradas": ["まれた", "ませた", "みさせられた"]},
+  {"jp": "昨日は駅で二時間も待たされました。", "pt": "Ontem me fizeram esperar duas horas na estação!", "alvo": "たされました", "erradas": ["たれました", "たせました", "ちさせられました"]},
+  {"jp": "先生に作文を書かせられた。", "pt": "O professor me fez escrever uma redação.", "alvo": "かせられた", "erradas": ["かれた", "かせた", "きさせられた"]},
+  {"jp": "毎日、部屋の掃除をさせられる。", "pt": "Todo dia me obrigam a limpar o quarto.", "alvo": "させられる", "erradas": ["される", "させる", "しさせられる"]}
+ ],
+ "parecidos": [
+  {"padrao": "せる・させる", "diferenca": "Causativo: eu faço alguém fazer. Causativo-passivo: alguém me faz fazer."},
+  {"padrao": "なければならない", "diferenca": "なければならない = 'tenho que' (obrigação geral); させられる destaca quem obrigou."}
+ ],
+ "erros_comuns": ["Confundir com a passiva: 飲まれた é 'foi bebido' (por alguém); 飲まされた é 'fui obrigado a beber'.", "Usar a forma curta em verbos em す: ×話さされる. O certo é 話させられる."],
+ "drill": {"verbo": [["CAUSPASS", ""]], "adj": [], "sentido": "ser obrigado a …", "teste": {"かく": "かかせられる", "たべる": "たべさせられる", "する": "させられる", "くる": "こさせられる"}},
+ "detectar": ["させられ"]},
+
+{"id": "bp:773", "leitura": "て・で", "romaji": "te / de (meio e modo)", "resumo": "forma て / で: de que jeito, com que meio",
+ "significado": "A forma て (ou で depois de substantivo) mostra como ou com que meio se faz algo: 歩いて行く = 'ir a pé', バスで行く = 'ir de ônibus'.",
+ "liga_a": ["te", "substantivo"],
+ "como_formar": ["Verbo (forma て) + verbo: 歩いて行く, 急いで出る, 座って話す", "Substantivo + で + verbo: バスで行く, 手で食べる, 日本語で話す"],
+ "uso": "Neutro e muito comum. A primeira ação descreve o jeito da segunda: 'correndo', 'sentado', 'usando…'. Com substantivo, で marca o instrumento ou meio.",
+ "exemplos": [
+  {"jp": "毎日歩いて学校へ行きます。", "pt": "Vou à escola a pé todos os dias.", "alvo": "いて", "erradas": ["くて", "きて", "いたら"]},
+  {"jp": "バスで駅まで行った。", "pt": "Fui até a estação de ônibus.", "alvo": "で", "erradas": ["に", "を", "が"]},
+  {"jp": "辞書を使って調べてください。", "pt": "Pesquise usando o dicionário.", "alvo": "って", "erradas": ["いて", "いで", "ったら"]},
+  {"jp": "急いで家を出た。", "pt": "Saí de casa às pressas.", "alvo": "いで", "erradas": ["いて", "ぎて", "いだ"]},
+  {"jp": "この料理は手で食べてもいいですか。", "pt": "Posso comer este prato com as mãos?", "alvo": "で", "erradas": ["に", "を", "が"]}
+ ],
+ "parecidos": [
+  {"padrao": "て (sequência)", "diferenca": "Na sequência, as ações são separadas ('fiz A e depois B'); no modo, A descreve como B é feito."},
+  {"padrao": "ながら", "diferenca": "ながら = duas ações ao mesmo tempo ('enquanto')."}
+ ],
+ "erros_comuns": ["Usar に para meio de transporte: ×バスに行く. O certo é バスで行く (バスに乗る é 'pegar o ônibus').", "Errar a forma て de verbos em ぐ: ×急いて. O certo é 急いで."],
+ "drill": null,
+ "detectar": []},
+
+{"id": "bp:159", "leitura": "てある", "romaji": "te aru", "resumo": "está (feito, deixado) assim por alguém",
+ "significado": "てある descreve um estado que resulta de uma ação feita de propósito por alguém: 窓が開けてある = 'a janela está aberta (alguém a deixou assim)'.",
+ "liga_a": ["te"],
+ "como_formar": ["Verbo transitivo (forma て) + ある: 書く → 書いてある, 置く → 置いてある", "A coisa costuma levar が: 名前が書いてある", "Grupo 2 e 3: 開けてある, してある", "Polido: てあります; passado: てあった"],
+ "uso": "Neutro. Foca no resultado e na intenção, sem dizer quem fez. Muito usado para descrever lugares e avisos: ここに書いてあります (está escrito aqui).",
+ "exemplos": [
+  {"jp": "机の上に手紙が置いてある。", "pt": "Tem uma carta deixada em cima da mesa.", "alvo": "いてある", "erradas": ["いている", "きてある", "くてある"]},
+  {"jp": "部屋の窓が開けてあります。", "pt": "A janela do quarto foi deixada aberta.", "alvo": "てあります", "erradas": ["ています", "ておきます", "てしまいます"]},
+  {"jp": "壁に地図がはってある。", "pt": "Tem um mapa colado na parede.", "alvo": "ってある", "erradas": ["っている", "りてある", "るてある"]},
+  {"jp": "ノートに名前が書いてありますね。", "pt": "O nome está escrito no caderno, né?", "alvo": "いてあります", "erradas": ["いています", "きてあります", "かれてあります"]},
+  {"jp": "ビールはもう冷やしてあるよ。", "pt": "Já deixei a cerveja gelando.", "alvo": "してある", "erradas": ["するてある", "してない", "しってある"]}
+ ],
+ "parecidos": [
+  {"padrao": "ている", "diferenca": "Com verbo intransitivo, ている também dá estado (窓が開いている), mas sem a ideia de intenção."},
+  {"padrao": "ておく", "diferenca": "ておく foca na ação de preparar; てある, no estado que ficou."}
+ ],
+ "erros_comuns": ["Usar com verbo intransitivo: ×窓が開いてある. Com intransitivo é 開いている.", "Usar ている com verbo transitivo para estado: ×名前が書いている. O certo é 名前が書いてある."],
+ "drill": {"verbo": [["TE", "ある"]], "adj": [], "sentido": "está … (deixado assim)", "teste": {"かく": "かいてある", "たべる": "たべてある", "する": "してある", "くる": "きてある"}},
+ "detectar": ["てある", "てあります", "てあった"]},
+
+{"id": "bp:379", "leitura": "ように…てほしい", "romaji": "you ni ~ te hoshii", "resumo": "quero que (alguém) faça como…/consiga…",
+ "significado": "ように + てほしい expressa o desejo de que alguém faça algo de certo jeito ('do jeito que…') ou passe a conseguir algo (ようになってほしい).",
+ "liga_a": ["dicionario", "nai", "potencial", "ta"],
+ "como_formar": ["Verbo (た) + ように + verbo て + ほしい: 先生が言ったようにやってほしい", "Potencial + ようになってほしい: 話せるようになってほしい", "Negativo + ように + てほしい: 遅れないように来てほしい"],
+ "uso": "Neutro. Muito usado por pais, professores e chefes ao falar de expectativas. Dito diretamente a alguém, é um pedido firme; com んだけど, fica mais suave.",
+ "exemplos": [
+  {"jp": "先生が言ったようにやってほしい。", "pt": "Quero que você faça do jeito que o professor disse.", "alvo": "ようにやってほしい", "erradas": ["ようなやってほしい", "ようにやりたい", "そうにやってほしい"]},
+  {"jp": "子供が野菜を食べられるようになってほしい。", "pt": "Quero que meu filho passe a conseguir comer verduras.", "alvo": "ようになってほしい", "erradas": ["ようになりたい", "ようなってほしい", "ようになるほしい"]},
+  {"jp": "明日は遅れないように来てほしい。", "pt": "Amanhã quero que você venha sem se atrasar.", "alvo": "ように来てほしい", "erradas": ["ような来てほしい", "ように来たい", "ように来るほしい"]},
+  {"jp": "私がしたように、書いてほしい。", "pt": "Quero que você escreva do jeito que eu fiz.", "alvo": "ように、書いてほしい", "erradas": ["ような、書いてほしい", "ように、書きたい", "そうに、書いてほしい"]},
+  {"jp": "みんなが日本語を話せるようになってほしいです。", "pt": "Quero que todos passem a conseguir falar japonês.", "alvo": "ようになってほしい", "erradas": ["ようになりたい", "ようなってほしい", "ようにほしい"]}
+ ],
+ "parecidos": [
+  {"padrao": "てほしい", "diferenca": "てほしい sozinho é 'quero que faça'; com ように, diz como ou o que a pessoa deve passar a conseguir."},
+  {"padrao": "ようになる", "diferenca": "ようになる descreve a mudança; ようになってほしい deseja que ela aconteça."}
+ ],
+ "erros_comuns": ["Usar たい: ×話せるようになりたい é o próprio desejo ('quero conseguir'). Para outra pessoa, é ようになってほしい.", "Esquecer o に: ×ようなってほしい."],
+ "drill": null,
+ "detectar": ["ようになってほしい", "ようにしてほしい"]},
+
+{"id": "bp:160", "leitura": "ているあいだに", "romaji": "te iru aida ni", "resumo": "enquanto… (algo acontece nesse meio-tempo)",
+ "significado": "ている間に quer dizer 'enquanto…', 'durante o tempo em que…'. Algo acontece uma vez dentro desse período.",
+ "liga_a": ["te"],
+ "como_formar": ["Verbo (forma て) + いる間に: 寝ている間に, 待っている間に", "Com いる: 日本にいる間に (enquanto estou no Japão)", "Substantivo + の間に: 夏休みの間に"],
+ "uso": "Neutro, vale em qualquer registro. Com に, a segunda ação é pontual e cabe dentro do período. Sem に (間), a segunda ação dura o período todo: 寝ている間、ずっと雨だった.",
+ "exemplos": [
+  {"jp": "私が寝ている間に、雨が降った。", "pt": "Enquanto eu dormia, choveu.", "alvo": "ている間に", "erradas": ["ている間で", "ている間を", "た間に"]},
+  {"jp": "母が買い物をしている間に、部屋を掃除した。", "pt": "Enquanto minha mãe fazia compras, limpei o quarto.", "alvo": "している間に", "erradas": ["している間で", "している間を", "しているのに"]},
+  {"jp": "日本にいる間に、富士山に登りたい。", "pt": "Enquanto estou no Japão, quero subir o Monte Fuji.", "alvo": "いる間に", "erradas": ["いる間で", "いる間を", "いるのに"]},
+  {"jp": "友達を待っている間に、コーヒーを買った。", "pt": "Enquanto esperava meu amigo, comprei um café.", "alvo": "ている間に", "erradas": ["ている間で", "ている間を", "てる間が"]},
+  {"jp": "子供が寝ている間に、料理を作ります。", "pt": "Enquanto as crianças dormem, eu cozinho.", "alvo": "ている間に", "erradas": ["ている間で", "ている間を", "ているのに"]}
+ ],
+ "parecidos": [
+  {"padrao": "ている間", "diferenca": "Sem に: a segunda ação dura o período inteiro."},
+  {"padrao": "ながら", "diferenca": "ながら: a mesma pessoa faz duas coisas ao mesmo tempo."},
+  {"padrao": "うちに", "diferenca": "うちに = 'enquanto ainda…', com ideia de aproveitar antes que mude."}
+ ],
+ "erros_comuns": ["Usar で: ×寝ている間で. O certo é 間に.", "Usar 間に com ação que dura todo o período: ×寝ている間に、ずっと雨だった → 寝ている間、ずっと雨だった."],
+ "drill": {"verbo": [["TE", "いる間に"]], "adj": [], "sentido": "enquanto …", "teste": {"かく": "かいているあいだに", "たべる": "たべているあいだに", "する": "しているあいだに", "くる": "きているあいだに"}},
+ "detectar": ["ている間に", "ているあいだに", "てる間に", "いる間に"]},
+
+{"id": "bp:171", "leitura": "なくてもいい", "romaji": "nakute mo ii", "resumo": "não precisa…",
+ "significado": "なくてもいい quer dizer 'não precisa', 'não é necessário': 来なくてもいい = 'você não precisa vir'.",
+ "liga_a": ["nai"],
+ "como_formar": ["Verbo (ない): ない → なくてもいい: 行かない → 行かなくてもいい", "Grupo 2 e 3: 食べなくてもいい, しなくてもいい, 来なくてもいい (こなくても)", "Pergunta: なくてもいいですか (não preciso…?)", "Mais casual: なくていい; mais formal: なくてもかまいません"],
+ "uso": "Neutro. Com ですよ fica gentil, tirando uma obrigação do outro. なくてもかまいません é mais formal. Na fala, なくていい (sem も) é muito comum.",
+ "exemplos": [
+  {"jp": "明日は学校に来なくてもいいです。", "pt": "Amanhã você não precisa vir à escola.", "alvo": "なくてもいい", "erradas": ["なくてはいけない", "ないてもいい", "なくでもいい"]},
+  {"jp": "全部食べなくてもいいよ。", "pt": "Não precisa comer tudo.", "alvo": "なくてもいい", "erradas": ["なければならない", "ないてもいい", "なくてもいけない"]},
+  {"jp": "急がなくてもいいですよ。", "pt": "Não precisa ter pressa.", "alvo": "なくてもいい", "erradas": ["なくてはいけない", "ないてもいい", "なくてもだめ"]},
+  {"jp": "名前は書かなくてもいいですか。", "pt": "Não preciso escrever o nome?", "alvo": "なくてもいい", "erradas": ["なければいけない", "ないてもいい", "なくでもいい"]},
+  {"jp": "心配しなくてもいいです。", "pt": "Não precisa se preocupar.", "alvo": "しなくてもいい", "erradas": ["しなくてはいけない", "しないてもいい", "すなくてもいい"]}
+ ],
+ "parecidos": [
+  {"padrao": "なければならない", "diferenca": "É o contrário: 'tem que'."},
+  {"padrao": "てもいい", "diferenca": "てもいい = 'pode fazer' (permissão); なくてもいい = 'não precisa fazer'."},
+  {"padrao": "てはいけない", "diferenca": "てはいけない = 'não pode' (proibição), bem diferente de 'não precisa'."}
+ ],
+ "erros_comuns": ["Confundir 'não precisa' com 'não pode': 来なくてもいい ≠ 来てはいけない.", "Errar a forma: ×来ないてもいい. O ない vira なくて: 来なくてもいい."],
+ "drill": {"verbo": [["NA", "くてもいい"]], "adj": [], "sentido": "não precisa …", "teste": {"かく": "かかなくてもいい", "たべる": "たべなくてもいい", "する": "しなくてもいい", "くる": "こなくてもいい"}},
+ "detectar": ["なくてもいい", "なくてもかまわない", "なくてもよい", "なくてもかまいません"]},
+
+{"id": "bp:99", "leitura": "てみる", "romaji": "te miru", "resumo": "experimentar fazer, tentar (para ver como é)",
+ "significado": "てみる quer dizer 'fazer para ver como é', 'experimentar': 食べてみる = 'provar'. A pessoa faz a ação para conhecer o resultado.",
+ "liga_a": ["te"],
+ "como_formar": ["Forma て + みる: 食べる → 食べてみる, 行く → 行ってみる, 読む → 読んでみる", "Grupo 3: する → してみる, 来る → 来てみる", "Conjuga como 見る (grupo 2): てみたい, てみた, てみてください", "Escreve-se em hiragana: みる"],
+ "uso": "Neutro e muito comum. てみたい = 'quero experimentar'; てみてください é uma sugestão gentil. Não é 'esforçar-se para': para isso, o padrão é ようとする.",
+ "exemplos": [
+  {"jp": "この服を着てみてもいいですか。", "pt": "Posso experimentar esta roupa?", "alvo": "てみても", "erradas": ["ておいても", "てあっても", "てみりても"]},
+  {"jp": "日本の料理を作ってみたい。", "pt": "Quero experimentar fazer comida japonesa.", "alvo": "ってみたい", "erradas": ["りてみたい", "ってみるたい", "ってみりたい"]},
+  {"jp": "一度、富士山に登ってみたいです。", "pt": "Quero subir o Monte Fuji pelo menos uma vez.", "alvo": "ってみたいです", "erradas": ["りてみたいです", "ってみるたいです", "ってみりたいです"]},
+  {"jp": "わからない言葉は辞書で調べてみてください。", "pt": "Tente procurar no dicionário as palavras que não entende.", "alvo": "てみてください", "erradas": ["てみるください", "てみってください", "てみりてください"]},
+  {"jp": "新しいラーメン屋に行ってみたら、とてもおいしかった。", "pt": "Fui conhecer o novo lámen e estava muito gostoso.", "alvo": "ってみたら", "erradas": ["いてみたら", "ってみたれば", "ってみりたら"]}
+ ],
+ "parecidos": [
+  {"padrao": "ようとする", "diferenca": "ようとする = 'tentar (se esforçar para) fazer'; てみる = fazer para ver como é."},
+  {"padrao": "見る", "diferenca": "見る sozinho é 'ver'; depois da forma て, みる é 'experimentar'."}
+ ],
+ "erros_comuns": ["Conjugar みる como grupo 1: ×てみります. O certo é てみます.", "Usar てみる para 'esforçar-se para': 起きてみた é 'experimentei acordar'. Para 'tentei acordar (mas não consegui)', o natural é 起きようとした."],
+ "drill": {"verbo": [["TE", "みる"]], "adj": [], "sentido": "experimentar …", "teste": {"かく": "かいてみる", "たべる": "たべてみる", "する": "してみる", "くる": "きてみる"}},
+ "detectar": ["てみる", "てみた", "てみて", "てみま", "でみる", "でみた", "でみて"]},
+
+{"id": "bp:106", "leitura": "てすみません", "romaji": "te sumimasen", "resumo": "desculpe por…",
+ "significado": "Forma て + すみません pede desculpas por algo específico: 遅れてすみません = 'desculpe o atraso'.",
+ "liga_a": ["te", "nai"],
+ "como_formar": ["Forma て + すみません: 遅れる → 遅れてすみません", "Grupo 1 e 3: 待たせてすみません, 電話してすみません", "Negativo: なくて + すみません: 手伝えなくてすみません", "Passado (o fato já passou): てすみませんでした; casual: てごめん"],
+ "uso": "Polido, muito usado no dia a dia e no trabalho. てすみませんでした é para algo já terminado, mais formal. Entre amigos, てごめん / てごめんね. Para situações bem formais, て申し訳ありません.",
+ "exemplos": [
+  {"jp": "遅れてすみません。", "pt": "Desculpe o atraso.", "alvo": "てすみません", "erradas": ["たらすみません", "てありがとう", "るすみません"]},
+  {"jp": "何度も電話してすみません。", "pt": "Desculpe ligar tantas vezes.", "alvo": "してすみません", "erradas": ["したらすみません", "してありがとう", "するすみません"]},
+  {"jp": "返事が遅くなってすみません。", "pt": "Desculpe a demora na resposta.", "alvo": "ってすみません", "erradas": ["ったらすみません", "ってありがとう", "りすみません"]},
+  {"jp": "お待たせしてすみませんでした。", "pt": "Desculpe por ter feito você esperar.", "alvo": "してすみませんでした", "erradas": ["したらすみませんでした", "してありがとうでした", "するすみませんでした"]},
+  {"jp": "手伝えなくてすみません。", "pt": "Desculpe não poder ajudar.", "alvo": "なくてすみません", "erradas": ["ないですみません", "ないてすみません", "なかったすみません"]}
+ ],
+ "parecidos": [
+  {"padrao": "てごめん", "diferenca": "Versão casual, para amigos e família."},
+  {"padrao": "てありがとう", "diferenca": "Mesma estrutura para agradecer: 来てくれてありがとう."}
+ ],
+ "erros_comuns": ["Juntar すみません à forma de dicionário: ×遅れるすみません. Use a forma て.", "Negativo errado: ×手伝えないですみません → 手伝えなくてすみません."],
+ "drill": {"verbo": [["TE", "すみません"]], "adj": [], "sentido": "desculpe por …", "teste": {"かく": "かいてすみません", "たべる": "たべてすみません", "する": "してすみません", "くる": "きてすみません"}},
+ "detectar": ["てすみません", "てごめん", "でごめん"]},
+
+{"id": "bp:92", "leitura": "てあげる", "romaji": "te ageru", "resumo": "fazer (algo) para alguém (favor)",
+ "significado": "てあげる quer dizer 'fazer algo para alguém', como um favor. Quem faz é quem fala (ou alguém do lado dele), e quem recebe é outra pessoa.",
+ "liga_a": ["te"],
+ "como_formar": ["Forma て + あげる: 教える → 教えてあげる, 持つ → 持ってあげる, 読む → 読んであげる", "Grupo 3: する → してあげる, 来る → 来てあげる", "Quem recebe: pessoa + に (教える) ou の (持つ: 荷物を持ってあげる)"],
+ "uso": "Neutro, mas cuidado: pode soar como se você estivesse fazendo um grande favor. Com superiores, evite dizer 'te ajudo' com てあげる; use ましょうか (お持ちしましょうか). Com crianças e animais também se usa てやる.",
+ "exemplos": [
+  {"jp": "友達に日本語を教えてあげた。", "pt": "Ensinei japonês para meu amigo.", "alvo": "てあげた", "erradas": ["てくれた", "てもらった", "てあげった"]},
+  {"jp": "妹に本を読んであげました。", "pt": "Li um livro para minha irmã.", "alvo": "であげました", "erradas": ["でくれました", "でもらいました", "てあげました"]},
+  {"jp": "おばあさんの荷物を持ってあげました。", "pt": "Carreguei a bagagem da senhora.", "alvo": "ってあげました", "erradas": ["ってくれました", "ってもらいました", "ちてあげました"]},
+  {"jp": "子供たちの写真を撮ってあげよう。", "pt": "Vou tirar uma foto das crianças.", "alvo": "ってあげよう", "erradas": ["ってくれよう", "ってもらおう", "ってあげろう"]},
+  {"jp": "母に花を買ってあげたいです。", "pt": "Quero comprar flores para minha mãe.", "alvo": "ってあげたい", "erradas": ["ってくれたい", "ってもらいたい", "ってあげりたい"]}
+ ],
+ "parecidos": [
+  {"padrao": "てくれる", "diferenca": "てくれる: outra pessoa faz algo para mim (ou para alguém do meu lado)."},
+  {"padrao": "てもらう", "diferenca": "てもらう: eu recebo a ação de alguém (peço e a pessoa faz)."}
+ ],
+ "erros_comuns": ["Usar てあげる quando alguém faz algo para você: ×友達が教えてあげた (para mim). O certo é 教えてくれた.", "Dizer 先生、手伝ってあげます: soa arrogante. Diga お手伝いしましょうか."],
+ "drill": {"verbo": [["TE", "あげる"]], "adj": [], "sentido": "fazer … para alguém", "teste": {"かく": "かいてあげる", "たべる": "たべてあげる", "する": "してあげる", "くる": "きてあげる"}},
+ "detectar": ["てあげ", "であげ"]},
+
+{"id": "bp:103", "leitura": "てくれる", "romaji": "te kureru", "resumo": "(alguém) faz algo para mim",
+ "significado": "てくれる quer dizer que outra pessoa faz algo para quem fala (ou para alguém do lado dele): 友達が手伝ってくれた = 'meu amigo me ajudou'. Mostra gratidão.",
+ "liga_a": ["te"],
+ "como_formar": ["Forma て + くれる: 送る → 送ってくれる, 作る → 作ってくれる", "Grupo 2 e 3: 教えてくれる, してくれる", "Quem faz leva が ou は: 母が作ってくれた", "Pedido: てくれる？ / てくれない？ (casual); polido: てくださる / てくださいませんか"],
+ "uso": "Neutro e muito comum. Dá o tom de 'recebi um favor', por isso é natural agradecer: 来てくれてありがとう. Para superiores, use てくださる. Como pedido, てくれる？ é casual.",
+ "exemplos": [
+  {"jp": "友達が駅まで送ってくれた。", "pt": "Meu amigo me levou até a estação.", "alvo": "ってくれた", "erradas": ["ってあげた", "ってもらった", "ってくれった"]},
+  {"jp": "母がお弁当を作ってくれました。", "pt": "Minha mãe fez marmita para mim.", "alvo": "ってくれました", "erradas": ["ってあげました", "ってもらいました", "りてくれました"]},
+  {"jp": "田中さんが手伝ってくれたので、早く終わった。", "pt": "Como o Tanaka me ajudou, terminou rápido.", "alvo": "ってくれた", "erradas": ["ってあげた", "ってもらった", "いてくれた"]},
+  {"jp": "ちょっと窓を開けてくれる？", "pt": "Pode abrir a janela para mim?", "alvo": "てくれる", "erradas": ["てあげる", "てもらう", "てくるる"]},
+  {"jp": "誰も教えてくれなかった。", "pt": "Ninguém me contou.", "alvo": "てくれなかった", "erradas": ["てあげなかった", "てもらわなかった", "てくれないだった"]}
+ ],
+ "parecidos": [
+  {"padrao": "てあげる", "diferenca": "てあげる: eu faço algo para outra pessoa."},
+  {"padrao": "てもらう", "diferenca": "Mesmo fato, visto de mim: 友達に送ってもらった (quem faz leva に)."}
+ ],
+ "erros_comuns": ["Usar てくれる quando você faz para outro: ×私が友達に教えてくれた. O certo é 教えてあげた.", "Marcar quem faz com に: ×友達に送ってくれた. Com くれる é が: 友達が送ってくれた."],
+ "drill": {"verbo": [["TE", "くれる"]], "adj": [], "sentido": "(alguém) … para mim", "teste": {"かく": "かいてくれる", "たべる": "たべてくれる", "する": "してくれる", "くる": "きてくれる"}},
+ "detectar": ["てくれ", "でくれ"]},
+
+{"id": "bp:114", "leitura": "てもらう", "romaji": "te morau", "resumo": "receber o favor de…, pedir para (alguém) fazer",
+ "significado": "てもらう quer dizer 'receber a ação de alguém': 友達に手伝ってもらった = 'meu amigo me ajudou' (lit. 'recebi a ajuda do meu amigo'). Muitas vezes a pessoa pediu.",
+ "liga_a": ["te"],
+ "como_formar": ["Forma て + もらう: 手伝う → 手伝ってもらう, 直す → 直してもらう", "Grupo 2 e 3: 教えてもらう, してもらう", "Quem faz leva に: 先生に直してもらう", "Pedido polido: てもらえませんか; mais formal: ていただけませんか"],
+ "uso": "Neutro e muito comum. O foco é em quem recebe (eu). てもらえませんか é um jeito educado de pedir. Para superiores, use ていただく.",
+ "exemplos": [
+  {"jp": "友達に宿題を手伝ってもらった。", "pt": "Meu amigo me ajudou com a lição.", "alvo": "ってもらった", "erradas": ["ってくれた", "ってあげた", "ってもらいった"]},
+  {"jp": "先生に作文を直してもらいました。", "pt": "O professor corrigiu minha redação.", "alvo": "してもらいました", "erradas": ["してくれました", "してあげました", "しってもらいました"]},
+  {"jp": "父に車で送ってもらった。", "pt": "Meu pai me levou de carro.", "alvo": "ってもらった", "erradas": ["ってくれた", "ってあげた", "りてもらった"]},
+  {"jp": "日本人の友達に日本語を教えてもらっています。", "pt": "Um amigo japonês está me ensinando japonês.", "alvo": "てもらっています", "erradas": ["てくれています", "てあげています", "てもらいています"]},
+  {"jp": "誰かに写真を撮ってもらいましょう。", "pt": "Vamos pedir para alguém tirar uma foto.", "alvo": "ってもらいましょう", "erradas": ["ってくれましょう", "ってあげましょう", "ってもらうましょう"]}
+ ],
+ "parecidos": [
+  {"padrao": "てくれる", "diferenca": "Mesmo fato, com quem faz como sujeito: 友達が手伝ってくれた."},
+  {"padrao": "てほしい", "diferenca": "てほしい = 'quero que faça' (desejo); てもらう = recebi (ou vou receber) a ação."}
+ ],
+ "erros_comuns": ["Usar が para quem faz: ×友達が手伝ってもらった. Com もらう, quem faz leva に.", "Misturar に com くれる: ×友達に手伝ってくれた. Com くれる, é が."],
+ "drill": {"verbo": [["TE", "もらう"]], "adj": [], "sentido": "receber o favor de (alguém) …", "teste": {"かく": "かいてもらう", "たべる": "たべてもらう", "する": "してもらう", "くる": "きてもらう"}},
+ "detectar": ["てもら", "でもら"]},
+
+{"id": "bp:95", "leitura": "なさい", "romaji": "nasai", "resumo": "faça…! (ordem de pai, mãe, professor)",
+ "significado": "Radical da ます + なさい é uma ordem: 'faça…!'. Usada por quem tem autoridade, como pais e professores, e em instruções de prova.",
+ "liga_a": ["radical_masu"],
+ "como_formar": ["Radical da ます + なさい: 寝る → 寝なさい, 起きる → 起きなさい, 書く → 書きなさい", "Grupo 3: する → しなさい, 来る → 来なさい (きなさい)"],
+ "uso": "De cima para baixo: pais com filhos, professores com alunos, e em provas (次の質問に答えなさい). Não use com colegas ou superiores: soa mandão. Mais firme que てください, mas menos rude que o imperativo (寝ろ).",
+ "exemplos": [
+  {"jp": "もう遅いから、早く寝なさい。", "pt": "Já está tarde, vá dormir logo!", "alvo": "なさい", "erradas": ["ください", "なさる", "なさいます"]},
+  {"jp": "テレビを消して、宿題をしなさい。", "pt": "Desliga a TV e faça a lição de casa!", "alvo": "しなさい", "erradas": ["するなさい", "しなさえ", "すなさい"]},
+  {"jp": "ちゃんと野菜も食べなさい。", "pt": "Coma as verduras também, direito!", "alvo": "べなさい", "erradas": ["べるなさい", "べなさえ", "べりなさい"]},
+  {"jp": "次の質問に答えなさい。", "pt": "Responda às perguntas a seguir.", "alvo": "えなさい", "erradas": ["えるなさい", "えりなさい", "えなさる"]},
+  {"jp": "早く起きなさい！学校に遅れるよ。", "pt": "Levanta logo! Vai se atrasar para a escola!", "alvo": "きなさい", "erradas": ["きるなさい", "くなさい", "きりなさい"]}
+ ],
+ "parecidos": [
+  {"padrao": "てください", "diferenca": "てください é pedido educado; なさい é ordem de quem tem autoridade."},
+  {"padrao": "Imperativo (ろ / え)", "diferenca": "寝ろ, 書け: muito mais bruto que なさい."}
+ ],
+ "erros_comuns": ["Juntar à forma de dicionário: ×するなさい, ×食べるなさい. Use o radical da ます: しなさい, 食べなさい.", "Usar com chefe ou colegas: soa como bronca de mãe."],
+ "drill": {"verbo": [["STEM", "なさい"]], "adj": [], "sentido": "faça …! (ordem)", "teste": {"かく": "かきなさい", "たべる": "たべなさい", "する": "しなさい", "くる": "きなさい"}},
+ "detectar": []}
+]

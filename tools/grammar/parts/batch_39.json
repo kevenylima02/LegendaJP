@@ -1,0 +1,786 @@
+[
+{
+ "id": "bp:1070",
+ "leitura": "つ",
+ "romaji": "ttsu (gíria)",
+ "resumo": "っつう / っつった: 'que se chama', 'disse que' (gíria)",
+ "significado": "Na fala bem casual, という vira っつう (ou っつー) e と言った vira っつった. Serve para citar ou dar nome: 'um tal de…', 'eu disse que…'.",
+ "liga_a": ["forma_simples", "substantivo", "frase"],
+ "como_formar": [
+  "という → っつう / っつー: 田中っつう人 (um tal de Tanaka)",
+  "と言った → っつった: 行かないっつった (eu disse que não vou)",
+  "と言って → っつって: 知らないっつってんだろ",
+  "Reclamação: ～っつーの！ (tô dizendo que…!)"
+ ],
+ "uso": "Gíria masculina e meio rude, de fala bem informal entre amigos ou quando a pessoa está irritada. ～っつーの no fim da frase soa como 'já falei, pô!'. Não use com quem você não tem intimidade.",
+ "exemplos": [
+  {"jp": "田中っつう人から電話があったよ。", "pt": "Ligou um tal de Tanaka.", "alvo": "っつう", "erradas": ["っぽい", "っけ", "ったら"]},
+  {"jp": "俺は行かないっつった。", "pt": "Eu disse que não vou.", "alvo": "っつった", "erradas": ["っぽかった", "ったって", "っけ"]},
+  {"jp": "だから、知らないっつってんだろ。", "pt": "Já falei que não sei, pô!", "alvo": "っつって", "erradas": ["ったって", "っぽくて", "っけど"]},
+  {"jp": "何度も言ってるっつーの！", "pt": "Tô dizendo, já falei mil vezes!", "alvo": "っつーの", "erradas": ["っぽいの", "っけの", "ったらの"]},
+  {"jp": "これ、何っつう料理？", "pt": "Como se chama essa comida?", "alvo": "っつう", "erradas": ["っぽい", "っけ", "ったら"]}
+ ],
+ "parecidos": [
+  {"padrao": "って", "diferenca": "って é a forma casual comum de という / と言った, usada por todos; っつう é mais forte e mais gíria."},
+  {"padrao": "という", "diferenca": "Versão padrão e neutra."}
+ ],
+ "erros_comuns": [
+  "Usar っつう achando que é só um って normal: soa rude ou irritado.",
+  "Escrever っつう em textos ou mensagens de trabalho."
+ ],
+ "drill": null,
+ "detectar": ["っつう", "っつー", "っつった", "っつって"]
+},
+{
+ "id": "bp:1071",
+ "leitura": "やがる",
+ "romaji": "yagaru",
+ "resumo": "ter a cara de pau de… (desprezo)",
+ "significado": "やがる, depois do verbo, mostra raiva ou desprezo por quem faz a ação: 'o desgraçado fez…', 'teve a cara de pau de…'.",
+ "liga_a": ["radical_masu", "te"],
+ "como_formar": [
+  "Verbo (radical da ます) + やがる: 遅刻しやがる, 食べやがる",
+  "Grupo 1: 言う → 言いやがる; grupo 2: 見る → 見やがる; grupo 3: しやがる, 来やがる",
+  "Com ている: 見ている → 見てやがる",
+  "Passado: やがった; forma て: やがって (ふざけやがって！)"
+ ],
+ "uso": "Muito rude e agressivo, típico de brigas, filmes de ação e anime. Só se usa sobre a ação de outra pessoa (ou até do tempo, de coisas) que irrita. Nunca use em situação normal.",
+ "exemplos": [
+  {"jp": "あいつ、また遅刻しやがった。", "pt": "Aquele cara se atrasou de novo, o desgraçado.", "alvo": "やがった", "erradas": ["ましょう", "たがった", "させた"]},
+  {"jp": "何見てやがるんだ！", "pt": "Tá olhando o quê, hein?!", "alvo": "やがる", "erradas": ["たがる", "くださる", "いらっしゃる"]},
+  {"jp": "出かけようとしたら、雨が降りやがった。", "pt": "Quando eu ia sair, essa droga de chuva começou.", "alvo": "やがった", "erradas": ["たがった", "なさった", "させた"]},
+  {"jp": "勝手に俺のパンを食べやがって。", "pt": "Comeu meu pão sem pedir, o folgado.", "alvo": "やがって", "erradas": ["たがって", "させて", "なさって"]},
+  {"jp": "ふざけやがって！", "pt": "Tá de brincadeira comigo?!", "alvo": "やがって", "erradas": ["たがって", "させて", "なさって"]}
+ ],
+ "parecidos": [
+  {"padrao": "てくれる (irônico)", "diferenca": "やってくれたな também pode soar irritado, mas de forma irônica; やがる é xingamento direto."},
+  {"padrao": "たがる", "diferenca": "たがる = 'querer' (de outra pessoa); só se parece no som."}
+ ],
+ "erros_comuns": [
+  "Usar sobre as próprias ações: ×俺が食べやがった. やがる é para criticar outros.",
+  "Repetir em conversa achando que é só 'informal': é ofensivo."
+ ],
+ "drill": {"verbo": [["STEM", "やがる"]], "adj": [], "sentido": "teve a cara de pau de … (desprezo)", "teste": {"かく": "かきやがる", "たべる": "たべやがる", "する": "しやがる", "くる": "きやがる"}},
+ "detectar": ["やがって", "やがった", "てやがる"]
+},
+{
+ "id": "bp:1072",
+ "leitura": "がいい",
+ "romaji": "ga ii",
+ "resumo": "que faça… / faça… (tom de superior)",
+ "significado": "Verbo + がいい é um jeito antigo e de cima para baixo de dizer 'é bom que você faça…', 'faça…'. Pode ser conselho ou desafio ('então que se arrependa!').",
+ "liga_a": ["dicionario"],
+ "como_formar": [
+  "Verbo (dicionário) + がいい: 好きにするがいい",
+  "Grupo 1: 行く → 行くがいい; grupo 2: 調べる → 調べるがいい; grupo 3: するがいい, 来るがいい",
+  "Mais formal: がよい"
+ ],
+ "uso": "Soa antiquado e arrogante, como um rei, um vilão ou um velho mestre falando. Muito comum em anime, jogos e romances. Na vida real, para dar conselho, use ほうがいい ou といい.",
+ "exemplos": [
+  {"jp": "好きにするがいい。", "pt": "Faça como quiser.", "alvo": "がいい", "erradas": ["がほしい", "がする", "にいい"]},
+  {"jp": "疲れたなら、ゆっくり休むがいい。", "pt": "Se está cansado, descanse bem.", "alvo": "がいい", "erradas": ["がほしい", "がする", "はいい"]},
+  {"jp": "文句があるなら、自分でやってみるがいい。", "pt": "Se tem reclamação, tente fazer você mesmo.", "alvo": "がいい", "erradas": ["がほしい", "がする", "がいる"]},
+  {"jp": "悪いことをしたやつは、一生後悔するがいい。", "pt": "Quem fez o mal, que se arrependa pela vida inteira.", "alvo": "がいい", "erradas": ["がほしい", "がする", "がある"]},
+  {"jp": "知りたければ、自分で調べるがいい。", "pt": "Se quer saber, pesquise você mesmo.", "alvo": "がいい", "erradas": ["がほしい", "がする", "がいる"]}
+ ],
+ "parecidos": [
+  {"padrao": "ほうがいい", "diferenca": "ほうがいい é o conselho normal do dia a dia; がいい soa antigo e superior."},
+  {"padrao": "といい", "diferenca": "といい = 'seria bom se…', conselho gentil."}
+ ],
+ "erros_comuns": [
+  "Usar がいい para aconselhar amigos ou colegas: soa arrogante. Diga 休んだほうがいい.",
+  "Confundir com a frase comum Xがいい ('prefiro X'): コーヒーがいい não tem nada a ver com o padrão."
+ ],
+ "drill": {"verbo": [["DICT", "がいい"]], "adj": [], "sentido": "que faça … (tom superior)", "teste": {"かく": "かくがいい", "たべる": "たべるがいい", "する": "するがいい", "くる": "くるがいい"}},
+ "detectar": ["るがいい", "るがよい"]
+},
+{
+ "id": "bp:1073",
+ "leitura": "かろう",
+ "romaji": "karou",
+ "resumo": "deve ser… (suposição com adjetivo-い, antigo)",
+ "significado": "かろう é a forma de suposição do adjetivo-い, antiga e escrita: 高かろう = 'deve ser caro' (高いだろう). Aparece também em 'seja A ou B' (高かろうが安かろうが).",
+ "liga_a": ["adjetivo_i"],
+ "como_formar": [
+  "Adjetivo-い sem o い + かろう: 寒い → 寒かろう, 難しい → 難しかろう",
+  "いい → よかろう (×いかろう)",
+  "Concessão: ～かろうが / ～かろうと (高かろうが安かろうが)"
+ ],
+ "uso": "Registro escrito, literário ou de gente mais velha; em conversa normal se diz 寒いだろう / 寒いでしょう. Ainda vive em expressões fixas como よかろう ('pode ser, está bem') e no padrão ～かろうが.",
+ "exemplos": [
+  {"jp": "山の上はさぞ寒かろう。", "pt": "Lá no alto da montanha deve estar muito frio.", "alvo": "かろう", "erradas": ["かった", "くろう", "いろう"]},
+  {"jp": "それでよかろう。", "pt": "Assim deve estar bom.", "alvo": "かろう", "erradas": ["くろう", "いろう", "かった"]},
+  {"jp": "一人で行くのは危なかろう。", "pt": "Ir sozinho deve ser perigoso.", "alvo": "かろう", "erradas": ["かった", "くろう", "くて"]},
+  {"jp": "高かろうが安かろうが、必要なものは買う。", "pt": "Seja caro ou barato, compro o que preciso.", "alvo": "かろう", "erradas": ["かった", "くろう", "いろう"]},
+  {"jp": "子どもには少し難しかろう。", "pt": "Para uma criança, deve ser um pouco difícil.", "alvo": "かろう", "erradas": ["かった", "くろう", "いろう"]}
+ ],
+ "parecidos": [
+  {"padrao": "だろう", "diferenca": "高いだろう é o jeito moderno de dizer 高かろう."},
+  {"padrao": "ようが", "diferenca": "Para verbos, a concessão é 行こうが; para adjetivo-い, é かろうが."}
+ ],
+ "erros_comuns": [
+  "Fazer com いい: ×いかろう. O certo é よかろう.",
+  "Usar かろう no dia a dia: soa como personagem antigo. Diga 寒いでしょう."
+ ],
+ "drill": {"verbo": [], "adj": [["STEM", "かろう"]], "sentido": "deve ser … (antigo)", "teste": {"たかい": "たかかろう"}},
+ "detectar": ["かろう"]
+},
+{
+ "id": "bp:1074",
+ "leitura": "やや",
+ "romaji": "yaya",
+ "resumo": "um pouco, ligeiramente",
+ "significado": "やや é um advérbio que quer dizer 'um pouco', 'ligeiramente'. Indica uma diferença pequena.",
+ "liga_a": ["sozinho"],
+ "como_formar": [
+  "やや + adjetivo: やや寒い, やや大きい",
+  "やや + verbo: やや増える",
+  "やや + substantivo de grau: やや多め, やや高め"
+ ],
+ "uso": "Mais formal que 少し e ちょっと; comum em notícias, previsão do tempo, relatórios e textos escritos. Na conversa do dia a dia, o normal é ちょっと.",
+ "exemplos": [
+  {"jp": "今日は昨日よりやや寒い。", "pt": "Hoje está um pouco mais frio que ontem.", "alvo": "やや", "erradas": ["とても", "ずっと", "かなり"]},
+  {"jp": "彼の意見にはやや問題がある。", "pt": "A opinião dele tem um pequeno problema.", "alvo": "やや", "erradas": ["とても", "全然", "大いに"]},
+  {"jp": "午後はやや雲が多くなるでしょう。", "pt": "À tarde deve ficar um pouco mais nublado.", "alvo": "やや", "erradas": ["とても", "まったく", "かなり"]},
+  {"jp": "この服は私にはやや大きい。", "pt": "Esta roupa é um pouco grande para mim.", "alvo": "やや", "erradas": ["とても", "かなり", "すっかり"]},
+  {"jp": "値段はやや高めだが、味はいい。", "pt": "O preço é um pouco salgado, mas o sabor é bom.", "alvo": "やや", "erradas": ["とても", "全然", "まったく"]}
+ ],
+ "parecidos": [
+  {"padrao": "少し / ちょっと", "diferenca": "Mesmo sentido; 少し é neutro, ちょっと é casual, やや é formal/escrito."},
+  {"padrao": "かなり", "diferenca": "かなり é 'bastante', o oposto de やや."}
+ ],
+ "erros_comuns": [
+  "Usar やや para pedir algo (×やや待ってください): aí é 少し ou ちょっと.",
+  "Confundir com ややこしい ('complicado'), que é outra palavra."
+ ],
+ "drill": null,
+ "detectar": []
+},
+{
+ "id": "bp:1075",
+ "leitura": "いずれも",
+ "romaji": "izure mo",
+ "resumo": "todos (eles) / nenhum (com negativo)",
+ "significado": "いずれも quer dizer 'todos', 'qualquer um deles' sobre um grupo já mencionado. Com verbo negativo, vira 'nenhum'.",
+ "liga_a": ["sozinho"],
+ "como_formar": [
+  "Grupo + は + いずれも + predicado: 三つの案はいずれもいい",
+  "Com negativo: いずれも～ない (nenhum…)",
+  "Também: いずれの + substantivo + も (いずれの場合も)"
+ ],
+ "uso": "Formal; comum em notícias, relatórios e textos escritos. Na conversa, o normal é どれも, 全部, 二人とも. Vale para dois ou mais itens.",
+ "exemplos": [
+  {"jp": "三つの案は、いずれもよくできている。", "pt": "As três propostas estão todas bem-feitas.", "alvo": "いずれも", "erradas": ["いずれか", "いずれは", "どれか"]},
+  {"jp": "応募した二人は、いずれも合格した。", "pt": "Os dois candidatos passaram.", "alvo": "いずれも", "erradas": ["いずれか", "いずれは", "どちらか"]},
+  {"jp": "出席者はいずれも二十代だった。", "pt": "Os participantes estavam todos na casa dos vinte anos.", "alvo": "いずれも", "erradas": ["いずれか", "いずれは", "いつか"]},
+  {"jp": "候補の店に電話したが、いずれも予約でいっぱいだった。", "pt": "Liguei para os restaurantes da lista, mas todos estavam lotados.", "alvo": "いずれも", "erradas": ["いずれか", "いずれは", "どこか"]},
+  {"jp": "どの方法も試したが、いずれもうまくいかなかった。", "pt": "Testei todos os métodos, mas nenhum deu certo.", "alvo": "いずれも", "erradas": ["いずれか", "いずれは", "どこも"]}
+ ],
+ "parecidos": [
+  {"padrao": "いずれか", "diferenca": "いずれか = 'um deles (qualquer)'; いずれも = 'todos'."},
+  {"padrao": "いずれ", "diferenca": "Sozinho, いずれ é 'algum dia, mais cedo ou mais tarde'."}
+ ],
+ "erros_comuns": [
+  "Confundir いずれも ('todos') com いずれか ('um deles').",
+  "Usar com algo que não foi mencionado antes: いずれも precisa de um grupo conhecido."
+ ],
+ "drill": null,
+ "detectar": ["いずれも"]
+},
+{
+ "id": "bp:1076",
+ "leitura": "あわよくば",
+ "romaji": "awayokuba",
+ "resumo": "se der sorte, se tudo correr bem",
+ "significado": "あわよくば quer dizer 'se a sorte ajudar', 'se tudo der certo': o falante espera aproveitar uma chance para conseguir algo a mais.",
+ "liga_a": ["sozinho"],
+ "como_formar": [
+  "あわよくば + desejo / intenção: あわよくば優勝したい",
+  "Combina com ～たい, ～(よ)うと思う, ～かもしれない"
+ ],
+ "uso": "Neutro, aparece na fala e na escrita. Às vezes tem um tom de 'esperteza', de querer tirar vantagem extra da situação. Fica no começo da oração do desejo.",
+ "exemplos": [
+  {"jp": "あわよくば優勝したい。", "pt": "Se der sorte, quero ser campeão.", "alvo": "あわよくば", "erradas": ["せっかく", "どうせ", "まさか"]},
+  {"jp": "安く買って、あわよくば高く売ろうと思っている。", "pt": "Penso em comprar barato e, com sorte, vender caro.", "alvo": "あわよくば", "erradas": ["どうせ", "まさか", "せめて"]},
+  {"jp": "あわよくば、彼女と二人で話せるかもしれない。", "pt": "Com um pouco de sorte, talvez eu consiga conversar a sós com ela.", "alvo": "あわよくば", "erradas": ["どうせ", "まさか", "わざわざ"]},
+  {"jp": "旅行のついでに、あわよくば仕事も見つけたい。", "pt": "Aproveitando a viagem, se der sorte, também quero arrumar um emprego.", "alvo": "あわよくば", "erradas": ["どうせ", "まさか", "せっかく"]},
+  {"jp": "試験は難しいが、あわよくば満点を取りたい。", "pt": "A prova é difícil, mas, com sorte, quero tirar nota máxima.", "alvo": "あわよくば", "erradas": ["どうせ", "まさか", "やっぱり"]}
+ ],
+ "parecidos": [
+  {"padrao": "できれば", "diferenca": "できれば = 'se possível', mais neutro e educado; あわよくば conta com a sorte."},
+  {"padrao": "うまくいけば", "diferenca": "Sentido parecido ('se der certo'), mais comum na fala."}
+ ],
+ "erros_comuns": [
+  "Usar para algo que certamente vai acontecer: あわよくば é para algo incerto, que depende de sorte.",
+  "Usar em pedidos formais (×あわよくばお願いします): prefira できれば."
+ ],
+ "drill": null,
+ "detectar": ["あわよくば"]
+},
+{
+ "id": "bp:1086",
+ "leitura": "むず",
+ "romaji": "muzu",
+ "resumo": "vai…, deve… (japonês clássico)",
+ "significado": "むず é um auxiliar do japonês clássico (de むとす) que indica intenção ou suposição: 'vou…', 'deve…'. Tem o mesmo sentido do clássico む, que virou o う/よう moderno.",
+ "liga_a": ["nai"],
+ "como_formar": [
+  "Forma ない clássica (sem ない) + むず: 行か + むず → 行かむず; 降ら → 降らむず",
+  "Formas: むず (fim de frase), むずる (antes de substantivo ou com pergunta), むずれ",
+  "Lê-se 'muzu' (às vezes escrito んず)"
+ ],
+ "uso": "Só aparece em textos clássicos (época Heian em diante), poemas e falas de época. Já no 枕草子 era criticado como jeito vulgar de falar (言はむずる). Para o aluno moderno, basta reconhecer: equivale a ～だろう / ～(よ)う.",
+ "exemplos": [
+  {"jp": "明日は雨降らむず。", "pt": "Amanhã deve chover.", "alvo": "むず", "erradas": ["けり", "たり", "ず"]},
+  {"jp": "われも共に行かむず。", "pt": "Eu também vou junto.", "alvo": "むず", "erradas": ["けり", "き", "ず"]},
+  {"jp": "鬼来むず。", "pt": "O demônio vai vir.", "alvo": "むず", "erradas": ["けり", "たり", "ず"]},
+  {"jp": "里へ出でむずる。", "pt": "Vou sair para a casa da família.", "alvo": "むずる", "erradas": ["ける", "ざる", "たる"]},
+  {"jp": "この文、いかが書かむずる。", "pt": "Como vou escrever esta carta?", "alvo": "むずる", "erradas": ["ける", "ざる", "たる"]}
+ ],
+ "parecidos": [
+  {"padrao": "む / ん (clássico)", "diferenca": "Mesmo sentido; むず é a forma contraída de むとす, considerada mais coloquial na época."},
+  {"padrao": "ず (clássico)", "diferenca": "ず é negação ('não'); む/むず é intenção ou suposição."}
+ ],
+ "erros_comuns": [
+  "Confundir com むずい / むずかしい ('difícil'): são palavras modernas sem relação.",
+  "Ler 行かむず como negativo por causa do 行か: aqui não há negação, é 'vou'."
+ ],
+ "drill": null,
+ "detectar": ["むずる"]
+},
+{
+ "id": "bp:964",
+ "leitura": "だ ⇒ や",
+ "romaji": "da => ya (kansai-ben)",
+ "resumo": "Kansai: や no lugar de だ (ser/estar)",
+ "significado": "No dialeto de Kansai (Osaka, Kyoto, Kobe), a cópula casual だ vira や: 雨だ → 雨や. As formas derivadas mudam também: だった → やった, だろう → やろ.",
+ "liga_a": ["substantivo", "adjetivo_na"],
+ "como_formar": [
+  "Substantivo / adjetivo-な + や: 雨や, 静かや",
+  "Passado: やった; suposição: やろ (= だろう)",
+  "Com partículas: やで, やな, やねん, やん"
+ ],
+ "uso": "Casual, típico de Kansai; muito ouvido em comédias, anime e conversas de Osaka. Na forma polida, o dialeto usa です normalmente. Fora de Kansai, soa como sotaque regional.",
+ "exemplos": [
+  {"jp": "今日は雨や。", "pt": "Hoje está chovendo.", "alvo": "や", "erradas": ["な", "に", "を"]},
+  {"jp": "あの人、先生やで。", "pt": "Aquela pessoa é professora, viu.", "alvo": "や", "erradas": ["な", "に", "の"]},
+  {"jp": "昨日は休みやった。", "pt": "Ontem foi folga.", "alvo": "やった", "erradas": ["や", "やない", "やろ"]},
+  {"jp": "明日は晴れやろ。", "pt": "Amanhã deve fazer sol, né.", "alvo": "やろ", "erradas": ["やった", "やない", "やで"]},
+  {"jp": "ほんまに、きれいな町やな。", "pt": "Que cidade bonita, de verdade.", "alvo": "や", "erradas": ["に", "の", "を"]}
+ ],
+ "parecidos": [
+  {"padrao": "だ", "diferenca": "Versão do japonês padrão (Tóquio)."},
+  {"padrao": "じゃ", "diferenca": "Em outras regiões do oeste (Hiroshima) e na fala de idosos, だ vira じゃ."}
+ ],
+ "erros_comuns": [
+  "Pôr や depois de adjetivo-い (×高いや no sentido de 'é caro'): assim como だ, ele vai com substantivo e adjetivo-な.",
+  "Achar que やった aqui é 'consegui!': em Kansai também é o passado de や (休みやった = era folga)."
+ ],
+ "drill": null,
+ "detectar": ["やねん", "やで", "やんか"]
+},
+{
+ "id": "bp:966",
+ "leitura": "よ ⇒ で・わ",
+ "romaji": "yo => de / wa (kansai-ben)",
+ "resumo": "Kansai: で e わ no lugar de よ (ênfase)",
+ "significado": "Em Kansai, a partícula final よ costuma virar で (informar algo com ênfase: 'viu!') ou わ (afirmação mais suave, sobre si mesmo). Homens e mulheres usam as duas.",
+ "liga_a": ["frase"],
+ "como_formar": [
+  "Forma simples + で: おいしいで, 降るで",
+  "Forma simples + わ: 行くわ, ええわ",
+  "Substantivo / adjetivo-な + やで / やわ: 先生やで"
+ ],
+ "uso": "Casual, típico de Kansai. で passa informação nova ao ouvinte ('fica sabendo'); わ é mais uma declaração do falante ('eu vou, tá'). Diferente de Tóquio, わ em Kansai não soa feminino.",
+ "exemplos": [
+  {"jp": "これ、めっちゃおいしいで。", "pt": "Isso aqui é uma delícia, viu!", "alvo": "で", "erradas": ["か", "っけ", "かな"]},
+  {"jp": "先に行くわ。", "pt": "Vou indo na frente, tá.", "alvo": "わ", "erradas": ["か", "っけ", "かな"]},
+  {"jp": "明日、雨降るで。", "pt": "Amanhã vai chover, viu.", "alvo": "で", "erradas": ["か", "っけ", "かな"]},
+  {"jp": "もうええわ。", "pt": "Deixa pra lá, já chega.", "alvo": "わ", "erradas": ["か", "っけ", "かな"]},
+  {"jp": "早よせな、遅れるで。", "pt": "Se não se apressar, vai se atrasar, hein.", "alvo": "で", "erradas": ["か", "っけ", "かな"]}
+ ],
+ "parecidos": [
+  {"padrao": "よ", "diferenca": "Partícula padrão (Tóquio) para informar ou enfatizar."},
+  {"padrao": "わ (Tóquio)", "diferenca": "Em Tóquio, わ soa feminino; em Kansai é neutro."}
+ ],
+ "erros_comuns": [
+  "Confundir este で com a partícula で de lugar/meio: aqui ele está no fim da frase.",
+  "Achar que um homem de Osaka falando わ está imitando mulher: em Kansai é normal."
+ ],
+ "drill": null,
+ "detectar": []
+},
+{
+ "id": "bp:984",
+ "leitura": "やん",
+ "romaji": "yan (kansai-ben)",
+ "resumo": "Kansai: やん = 'né?', 'não é?'",
+ "significado": "やん, no fim da frase, é o 'né?' / 'não é?' de Kansai: busca concordância ou aponta algo óbvio, como だよね ou でしょう.",
+ "liga_a": ["forma_simples", "substantivo", "adjetivo_na"],
+ "como_formar": [
+  "Substantivo / adjetivo-な + やん: 休みやん, 上手やん",
+  "Adjetivo-い + やん: かわいいやん",
+  "Verbo (forma simples) + やん: できるやん, 言うたやん"
+ ],
+ "uso": "Bem casual, típico de Kansai; muito usado entre amigos. Pode ser elogio surpreso (上手やん！), lembrete ('eu falei, não falei?') ou concordância. Mais forte: やんか.",
+ "exemplos": [
+  {"jp": "これ、かわいいやん。", "pt": "Isso é fofo, né?", "alvo": "やん", "erradas": ["やろか", "やった", "へん"]},
+  {"jp": "明日、休みやん。", "pt": "Amanhã é folga, né?", "alvo": "やん", "erradas": ["やった", "やろか", "へん"]},
+  {"jp": "言うたやん。", "pt": "Eu te falei, não falei?", "alvo": "やん", "erradas": ["やろか", "へん", "とる"]},
+  {"jp": "自分でできるやん！", "pt": "Você consegue fazer sozinho, ué!", "alvo": "やん", "erradas": ["やろか", "へん", "やった"]},
+  {"jp": "めっちゃ上手やん！", "pt": "Você é muito bom nisso, hein!", "alvo": "やん", "erradas": ["やろか", "へん", "やった"]}
+ ],
+ "parecidos": [
+  {"padrao": "だよね / じゃん", "diferenca": "Equivalentes no japonês de Tóquio; じゃん é o mais parecido em tom."},
+  {"padrao": "やんか", "diferenca": "Versão mais enfática ('não é óbvio?')."}
+ ],
+ "erros_comuns": [
+  "Confundir やん com o negativo へん: やん não nega nada, só pede concordância.",
+  "Usar com superiores: é bem casual."
+ ],
+ "drill": null,
+ "detectar": ["やん。", "やん！"]
+},
+{
+ "id": "bp:967",
+ "leitura": "やんか",
+ "romaji": "yanka (kansai-ben)",
+ "resumo": "Kansai: やんか = 'não é?', 'olha só!'",
+ "significado": "やんか é o じゃないか de Kansai: aponta algo que deveria ser óbvio ('não é?', 'olha só!') ou lembra o ouvinte de algo, às vezes com leve reclamação.",
+ "liga_a": ["forma_simples", "substantivo", "adjetivo_na"],
+ "como_formar": [
+  "Forma simples + やんか: 言うたやんか, 安いやんか",
+  "Substantivo / adjetivo-な + やんか: 自分で決めたことやんか",
+  "Variante mais rude: やんけ"
+ ],
+ "uso": "Casual, típico de Kansai. Mais enfático que やん: serve para insistir, cobrar ou se surpreender. Em tom brincalhão, também convida (ええやんか、行こうや = 'ah, qual é, vamos!').",
+ "exemplos": [
+  {"jp": "それ、昨日言うたやんか。", "pt": "Eu te falei isso ontem, não falei?", "alvo": "やんか", "erradas": ["やろか", "へんか", "やったか"]},
+  {"jp": "ええやんか、行こうや。", "pt": "Ah, qual é, vamos!", "alvo": "やんか", "erradas": ["やろか", "へんか", "とるか"]},
+  {"jp": "あの店、安いやんか。", "pt": "Aquela loja é barata, não é?", "alvo": "やんか", "erradas": ["やろか", "へんか", "とるか"]},
+  {"jp": "雨降ってるやんか。", "pt": "Olha, tá chovendo!", "alvo": "やんか", "erradas": ["やろか", "へんか", "やったか"]},
+  {"jp": "自分で決めたことやんか。", "pt": "Foi você mesmo que decidiu, não foi?", "alvo": "やんか", "erradas": ["やろか", "へんか", "とるか"]}
+ ],
+ "parecidos": [
+  {"padrao": "じゃないか / じゃん", "diferenca": "Equivalentes do japonês padrão."},
+  {"padrao": "やん", "diferenca": "やん é mais leve; やんか insiste mais."}
+ ],
+ "erros_comuns": [
+  "Entender como negativo por causa do じゃない do padrão: やんか afirma, não nega.",
+  "Usar com quem não é próximo: soa intrometido ou de cobrança."
+ ],
+ "drill": null,
+ "detectar": ["やんか", "やんけ"]
+},
+{
+ "id": "bp:972",
+ "leitura": "ねん / てん",
+ "romaji": "nen / ten (kansai-ben)",
+ "resumo": "Kansai: ねん = のだ/んだ (explicação); てん = たんだ",
+ "significado": "Em Kansai, o んだ / のだ explicativo vira ねん: 行くんだ → 行くねん. No passado, たんだ vira てん: 会ったんだ → 会ってん.",
+ "liga_a": ["forma_simples", "substantivo", "adjetivo_na"],
+ "como_formar": [
+  "Verbo / adjetivo-い + ねん: 行くねん, 忙しいねん",
+  "Substantivo / adjetivo-な + やねん: 休みやねん",
+  "Passado: forma て + ん: 会ってん (会ったんだ), 忘れてん (忘れたんだ)"
+ ],
+ "uso": "Casual, típico de Kansai; um dos traços mais marcantes do dialeto de Osaka. Dá o tom de explicação ou de contar algo ('é que…', 'sabe'). Em pergunta, vira のん/ねん？ ou の？.",
+ "exemplos": [
+  {"jp": "明日、東京に行くねん。", "pt": "Amanhã eu vou pra Tóquio, sabe.", "alvo": "ねん", "erradas": ["へん", "やん", "とる"]},
+  {"jp": "昨日、駅で先生に会ってん。", "pt": "Ontem eu encontrei o professor na estação, sabe.", "alvo": "てん", "erradas": ["へん", "とる", "ねん"]},
+  {"jp": "今日は休みやねん。", "pt": "É que hoje é minha folga.", "alvo": "ねん", "erradas": ["へん", "てん", "とる"]},
+  {"jp": "この本、めっちゃおもろいねん。", "pt": "Este livro é muito legal, sério.", "alvo": "ねん", "erradas": ["へん", "てん", "とる"]},
+  {"jp": "財布、家に忘れてん。", "pt": "É que esqueci a carteira em casa.", "alvo": "てん", "erradas": ["へん", "とく", "とる"]}
+ ],
+ "parecidos": [
+  {"padrao": "んだ / のだ", "diferenca": "Equivalente do japonês padrão."},
+  {"padrao": "ているの ⇒ てん", "diferenca": "てん também pode ser 'está fazendo' (何してん？); o contexto decide se é passado ou progressivo."}
+ ],
+ "erros_comuns": [
+  "Achar que 会ってん é 'estou encontrando': na afirmação, てん normalmente é passado (たんだ).",
+  "Pôr ねん direto depois de substantivo: ×休みねん → 休みやねん."
+ ],
+ "drill": null,
+ "detectar": ["やねん"]
+},
+{
+ "id": "bp:965",
+ "leitura": "ね ⇒ な",
+ "romaji": "ne => na (kansai-ben)",
+ "resumo": "Kansai: な no lugar de ね ('né?')",
+ "significado": "Em Kansai, a partícula final ね ('né?', 'tá?') costuma virar な, usada por homens e mulheres para buscar concordância ou suavizar.",
+ "liga_a": ["frase"],
+ "como_formar": [
+  "Forma simples + な: 暑いな, ええな",
+  "Substantivo / adjetivo-な + やな: きれいな町やな",
+  "Despedida: また明日な (até amanhã, tá?)"
+ ],
+ "uso": "Casual, típico de Kansai. Em Tóquio, な no fim também existe, mas soa masculino; em Kansai é neutro e muito frequente. Alongado (なあ), expressa emoção.",
+ "exemplos": [
+  {"jp": "今日は暑いな。", "pt": "Hoje tá quente, né?", "alvo": "な", "erradas": ["か", "っけ", "で"]},
+  {"jp": "ほんまにおいしいな。", "pt": "É gostoso mesmo, né.", "alvo": "な", "erradas": ["か", "っけ", "かい"]},
+  {"jp": "ほな、また明日な。", "pt": "Então, até amanhã, tá?", "alvo": "な", "erradas": ["か", "っけ", "で"]},
+  {"jp": "あの人、背が高いな。", "pt": "Aquela pessoa é alta, né?", "alvo": "な", "erradas": ["か", "っけ", "かい"]},
+  {"jp": "これ、ええな。", "pt": "Isso aqui é bom, né?", "alvo": "な", "erradas": ["か", "っけ", "へん"]}
+ ],
+ "parecidos": [
+  {"padrao": "ね", "diferenca": "Versão padrão, usada por todos em Tóquio."},
+  {"padrao": "な (proibição)", "diferenca": "Depois da forma de dicionário, な pode ser proibição (行くな = não vá); aqui é só 'né?'."}
+ ],
+ "erros_comuns": [
+  "Confundir com o な de proibição: 食べるな é 'não coma!', não 'come, né?'.",
+  "Achar que な soa rude: em Kansai é normal entre amigos e família."
+ ],
+ "drill": null,
+ "detectar": []
+},
+{
+ "id": "bp:971",
+ "leitura": "ない ⇒ へん",
+ "romaji": "nai => hen (kansai-ben)",
+ "resumo": "Kansai: へん no lugar de ない (negativo)",
+ "significado": "Em Kansai, o negativo ない dos verbos vira へん: 行かない → 行かへん, 食べない → 食べへん. Passado: へんかった.",
+ "liga_a": ["nai"],
+ "como_formar": [
+  "Grupo 1: forma ない sem ない + へん: 行か → 行かへん (também 行けへん)",
+  "Grupo 2: radical + へん: 食べへん, 見いひん / 見えへん",
+  "Grupo 3: する → せえへん (Kyoto: しいひん); 来る → けえへん / こおへん",
+  "Passado: 行かへんかった"
+ ],
+ "uso": "Casual, típico de Kansai; é um dos traços mais conhecidos do dialeto. Em Kyoto aparece também ひん (見いひん). Só serve para verbos; adjetivos usam outra forma (高ない).",
+ "exemplos": [
+  {"jp": "今日は行かへん。", "pt": "Hoje eu não vou.", "alvo": "へん", "erradas": ["ねん", "てん", "はる"]},
+  {"jp": "肉は食べへん。", "pt": "Carne eu não como.", "alvo": "へん", "erradas": ["ねん", "てん", "とる"]},
+  {"jp": "そんなこと、せえへんよ。", "pt": "Eu não faço uma coisa dessas.", "alvo": "せえへん", "erradas": ["すへん", "しないへん", "しとる"]},
+  {"jp": "彼、まだ来えへんな。", "pt": "Ele ainda não chegou, né.", "alvo": "へん", "erradas": ["ねん", "てん", "とる"]},
+  {"jp": "全然わからへん。", "pt": "Não entendo nada.", "alvo": "へん", "erradas": ["ねん", "てん", "はる"]}
+ ],
+ "parecidos": [
+  {"padrao": "ない", "diferenca": "Negativo do japonês padrão."},
+  {"padrao": "ん (知らん)", "diferenca": "知らん, わからん também são negativos do oeste do Japão, mais secos que へん."}
+ ],
+ "erros_comuns": [
+  "Usar へん com adjetivo-い: ×高いへん. Em Kansai é 高ない (ou 高くない).",
+  "Conjugar する como すへん: o certo é せえへん (ou しいひん em Kyoto)."
+ ],
+ "drill": null,
+ "detectar": ["かへん", "べへん", "せえへん", "けえへん", "来えへん"]
+},
+{
+ "id": "bp:973",
+ "leitura": "じゃない ⇒ ちゃう",
+ "romaji": "janai => chau (kansai-ben)",
+ "resumo": "Kansai: ちゃう = 'não é' / 'não, não'",
+ "significado": "ちゃう vem de 違う ('estar errado, ser diferente') e em Kansai faz o papel de じゃない: 学生ちゃう = 'não sou estudante'. Sozinho, ちゃうちゃう é 'não, não!'. Com ん antes, vira pergunta: ～んちゃう？ = 'não é…?'.",
+ "liga_a": ["substantivo", "forma_simples"],
+ "como_formar": [
+  "Substantivo + ちゃう / とちゃう: 学生ちゃう, 学生とちゃう",
+  "Negação forte: ちゃうちゃう (não, não)",
+  "Suposição: forma simples + んちゃう？ (= んじゃない？): 降るんちゃう？"
+ ],
+ "uso": "Casual, típico de Kansai. Muito frequente na conversa de Osaka. Cuidado: no japonês padrão, ちゃう é também a contração de てしまう (食べちゃう), que é outra coisa.",
+ "exemplos": [
+  {"jp": "私、学生ちゃうで。", "pt": "Eu não sou estudante, viu.", "alvo": "ちゃう", "erradas": ["や", "やん", "とる"]},
+  {"jp": "それ、ちゃうちゃう。", "pt": "Não, não, não é isso.", "alvo": "ちゃうちゃう", "erradas": ["そやそや", "ほんまほんま", "せやせや"]},
+  {"jp": "あれ、田中さんちゃう？", "pt": "Aquele ali não é o Tanaka?", "alvo": "ちゃう", "erradas": ["へん", "とる", "てん"]},
+  {"jp": "今日は休みちゃうで。", "pt": "Hoje não é folga, viu.", "alvo": "ちゃう", "erradas": ["や", "やん", "とる"]},
+  {"jp": "明日、雨降るんちゃう？", "pt": "Amanhã não vai chover, não?", "alvo": "ちゃう", "erradas": ["へん", "とる", "てん"]}
+ ],
+ "parecidos": [
+  {"padrao": "じゃない", "diferenca": "Equivalente no japonês padrão."},
+  {"padrao": "ちゃう (てしまう)", "diferenca": "食べちゃう = 'acabar comendo': contração de てしまう, sem relação com o ちゃう de Kansai."}
+ ],
+ "erros_comuns": [
+  "Confundir 学生ちゃう ('não é estudante') com a contração 食べちゃう ('acabar comendo').",
+  "Usar ちゃう com verbo para negar: ×行くちゃう. Para negar verbos, Kansai usa へん (行かへん)."
+ ],
+ "drill": null,
+ "detectar": ["んちゃう", "ちゃうちゃう", "ちゃうで"]
+},
+{
+ "id": "bp:968",
+ "leitura": "くない ⇒ ない",
+ "romaji": "kunai => nai (kansai-ben)",
+ "resumo": "Kansai: adjetivo-い negativo sem く (高ない)",
+ "significado": "Em Kansai, o negativo do adjetivo-い muitas vezes perde o く: 高くない → 高ない, おもしろくない → おもろない.",
+ "liga_a": ["adjetivo_i"],
+ "como_formar": [
+  "Adjetivo-い sem o い + ない: 高い → 高ない, 寒い → 寒ない",
+  "Adjetivos em しい: 難しい → 難しない",
+  "Passado: 高なかった",
+  "Gíria comum: おもろい → おもろない (não tem graça)"
+ ],
+ "uso": "Casual, típico de Kansai. Também é comum ouvir a forma padrão 高くない na mesma região. Não confunda com へん, que é só para verbos.",
+ "exemplos": [
+  {"jp": "この店、高ないで。", "pt": "Esta loja não é cara, viu.", "alvo": "ない", "erradas": ["いない", "いへん", "なかった"]},
+  {"jp": "全然おもろないわ。", "pt": "Não tem graça nenhuma.", "alvo": "ない", "erradas": ["いない", "いへん", "なかった"]},
+  {"jp": "今日はそんなに寒ないな。", "pt": "Hoje não tá tão frio, né.", "alvo": "ない", "erradas": ["いない", "いへん", "なかった"]},
+  {"jp": "この部屋、広ないで。", "pt": "Este quarto não é espaçoso, viu.", "alvo": "ない", "erradas": ["いない", "いへん", "なかった"]},
+  {"jp": "昨日のテスト、難しなかった。", "pt": "A prova de ontem não foi difícil.", "alvo": "なかった", "erradas": ["ない", "いなかった", "いへんかった"]}
+ ],
+ "parecidos": [
+  {"padrao": "くない", "diferenca": "Negativo do japonês padrão (高くない)."},
+  {"padrao": "へん", "diferenca": "へん nega verbos (行かへん); para adjetivo-い é 高ない."}
+ ],
+ "erros_comuns": [
+  "Usar へん com adjetivo: ×高いへん → 高ない.",
+  "Manter o い do adjetivo: ×高いない → 高ない."
+ ],
+ "drill": {"verbo": [], "adj": [["STEM", "ない"]], "sentido": "não é … (Kansai)", "teste": {"たかい": "たかない"}},
+ "detectar": []
+},
+{
+ "id": "bp:970",
+ "leitura": "ている ⇒ とる",
+ "romaji": "te iru => toru (kansai / oeste)",
+ "resumo": "Oeste do Japão: とる no lugar de ている",
+ "significado": "No oeste do Japão (Kobe, Hiroshima e muitos falantes de Kansai), ている vira とる: 食べている → 食べとる, 降っている → 降っとる. Indica ação em andamento ou estado.",
+ "liga_a": ["te"],
+ "como_formar": [
+  "Forma て sem て + とる: 食べて → 食べとる, 待って → 待っとる",
+  "Verbos com で: 読んで → 読んどる",
+  "Grupo 3: して → しとる; 来て → 来とる",
+  "Passado: とった (待っとった)"
+ ],
+ "uso": "Casual e regional. Em Osaka, os jovens usam mais てる; とる soa mais de Kobe, Hiroshima, gente mais velha ou personagens 'do interior'. Não use em situações formais.",
+ "exemplos": [
+  {"jp": "何しとるん？", "pt": "O que você tá fazendo?", "alvo": "とる", "erradas": ["とく", "たる", "へん"]},
+  {"jp": "雨、降っとるで。", "pt": "Tá chovendo, viu.", "alvo": "とる", "erradas": ["とく", "たる", "へん"]},
+  {"jp": "彼はもう寝とる。", "pt": "Ele já está dormindo.", "alvo": "とる", "erradas": ["とく", "たる", "まう"]},
+  {"jp": "あの人のこと、よう知っとるわ。", "pt": "Eu conheço bem aquela pessoa.", "alvo": "とる", "erradas": ["とく", "たる", "てまう"]},
+  {"jp": "駅の前で待っとるから。", "pt": "Tô esperando na frente da estação.", "alvo": "とる", "erradas": ["とく", "たる", "へん"]}
+ ],
+ "parecidos": [
+  {"padrao": "てる", "diferenca": "Contração casual de ている usada em todo o Japão (e muito em Osaka)."},
+  {"padrao": "とく", "diferenca": "とく = ておく ('deixar feito'); とる = ている ('estar fazendo')."}
+ ],
+ "erros_comuns": [
+  "Confundir 待っとる ('estou esperando') com 待っとく ('vou esperar de antemão').",
+  "Achar que とる aqui é o verbo 取る ('pegar')."
+ ],
+ "drill": null,
+ "detectar": ["っとる", "しとる"]
+},
+{
+ "id": "bp:969",
+ "leitura": "ているの ⇒ てん",
+ "romaji": "te iru no => ten (kansai-ben)",
+ "resumo": "Kansai: 何してん？ = 'o que você tá fazendo?'",
+ "significado": "Em Kansai, ているの / ているんだ encurta para てん: 何しているの？ → 何してん？. Usado sobretudo em perguntas sobre o que alguém está fazendo.",
+ "liga_a": ["te"],
+ "como_formar": [
+  "Forma て + ん: して → してん, 言うて → 言うてん",
+  "Verbos com で: 読んで → 読んでん, 住んで → 住んでん",
+  "Pergunta com entonação subindo: 何してん？"
+ ],
+ "uso": "Casual, típico de Kansai. A mesma forma てん pode ser passado (会ってん = 'encontrei'); na pergunta sobre o momento presente (何してん？), é 'está fazendo'. O contexto decide.",
+ "exemplos": [
+  {"jp": "何してん？", "pt": "O que você tá fazendo?", "alvo": "てん", "erradas": ["とく", "たる", "てまう"]},
+  {"jp": "何言うてん？", "pt": "Do que você tá falando?", "alvo": "てん", "erradas": ["とく", "たる", "へん"]},
+  {"jp": "そこで何作ってん？", "pt": "O que você tá fazendo (cozinhando) aí?", "alvo": "てん", "erradas": ["とく", "たる", "てまう"]},
+  {"jp": "今、何読んでん？", "pt": "O que você tá lendo agora?", "alvo": "でん", "erradas": ["どく", "だる", "でまう"]},
+  {"jp": "今どこに住んでん？", "pt": "Onde você tá morando agora?", "alvo": "でん", "erradas": ["どく", "だる", "でまう"]}
+ ],
+ "parecidos": [
+  {"padrao": "てるの / てんの", "diferenca": "Versões casuais de Tóquio (何してるの？ / 何してんの？)."},
+  {"padrao": "のだ ⇒ ねん / てん", "diferenca": "Na afirmação, てん costuma ser passado (忘れてん = esqueci)."}
+ ],
+ "erros_comuns": [
+  "Confundir com てん do passado: 何してん？ pergunta o que a pessoa está fazendo agora; 昨日何してん？ seria 'o que você fez ontem?'.",
+  "Usar com superiores: é bem casual."
+ ],
+ "drill": {"verbo": [["TE", "ん"]], "adj": [], "sentido": "está … ? (Kansai)", "teste": {"かく": "かいてん", "たべる": "たべてん", "する": "してん", "くる": "きてん"}},
+ "detectar": []
+},
+{
+ "id": "bp:974",
+ "leitura": "とく・たる・てまう",
+ "romaji": "toku / taru / temau (kansai-ben)",
+ "resumo": "Kansai: とく (ておく), たる (てやる), てまう (てしまう)",
+ "significado": "Três contrações de Kansai: ておく → とく ('deixar feito'), てやる/てあげる → たる ('fazer para alguém') e てしまう → てまう ('acabar fazendo'; passado てもうた).",
+ "liga_a": ["te"],
+ "como_formar": [
+  "ておく → とく: 冷やしとく, 読んどく",
+  "てやる → たる: 持ったる, 教えたる (com で: 読んだる)",
+  "てしまう → てまう: 遅れてまう; passado: 食べてもうた",
+  "Com verbos em で: 飲んでまう / 飲んでもうた"
+ ],
+ "uso": "Casual, típico de Kansai. とく também é comum em Tóquio; たる e てまう / てもうた soam claramente de Kansai. たる (てやる) em Kansai é amigável, não rude como em Tóquio.",
+ "exemplos": [
+  {"jp": "ビール、冷やしとくわ。", "pt": "Vou deixar a cerveja gelando, tá.", "alvo": "とく", "erradas": ["てまう", "とる", "へん"]},
+  {"jp": "重いやろ、持ったるわ。", "pt": "Tá pesado, né? Eu levo pra você.", "alvo": "たる", "erradas": ["てまう", "へん", "とる"]},
+  {"jp": "このままやと、遅れてまう。", "pt": "Desse jeito, vou acabar me atrasando.", "alvo": "てまう", "erradas": ["とく", "たる", "とる"]},
+  {"jp": "ケーキ、全部食べてもうた。", "pt": "Acabei comendo o bolo todo.", "alvo": "てもうた", "erradas": ["とった", "とけた", "てへん"]},
+  {"jp": "教えたるから、よう聞きや。", "pt": "Eu te ensino, então escuta bem.", "alvo": "たる", "erradas": ["てまう", "とる", "へん"]}
+ ],
+ "parecidos": [
+  {"padrao": "ちゃう / ちゃった", "diferenca": "Contração de てしまう em Tóquio; em Kansai, てまう / てもうた."},
+  {"padrao": "とる", "diferenca": "とる = ている ('estar fazendo'); とく = ておく ('deixar feito')."}
+ ],
+ "erros_comuns": [
+  "Confundir 持ったる ('eu levo para você') com 持っとる ('estou segurando').",
+  "Achar que たる soa rude como てやる em Tóquio: em Kansai é um jeito amigável de oferecer ajuda."
+ ],
+ "drill": null,
+ "detectar": ["てまう", "てもうた", "でまう", "でもうた"]
+},
+{
+ "id": "bp:975",
+ "leitura": "めいれいけい ⇒ ますけい + ちょうおん",
+ "romaji": "meireikei => masu-kei + chouon (kansai-ben)",
+ "resumo": "Kansai: ordem suave com radical + som longo (食べー)",
+ "significado": "Em Kansai, uma ordem suave e carinhosa se faz com o radical da forma ます alongado: 食べー ('come!'), 寝ー ('vai dormir!'), しー ('faz!'), 来ー ('vem!').",
+ "liga_a": ["radical_masu"],
+ "como_formar": [
+  "Radical da ます + ー: 食べ → 食べー, 寝 → 寝ー",
+  "Grupo 1: 帰り → 帰りー, 書き → 書きー",
+  "Grupo 3: する → しー; 来る → きー (来ー)",
+  "Também com や: 食べや, 聞きや"
+ ],
+ "uso": "Casual e carinhoso, típico de pais falando com filhos ou de amigos próximos em Kansai. Bem mais suave que o imperativo padrão (食べろ). Não serve com superiores.",
+ "exemplos": [
+  {"jp": "早よ寝ー。", "pt": "Vai dormir logo.", "alvo": "ー", "erradas": ["る", "た", "ます"]},
+  {"jp": "これ、食べー。", "pt": "Toma, come isso.", "alvo": "ー", "erradas": ["る", "た", "ます"]},
+  {"jp": "ちょっとこっちきー。", "pt": "Vem cá um pouquinho.", "alvo": "きー", "erradas": ["きた", "きます", "くー"]},
+  {"jp": "宿題、先にしー。", "pt": "Faz a lição de casa primeiro.", "alvo": "しー", "erradas": ["する", "した", "すー"]},
+  {"jp": "気ぃつけて帰りー。", "pt": "Vai com cuidado na volta pra casa.", "alvo": "ー", "erradas": ["る", "た", "ます"]}
+ ],
+ "parecidos": [
+  {"padrao": "命令形 (食べろ)", "diferenca": "Imperativo padrão: direto e duro. A forma de Kansai é suave."},
+  {"padrao": "なさい", "diferenca": "食べなさい é a ordem educada de pais e professores no padrão."}
+ ],
+ "erros_comuns": [
+  "Usar a forma de dicionário: ×食べるー. É o radical: 食べー.",
+  "Usar com chefe ou clientes: é ordem, mesmo que suave."
+ ],
+ "drill": {"verbo": [["STEM", "ー"]], "adj": [], "sentido": "… ! (ordem suave, Kansai)", "teste": {"かく": "かきー", "たべる": "たべー", "する": "しー", "くる": "きー"}},
+ "detectar": []
+},
+{
+ "id": "bp:976",
+ "leitura": "ないで ⇒ んといて",
+ "romaji": "naide => n toite (kansai-ben)",
+ "resumo": "Kansai: んといて = 'não faça, por favor'",
+ "significado": "Em Kansai, o pedido negativo ないで ('não faça') vira んといて: 言わないで → 言わんといて, 食べないで → 食べんといて.",
+ "liga_a": ["nai"],
+ "como_formar": [
+  "Forma ない sem ない + んといて: 言わ → 言わんといて, 帰ら → 帰らんといて",
+  "Grupo 2: 食べ → 食べんといて",
+  "Grupo 3: する → せんといて; 来る → 来んといて (こんといて)",
+  "Variante: んとって"
+ ],
+ "uso": "Casual, típico de Kansai; equivale a ないで(ください). Soa como pedido, não como ordem dura. Muito comum com な no fim para suavizar (食べんといてな).",
+ "exemplos": [
+  {"jp": "まだ帰らんといて。", "pt": "Não vai embora ainda.", "alvo": "んといて", "erradas": ["ないと", "んとく", "んかった"]},
+  {"jp": "そんなこと言わんといて。", "pt": "Não fala uma coisa dessas.", "alvo": "んといて", "erradas": ["ないと", "んとく", "んかった"]},
+  {"jp": "私のケーキ、食べんといてな。", "pt": "Não come o meu bolo, tá?", "alvo": "んといて", "erradas": ["ないと", "んとく", "んかった"]},
+  {"jp": "心配せんといて。", "pt": "Não se preocupa.", "alvo": "せんといて", "erradas": ["するといて", "すんといて", "せんとく"]},
+  {"jp": "ここに来んといて。", "pt": "Não vem aqui.", "alvo": "んといて", "erradas": ["ないと", "んとく", "んかった"]}
+ ],
+ "parecidos": [
+  {"padrao": "ないで", "diferenca": "Equivalente do japonês padrão."},
+  {"padrao": "んとく", "diferenca": "言わんとく = 'vou deixar de dizer' (decisão minha); 言わんといて = 'não diga' (pedido)."}
+ ],
+ "erros_comuns": [
+  "Confundir んといて com んとく: um é pedido ao outro, o outro é decisão própria.",
+  "Conjugar する como しんといて de forma geral: o mais comum em Osaka é せんといて."
+ ],
+ "drill": null,
+ "detectar": ["んといて", "んとって"]
+},
+{
+ "id": "bp:977",
+ "leitura": "じしょけい + な ⇒ ますけい + な",
+ "romaji": "jishokei + na => masu-kei + na (kansai-ben)",
+ "resumo": "Kansai: radical + な = 'não faça' (proibição)",
+ "significado": "Em Kansai, a proibição 'não faça' pode se fazer com o radical da forma ます + な (言いな = 'não diga'), no lugar do padrão forma de dicionário + な (言うな). Soa mais suave.",
+ "liga_a": ["radical_masu"],
+ "como_formar": [
+  "Radical da ます + な: 言い → 言いな, 触り → 触りな",
+  "Grupo 2: 食べ → 食べな",
+  "Grupo 3: する → しな (無理しな); 来る → 来な (きな)",
+  "Com や para suavizar: 言いなや"
+ ],
+ "uso": "Casual, típico de Kansai. Cuidado: em outras regiões (e às vezes em Kansai, com outra entonação), 食べな pode ser ordem ('come!', de なさい). O contexto e o tom de voz decidem; na proibição, a frase costuma vir com そんなこと, 危ないから etc.",
+ "exemplos": [
+  {"jp": "そんなこと言いな。", "pt": "Não fala uma coisa dessas.", "alvo": "な", "erradas": ["や", "ね", "たい"]},
+  {"jp": "危ないから触りな。", "pt": "É perigoso, não encosta.", "alvo": "な", "erradas": ["や", "ね", "たい"]},
+  {"jp": "夜中に騒ぎな。", "pt": "Não faz barulho de madrugada.", "alvo": "な", "erradas": ["や", "ね", "たい"]},
+  {"jp": "人の悪口、言いなや。", "pt": "Não fala mal dos outros, tá.", "alvo": "な", "erradas": ["ね", "たい", "ます"]},
+  {"jp": "あんまり無理しなや。", "pt": "Não força muito a barra, tá.", "alvo": "な", "erradas": ["ね", "たい", "ます"]}
+ ],
+ "parecidos": [
+  {"padrao": "辞書形 + な (言うな)", "diferenca": "Proibição padrão, bem mais dura."},
+  {"padrao": "なさい (言いな = 言いなさい)", "diferenca": "Em Tóquio, 言いな costuma ser ordem ('diga!'); em Kansai pode ser proibição. Atenção ao contexto."}
+ ],
+ "erros_comuns": [
+  "Entender 触りな como 'toque!': em Kansai, com 危ないから, é 'não toque'.",
+  "Usar a forma de dicionário achando que é a mesma coisa: 言うな é bem mais rude que 言いな."
+ ],
+ "drill": {"verbo": [["STEM", "な"]], "adj": [], "sentido": "não … (proibição, Kansai)", "teste": {"かく": "かきな", "たべる": "たべな", "する": "しな", "くる": "きな"}},
+ "detectar": []
+},
+{
+ "id": "bp:978",
+ "leitura": "ないで・な ⇒ なさんな",
+ "romaji": "naide / na => nasanna (kansai-ben)",
+ "resumo": "Kansai: なさんな = 'não faça' (suave, de mais velho)",
+ "significado": "なさんな é uma proibição suave: radical da forma ます + なさんな = 'não faça…'. Vem de なさるな e soa como conselho carinhoso.",
+ "liga_a": ["radical_masu"],
+ "como_formar": [
+  "Radical da ます + なさんな: 泣き → 泣きなさんな",
+  "Grupo 2: 食べ → 食べなさんな",
+  "Grupo 3: する → しなさんな (心配しなさんな); 来る → 来なさんな (きなさんな)"
+ ],
+ "uso": "Casual, um pouco antiquado; típico de pessoas mais velhas em Kansai (e no falar antigo de Tóquio). Soa caloroso, como um avô aconselhando: 心配しなさんな ('não se preocupe').",
+ "exemplos": [
+  {"jp": "心配しなさんな。", "pt": "Não se preocupa.", "alvo": "なさんな", "erradas": ["なさい", "なさった", "ないと"]},
+  {"jp": "そんなに泣きなさんな。", "pt": "Não chora tanto assim.", "alvo": "なさんな", "erradas": ["なさい", "なさった", "たがる"]},
+  {"jp": "無理しなさんなよ。", "pt": "Não força a barra, viu.", "alvo": "なさんな", "erradas": ["なさい", "なさった", "ましょう"]},
+  {"jp": "人の話を笑いなさんな。", "pt": "Não ria do que os outros dizem.", "alvo": "なさんな", "erradas": ["なさい", "なさった", "ましょう"]},
+  {"jp": "遠慮しなさんな、たくさん食べ。", "pt": "Não faça cerimônia, come bastante.", "alvo": "なさんな", "erradas": ["なさい", "なさった", "ないと"]}
+ ],
+ "parecidos": [
+  {"padrao": "なさい", "diferenca": "なさい é ordem ('faça!'); なさんな é o oposto ('não faça')."},
+  {"padrao": "ないで", "diferenca": "Pedido negativo padrão, neutro."}
+ ],
+ "erros_comuns": [
+  "Confundir なさんな com なさい por causa do começo igual: o sentido é oposto.",
+  "Pôr na forma de dicionário: ×するなさんな. É o radical: しなさんな."
+ ],
+ "drill": {"verbo": [["STEM", "なさんな"]], "adj": [], "sentido": "não … (suave)", "teste": {"かく": "かきなさんな", "たべる": "たべなさんな", "する": "しなさんな", "くる": "きなさんな"}},
+ "detectar": ["なさんな"]
+},
+{
+ "id": "bp:979",
+ "leitura": "う・よう ⇒ お・よ",
+ "romaji": "you / ou => yo / o (kansai-ben)",
+ "resumo": "Kansai: volitiva curta (行こ, 食べよ, しよ)",
+ "significado": "Em Kansai, a forma volitiva perde o う final: 行こう → 行こ, 食べよう → 食べよ, しよう → しよ. O sentido é o mesmo: 'vamos…', 'vou…'.",
+ "liga_a": ["volitiva"],
+ "como_formar": [
+  "Grupo 1: 行こう → 行こ, 帰ろう → 帰ろ",
+  "Grupo 2: 食べよう → 食べよ, 寝よう → 寝よ",
+  "Grupo 3: しよう → しよ; 来よう → 来よ (こよ)",
+  "Convite: 行こか (= 行こうか), 食べよか"
+ ],
+ "uso": "Casual; muito comum em Kansai, mas a forma curta também aparece na fala jovem de todo o Japão. Com か vira convite ('vamos…?').",
+ "exemplos": [
+  {"jp": "ほな、そろそろ食べよ。", "pt": "Então, bora comer.", "alvo": "よ", "erradas": ["ろ", "た", "ない"]},
+  {"jp": "明日、映画見に行こか。", "pt": "Amanhã, vamos ver um filme?", "alvo": "行こか", "erradas": ["行けか", "行きか", "行ったか"]},
+  {"jp": "今日はもう寝よ。", "pt": "Bora dormir, por hoje chega.", "alvo": "よ", "erradas": ["ろ", "た", "ない"]},
+  {"jp": "宿題、一緒にしよ。", "pt": "Bora fazer a lição juntos.", "alvo": "よ", "erradas": ["ろ", "た", "ない"]},
+  {"jp": "帰りにラーメン食べよか。", "pt": "Que tal comer um lámen na volta?", "alvo": "よ", "erradas": ["ろ", "た", "れ"]}
+ ],
+ "parecidos": [
+  {"padrao": "う・よう", "diferenca": "Volitiva padrão: 行こう, 食べよう."},
+  {"padrao": "命令形 (食べろ)", "diferenca": "食べろ é ordem ('come!'); 食べよ é convite ('bora comer')."}
+ ],
+ "erros_comuns": [
+  "Confundir 食べよ ('bora comer') com 食べろ ('come!').",
+  "Achar que 食べよ é a partícula よ depois do verbo: aqui é a volitiva encurtada."
+ ],
+ "drill": null,
+ "detectar": []
+}
+]

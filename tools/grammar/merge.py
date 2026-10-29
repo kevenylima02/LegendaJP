@@ -80,6 +80,16 @@ def main():
         p["detectar"] = [s for s in p["detectar"] if use[s] == 1]
     if dropped:
         print("textos de reconhecimento repetidos (fora):", "、".join(dropped))
+    # Trava: nunca trocar o banco por um menor (ex.: rodar sem os lotes em parts/) sem pedir com --forcar
+    if os.path.exists(OUT) and "--forcar" not in sys.argv:
+        try:
+            old = len(json.load(open(OUT, encoding="utf-8"))["points"])
+        except Exception:
+            old = 0
+        if len(points) < old:
+            print(f"PAREI: o banco atual tem {old} pontos e o novo teria {len(points)}. Nada foi gravado.")
+            print("Confira tools/grammar/parts/ (e tools/grammar/in/, gerado por prep.py) ou rode com --forcar.")
+            sys.exit(1)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     json.dump({"v": 1, "points": points}, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     for m in bad:
