@@ -77,6 +77,17 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   pasta, Selecionar vários (marca e move de uma vez), Renomear, Apagar. Toque longo numa pasta: Estudar a
   pasta inteira (as frases de todos os itens juntas), Renomear, Apagar (os itens voltam para Sem pasta). Um
   texto criado ou importado dentro de uma pasta já entra nela. Só no banco: os arquivos não mudam de lugar.
+- **Leitor de mangá (build-43)**: Textos → "📖 Mangá (PDF)" abre um PDF (a lista lembra os mangás e a página onde
+  você parou). Uma página por vez, deslizar ou tocar nas bordas para virar (sentido japonês por padrão, trocável no
+  menu), pinça e toque duplo para ampliar. ✨ Varinha: toque num balão; o app lê a página com o OCR do celular e
+  pega o bloco tocado; se não achar (ou se você pedir ✦ Ler com IA), manda só o recorte em volta do toque ao Gemini.
+  ✦ Página inteira: o Gemini lista todos os balões na ordem de leitura, com tradução, e numera cada um na imagem.
+  Nada é traduzido sem toque, e tudo fica guardado por página e região. O quadro do balão tem as palavras tocáveis
+  (salvar, conheço), tradução, gramática, ✦ Palavras (IA) e ✏ Corrigir. Cada balão lido vai para o texto
+  "Mangá · título" (com um título por página), então Estudar, Gramática e o dicionário funcionam no mangá.
+- **Bunpro (ferramenta local)**: tools/bunpro/explore.py imprime o formato da lista de gramática do Bunpro (página
+  pública) e, com o seu token em BUNPRO_TOKEN ou tools/bunpro/token.txt, os endpoints autenticados. Token e dados
+  ficam fora do git (tools/bunpro/out/).
 - **Alternativas parecidas no vocabulário (build-42)**: em "Tradução → palavra", "Palavra → tradução" e na lacuna
   com substantivo, as erradas são primeiro palavras que dividem um kanji com a resposta (医者 → 歯医者, 医学, 患者),
   depois leitura parecida e mesma classe, e só no fim palavras quaisquer (WordOptions). O conjunto vem das palavras

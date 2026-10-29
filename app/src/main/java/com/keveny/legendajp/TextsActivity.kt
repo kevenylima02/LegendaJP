@@ -46,6 +46,7 @@ class TextsActivity : Activity() {
     private val reqPhoto = 11
     private val reqGallery = 12
     private val reqFile = 13
+    private val reqManga = 14
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +71,7 @@ class TextsActivity : Activity() {
             startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*")
                 .putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("text/plain", "text/*", "application/pdf")), reqFile)
         }
+        action("📖 Mangá (PDF)") { mangaLibrary() }
         root.addView(actions)
         root.addView(TextView(this).apply {
             text = "Também dá para selecionar um texto em outro app (navegador, notícias…) e usar Compartilhar → Michi."
@@ -255,6 +257,28 @@ class TextsActivity : Activity() {
         }
     }
 
+    /** Mangás já abertos (continua na página onde parou) e "abrir outro PDF". Toque longo tira da lista. */
+    private fun mangaLibrary() {
+        val list = MangaStore.all(this)
+        val names = list.map { "${it.title}  ·  pág. ${it.page + 1}" + (if (it.pages > 0) "/${it.pages}" else "") } + "＋ Abrir um PDF de mangá…"
+        val dlg = AlertDialog.Builder(this).setTitle("📖 Mangá")
+            .setItems(names.toTypedArray()) { _, i ->
+                if (i < list.size) startActivity(Intent(this, MangaActivity::class.java).putExtra(MangaActivity.EXTRA_URI, list[i].uri))
+                else startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/pdf"), reqManga)
+            }
+            .setNegativeButton("Fechar", null).create()
+        dlg.setOnShowListener {
+            dlg.listView?.setOnItemLongClickListener { _, _, pos, _ ->
+                if (pos >= list.size) return@setOnItemLongClickListener false
+                AlertDialog.Builder(this).setMessage("Tirar \"${list[pos].title}\" da lista? O PDF e o texto dos balões continuam onde estão.")
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setPositiveButton("Tirar") { _, _ -> MangaStore.remove(this, list[pos].uri); dlg.dismiss(); mangaLibrary() }.show()
+                true
+            }
+        }
+        dlg.show()
+    }
+
     @Deprecated("Activity simples sem AndroidX")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         @Suppress("DEPRECATION")
@@ -266,6 +290,12 @@ class TextsActivity : Activity() {
                 else try { contentResolver.delete(u, null, null) } catch (_: Exception) {}
             }
             reqGallery -> if (resultCode == RESULT_OK) data?.data?.let { openEditor(image = it) }
+            reqManga -> if (resultCode == RESULT_OK) data?.data?.let { uri ->
+                try { contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) } catch (_: Exception) {}
+                val e = MangaStore.get(this, uri.toString()) ?: MangaStore.Entry(uri.toString(), MangaStore.displayName(this, uri), 0, 0, true, null)
+                MangaStore.put(this, e)
+                startActivity(Intent(this, MangaActivity::class.java).putExtra(MangaActivity.EXTRA_URI, uri.toString()))
+            }
             reqFile -> if (resultCode == RESULT_OK) data?.data?.let { uri ->
                 val isPdf = contentResolver.getType(uri) == "application/pdf" || uri.toString().lowercase().endsWith(".pdf")
                 if (isPdf) {

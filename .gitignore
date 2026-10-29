@@ -3,3 +3,7 @@ build/
 local.properties
 .idea/
 *.iml
+
+# Bunpro: token e dados locais (uso pessoal, fora do git)
+tools/bunpro/token.txt
+tools/bunpro/out/

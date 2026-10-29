@@ -616,7 +616,7 @@ object Ai {
     // =====================================================================
 
     /** Pedido com corpo pronto (ex.: áudio + texto) ao modelo da nuvem; devolve o texto da resposta. */
-    private fun runCloudBody(ctx: Context, body: JSONObject): String {
+    internal fun runCloudBody(ctx: Context, body: JSONObject): String {
         val p = Prefs(ctx)
         val key = p.geminiKey.ifBlank { TEST_KEY }
         if (key.isBlank()) throw IllegalStateException("Sem chave do Gemini: cole a sua em Configurações → Inteligência artificial.")
