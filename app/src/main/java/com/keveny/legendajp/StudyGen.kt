@@ -162,7 +162,8 @@ object StudyGen {
             val has = HashMap<String, Boolean>()
             fun sentenceHas(s: String) = has.getOrPut(s) { (try { Grammar.find(s) } catch (_: Exception) { emptyList() }).any { it.point.id in points } }
             gen = gen.filter { it.focus == Focus.GRAMATICA && (it.grammarId?.let { p -> p in points } ?: sentenceHas(it.sentence)) } +
-                GrammarDrill.coverage(ctx, points, lines, rnd, withAi = Ai.enabled(ctx)).filter { it.kind !in disabled }
+                GrammarDrill.coverage(ctx, points, lines, rnd, withAi = Ai.enabled(ctx)).filter { it.kind !in disabled } +
+                GrammarBank.clozes(ctx, points, rnd).filter { it.kind !in disabled }
         }
         val all = gen.shuffled(rnd).distinctBy { it.identity }
         val pool = if (focus == Focus.MISTO) all else all.filter { it.focus == focus }

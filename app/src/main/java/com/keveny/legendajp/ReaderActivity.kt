@@ -604,7 +604,7 @@ class ReaderActivity : Activity() {
         }
         val b = AlertDialog.Builder(this).setView(ScrollView(this).apply { addView(box) }).setNegativeButton("Fechar", null)
         b.setPositiveButton("▶ Ouvir", null)
-        b.setNeutralButton("Dicionário") { _, _ -> startActivity(Intent(this, GrammarDictActivity::class.java).putExtra(GrammarDictActivity.EXTRA_ID, hits.firstOrNull()?.point?.id)) }
+        b.setNeutralButton("Dicionário") { _, _ -> GrammarPointActivity.open(this, hits.firstOrNull()?.point?.id) }
         val dlg = b.show()
         dlg.getButton(AlertDialog.BUTTON_POSITIVE)?.setOnClickListener { speak(s) }
     }

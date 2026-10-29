@@ -121,7 +121,7 @@ object GrammarDrill {
 
     private val byId = specs.associateBy { it.id }
 
-    fun spec(id: String): Spec? = byId[id]
+    fun spec(id: String): Spec? = byId[id] ?: GrammarBank.spec(id)
 
     /** Verbos para quando a frase não tem um que sirva. */
     private val fallbackVerbs = listOf("食べる", "飲む", "行く", "見る", "読む", "書く", "話す", "待つ", "遊ぶ", "買う", "寝る", "起きる")

@@ -7,3 +7,7 @@ local.properties
 # Bunpro: token e dados locais (uso pessoal, fora do git)
 tools/bunpro/token.txt
 tools/bunpro/out/
+
+# Banco de gramática: entradas (com dados do Bunpro) e lotes intermediários
+tools/grammar/in/
+tools/grammar/parts/

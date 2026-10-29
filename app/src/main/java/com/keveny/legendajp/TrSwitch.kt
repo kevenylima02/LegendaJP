@@ -26,7 +26,10 @@ object TrSwitch {
     ) {
         tv.setTag(R.id.trText, sentence)
         if (sentence.isBlank()) { tv.text = prefix; return }
-        val ml = Tr.cached(ctx, sentence)
+        // Exemplo do banco de gramática: a tradução escrita junto com a frase vale no lugar do ML Kit
+        val bank = GrammarBank.translation(sentence)
+        val ml = bank ?: Tr.cached(ctx, sentence)
+        val mlLabel = if (bank != null) "tradução do app" else ML
         val ai = Tr.aiCached(ctx, sentence)
         // Fonte escolhida pelo toque (vale só para esta frase); sem toque, a preferida
         val chosen = (tv.getTag(R.id.trSource) as? Pair<*, *>)?.takeIf { it.first == sentence }?.second as? String
@@ -44,7 +47,7 @@ object TrSwitch {
         if (scale != 1f) sb.setSpan(RelativeSizeSpan(scale), a, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         if (text != null) {
             val b = sb.length
-            sb.append("  · ").append(src).append(if (ml != null && ai != null) " ⇄" else "")
+            sb.append("  · ").append(if (src == ML) mlLabel else src).append(if (ml != null && ai != null) " ⇄" else "")
             sb.setSpan(ForegroundColorSpan(ctx.getColor(R.color.accent)), b, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             sb.setSpan(RelativeSizeSpan(0.8f * scale), b, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }

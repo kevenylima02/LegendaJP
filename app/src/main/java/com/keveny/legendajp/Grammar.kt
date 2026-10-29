@@ -350,7 +350,10 @@ object Grammar {
 
     private val pointsById: Map<String, Point> = rules.associate { it.point.id to it.point }
 
-    fun point(id: String): Point? = pointsById[id]
+    fun point(id: String): Point? = pointsById[id] ?: GrammarBank.point(id)
+
+    /** O padrão é do catálogo do app (com regras próprias), e não só do banco. */
+    fun isCatalog(id: String) = id in pointsById
 
     /** Pontos gramaticais encontrados na frase, sem repetir o mesmo ponto. */
     fun find(sentence: String): List<Hit> {
@@ -386,7 +389,11 @@ object Grammar {
         val present = hits.map { it.point.id }.toSet()
         val hidden = HashSet<String>()
         for ((bigger, smaller) in subsumes) if (bigger in present) hidden.addAll(smaller)
-        return hits.filter { it.point.id !in hidden }.sortedBy { it.start }
+        val out = hits.filter { it.point.id !in hidden }.toMutableList()
+        // Padrões do banco (N5 a N1) que só se reconhecem pelo texto
+        val starts = tokens.map { it.position }.toHashSet()
+        out.addAll(GrammarBank.find(sentence, starts, seen))
+        return out.sortedBy { it.start }
     }
 
     /** Todos os pontos do catálogo (para alternativas erradas em exercícios). */

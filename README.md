@@ -77,14 +77,16 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   pasta, Selecionar vários (marca e move de uma vez), Renomear, Apagar. Toque longo numa pasta: Estudar a
   pasta inteira (as frases de todos os itens juntas), Renomear, Apagar (os itens voltam para Sem pasta). Um
   texto criado ou importado dentro de uma pasta já entra nela. Só no banco: os arquivos não mudam de lugar.
-- **Gramática completa do Bunpro (build-44)**: o dicionário junta os padrões que o app reconhece com a lista do Bunpro
-  (979 pontos: N5 a N1, Fora do JLPT e Kansai-ben), ligados pelo nome quando são o mesmo padrão (96 dos 110 do app).
-  Filtros por nível, "Fora do JLPT", "Kansai-ben", "Nas minhas frases" e "Com exercícios"; a busca acha também o
-  sentido em inglês e o romaji. A lista fica só no armazenamento do app (files/bunpro_grammar.json): ⋮ → "Importar a
-  lista do Bunpro" (o arquivo gerado por tools/bunpro/build_grammar.py) ou "Baixar a lista do Bunpro agora" (uma
-  requisição à página pública). Para os pontos que só existem no Bunpro, "✦ Explicar com IA" escreve em português:
-  significado, a que forma se liga, como se forma, quando usar, exemplos, parecidos e erros comuns. A conjugação dos
-  verbos nessa explicação é montada pelo app (o conjugador dos exercícios), não pela IA, que errava os grupos.
+- **Banco de gramática dentro do app (build-45)**: `app/src/main/assets/grammar_bank.json` traz todos os padrões de
+  N5 a N1, Fora do JLPT e Kansai-ben (a lista de pontos do Bunpro mais os padrões do app sem par), escritos uma vez
+  para o Michi: resumo, significado, a que forma se liga, como se forma, quando usar, 5 exemplos com o trecho do
+  padrão e 3 alternativas erradas cada, parecidos, erros comuns, o exercício de conjugação (quando o padrão é forma +
+  sufixo; conferido com o conjugador do app) e os textos que indicam o padrão numa frase. Não usa IA nem internet no
+  celular. Do Bunpro ficam só o nome, o nível e a ordem. Como gerar de novo: `tools/grammar/FORMATO.md`.
+  O dicionário lista tudo (filtros por nível, "Nas minhas frases", "Com conjugação"); tocar num padrão abre a tela
+  dele com o material, as suas frases onde ele aparece e "Estudar este padrão" (lacunas com os exemplos, conjugação
+  com verbos dos 3 grupos e as suas frases, com revisão espaçada). Os padrões com textos de reconhecimento passam a
+  ser achados nas gravações, textos e mangá, como os do catálogo.
 - **Leitor de mangá (build-43)**: Textos → "📖 Mangá (PDF)" abre um PDF (a lista lembra os mangás e a página onde
   você parou). Uma página por vez, deslizar ou tocar nas bordas para virar (sentido japonês por padrão, trocável no
   menu), pinça e toque duplo para ampliar. ✨ Varinha: toque num balão; o app lê a página com o OCR do celular e

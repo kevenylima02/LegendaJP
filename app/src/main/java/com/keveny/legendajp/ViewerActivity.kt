@@ -250,7 +250,7 @@ class ViewerActivity : Activity() {
         val b = AlertDialog.Builder(this).setTitle("Gramática da frase").setView(scroll)
             .setPositiveButton("Fechar", null)
             .setNegativeButton("Dicionário") { _, _ ->
-                startActivity(Intent(this, GrammarDictActivity::class.java).putExtra(GrammarDictActivity.EXTRA_ID, hits.firstOrNull()?.point?.id))
+                GrammarPointActivity.open(this, hits.firstOrNull()?.point?.id)
             }
         // Quando o app não reconhece uma palavra da frase: a IA separa e deixa salvar cada uma
         if (Ai.enabled(this)) b.setNeutralButton("✦ Palavras (IA)") { _, _ ->
