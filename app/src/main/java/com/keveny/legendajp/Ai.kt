@@ -38,6 +38,7 @@ object Ai {
         WORD("Explicar a palavra nesta frase"),
         GRAMMAR("Explicar a gramática"),
         GUIDE("Escrever o material de estudo"),
+        POINT("Explicar este padrão"),
     }
 
     /**
@@ -70,12 +71,12 @@ object Ai {
         else -> Prefs(ctx).geminiModel.ifBlank { DEFAULT_MODEL }
     }
 
-    private fun cacheKey(ctx: Context, r: Request) = "${r.task}|${modelId(ctx)}|${r.sentence}|${r.target}|${r.note}" + (if (r.task == Task.GUIDE) "|txt" else "")
+    private fun cacheKey(ctx: Context, r: Request) = "${r.task}|${modelId(ctx)}|${r.sentence}|${r.target}|${r.note}" + (if (r.task == Task.GUIDE) "|txt" else "") + (if (r.task == Task.POINT) "|v2" else "")
 
     /** Resposta guardada, se houver. Chame fora da UI. */
     fun cached(ctx: Context, r: Request): Result? {
         val out = VocabDb.get(ctx).aiGet(cacheKey(ctx, r)) ?: return null
-        return parse(r.task, out, modelLabel(ctx), cached = true)
+        return pointPost(r, parse(r.task, out, modelLabel(ctx), cached = true))
     }
 
     /** Pergunta à IA (ou devolve o cache, se fresh = false). O callback roda na thread principal. */
@@ -94,7 +95,7 @@ object Ai {
                     CLOUD -> if (r.task == Task.GUIDE) runCloud(app, prompt, 8192, json = false) else runCloud(app, prompt)
                     else -> throw IllegalStateException("A IA está desligada em Configurações.")
                 }
-                val parsed = parse(r.task, out, modelLabel(app), cached = false)
+                val parsed = pointPost(r, parse(r.task, out, modelLabel(app), cached = false))
                 if (parsed.error == null) {
                     VocabDb.get(app).aiPut(cacheKey(app, r), out)
                     if (r.task == Task.TRANSLATE) keepTranslation(app, r.sentence, out)
@@ -492,6 +493,7 @@ object Ai {
 
     private fun prompt(ctx: Context, r: Request): String {
         if (r.task == Task.GUIDE) return guidePrompt(r)
+        if (r.task == Task.POINT) return pointPrompt(r)
         val context = contextLines(ctx, r.recording, r.sentence)
         val sb = StringBuilder()
         sb.append("Você é professor de japonês de um brasileiro que estuda para o JLPT N${r.level}. ")
@@ -524,7 +526,7 @@ object Ai {
                     "\"nesta_frase\" (o que ele faz nesta frase, 1 linha), \"exemplo_ja\" (frase nova e simples), " +
                     "\"exemplo_pt\" (tradução do exemplo), \"nivel\" (N5 a N1)."
             )
-            Task.GUIDE -> {}
+            Task.GUIDE, Task.POINT -> {}
         }
         sb.append("\nResponda somente com um objeto JSON, sem markdown. Textos curtos, em português do Brasil (o japonês em japonês).")
         return sb.toString()
@@ -580,6 +582,79 @@ object Ai {
             "Termine com a linha DICAS E ERROS COMUNS: padrões parecidos e como diferenciar, e os erros mais comuns de brasileiros. " +
             "O japonês em japonês, com a leitura em hiragana entre parênteses quando houver kanji."
 
+    /** Padrão do dicionário sem frase (lista do Bunpro): r.sentence = padrão, r.target = sentido em inglês, r.note = nível e palavras-chave. */
+    private fun pointPrompt(r: Request): String =
+        "Você é professor de japonês de um brasileiro que estuda para o JLPT N${r.level}. " +
+            "Explique o padrão gramatical 「${r.sentence}」" + (if (r.target.isNotBlank()) " (em inglês costuma ser resumido como \"${r.target}\")" else "") +
+            (if (r.note.isNotBlank()) "; dados do padrão: ${r.note}" else "") + ". " +
+            "Seja fiel ao uso real do japonês e não invente formas: na dúvida, diga que há variação. " +
+            "Chaves do JSON: \"significado\" (o que ele quer dizer, em português, 1 a 2 linhas), " +
+            "\"liga_a\" (lista com a forma ou as formas a que o padrão se liga, usando só estes códigos: " +
+            POINT_FORMS.keys.joinToString(", ") + "), " +
+            "\"como_formar\" (só a parte que NÃO é verbo: como se liga a substantivos, adjetivos-い, adjetivos-な ou frases, com exemplos curtos; " +
+            "\"\" se o padrão só se liga a verbos — o app monta a conjugação dos verbos sozinho), " +
+            "\"uso\" (quando usar, registro formal ou casual, nuances, 2 a 4 linhas), " +
+            "\"exemplos\" (lista com 3 frases naturais e corretas, cada uma como \"japonês — tradução\"), " +
+            "\"parecidos\" (padrões parecidos e como diferenciar; \"\" se não houver), \"erros_comuns\" (erros comuns de brasileiros com esse padrão).\n" +
+            "Responda somente com um objeto JSON, sem markdown. Textos em português do Brasil; o japonês em japonês, com a leitura em hiragana entre parênteses quando houver kanji."
+
+    /** Códigos de "liga_a" → rótulo e forma do conjugador (null = não é verbo). */
+    private val POINT_FORMS: Map<String, Pair<String, Conj.V?>> = linkedMapOf(
+        "radical_masu" to ("radical da forma ます" to Conj.V.STEM),
+        "dicionario" to ("forma de dicionário" to Conj.V.DICT),
+        "te" to ("forma て" to Conj.V.TE),
+        "ta" to ("forma た" to Conj.V.TA),
+        "nai" to ("forma ない" to Conj.V.NAI),
+        "volitiva" to ("forma volitiva (よう)" to Conj.V.VOL),
+        "ba" to ("forma ば" to Conj.V.BA),
+        "passiva" to ("forma passiva" to Conj.V.PASS),
+        "causativa" to ("forma causativa" to Conj.V.CAUS),
+        "imperativa" to ("forma imperativa" to Conj.V.IMP),
+        "substantivo" to ("substantivo" to null),
+        "adjetivo_i" to ("adjetivo-い" to null),
+        "adjetivo_na" to ("adjetivo-な" to null),
+        "frase" to ("frase inteira" to null),
+    )
+
+    /**
+     * Padrão do dicionário: a conjugação dos verbos é feita pelo app (Conj), não pela IA, que erra
+     * os grupos com frequência. A IA só diz a que forma o padrão se liga.
+     */
+    private fun pointPost(r: Request, res: Result): Result {
+        if (r.task != Task.POINT || res.error != null) return res
+        val o = try { JSONObject(res.raw.substring(res.raw.indexOf('{'), res.raw.lastIndexOf('}') + 1)) } catch (_: Exception) { return res }
+        val codes = (o.optJSONArray("liga_a")?.let { a -> (0 until a.length()).map { a.optString(it) } } ?: o.optString("liga_a").split(","))
+            .map { it.trim().lowercase() }.filter { it.isNotEmpty() }.distinct()
+        val fields = res.fields.filter { it.first != "Liga-se a" && it.first != "Como se forma" }.toMutableList()
+        val at = fields.indexOfFirst { it.first == "Significado" } + 1
+        if (codes.isNotEmpty()) fields.add(at, "Liga-se a" to codes.joinToString(", ") { POINT_FORMS[it]?.first ?: it })
+        // Verbos: forma de cada grupo + o padrão, montados pelo conjugador do app
+        val head = r.sentence.split("・").first().replace("～", "").replace("〜", "").trim()
+        val sb = StringBuilder()
+        if (head.isNotEmpty() && head.none { it in 'A'..'Z' || it in 'a'..'z' || it == '［' || it == '[' }) {
+            for (code in codes) {
+                val f = POINT_FORMS[code]?.second ?: continue
+                val tail = when (f) {
+                    Conj.V.TE -> head.removePrefix("て").removePrefix("で")
+                    Conj.V.TA -> head.removePrefix("た").removePrefix("だ")
+                    Conj.V.NAI -> head.removePrefix("ない")
+                    else -> head
+                }
+                if (sb.isNotEmpty()) sb.append("\n")
+                sb.append("Verbo (").append(POINT_FORMS[code]!!.first).append(") + padrão:")
+                for ((base, k, g) in listOf(Triple("かく", Conj.Kind.GODAN, "grupo 1 (godan)"), Triple("たべる", Conj.Kind.ICHIDAN, "grupo 2 (ichidan)"),
+                        Triple("する", Conj.Kind.SURU, "grupo 3"), Triple("くる", Conj.Kind.KURU, "grupo 3"))) {
+                    val form = Conj.verb(base, k)[f] ?: continue
+                    sb.append("\n • ").append(g).append(": ").append(base).append(" → ").append(form).append(" + ").append(tail).append(" = ").append(form).append(tail)
+                }
+            }
+        }
+        val other = o.optString("como_formar").trim()
+        val formation = listOf(sb.toString(), other).filter { it.isNotBlank() }.joinToString("\n")
+        if (formation.isNotBlank()) fields.add(if (codes.isNotEmpty()) at + 1 else at, "Como se forma" to formation)
+        return res.copy(fields = fields)
+    }
+
     private val labels = mapOf(
         Task.TRANSLATE to listOf("traducao" to "Tradução (IA)", "literal" to "Literal", "observacao" to "Obs."),
         Task.WORD to listOf(
@@ -591,6 +666,10 @@ object Ai {
             "nesta_frase" to "Nesta frase", "exemplo_ja" to "Exemplo", "exemplo_pt" to ""
         ),
         Task.GUIDE to listOf("introducao" to "Visão geral", "material" to "Padrões", "dicas" to "Dicas e erros comuns"),
+        Task.POINT to listOf(
+            "significado" to "Significado", "liga_a" to "Liga-se a", "como_formar" to "Como se forma", "uso" to "Quando usar",
+            "exemplos" to "Exemplos", "parecidos" to "Parecidos", "erros_comuns" to "Erros comuns"
+        ),
     )
 
     private fun parse(task: Task, out: String, model: String, cached: Boolean): Result {
@@ -603,7 +682,7 @@ object Ai {
         for ((k, label) in labels.getValue(task)) {
             val v = o.opt(k) ?: continue
             val text = when (v) {
-                is JSONArray -> (0 until v.length()).map { v.optString(it) }.filter { it.isNotBlank() }.joinToString("; ")
+                is JSONArray -> (0 until v.length()).map { v.optString(it) }.filter { it.isNotBlank() }.joinToString(if (task == Task.POINT) "\n" else "; ")
                 else -> v.toString()
             }.trim()
             if (text.isNotEmpty() && text != "null") fields.add(label to text)

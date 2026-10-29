@@ -77,6 +77,14 @@ on-device do Android e salva em `Download/LegendaJP/legenda_*.txt`.
   pasta, Selecionar vários (marca e move de uma vez), Renomear, Apagar. Toque longo numa pasta: Estudar a
   pasta inteira (as frases de todos os itens juntas), Renomear, Apagar (os itens voltam para Sem pasta). Um
   texto criado ou importado dentro de uma pasta já entra nela. Só no banco: os arquivos não mudam de lugar.
+- **Gramática completa do Bunpro (build-44)**: o dicionário junta os padrões que o app reconhece com a lista do Bunpro
+  (979 pontos: N5 a N1, Fora do JLPT e Kansai-ben), ligados pelo nome quando são o mesmo padrão (96 dos 110 do app).
+  Filtros por nível, "Fora do JLPT", "Kansai-ben", "Nas minhas frases" e "Com exercícios"; a busca acha também o
+  sentido em inglês e o romaji. A lista fica só no armazenamento do app (files/bunpro_grammar.json): ⋮ → "Importar a
+  lista do Bunpro" (o arquivo gerado por tools/bunpro/build_grammar.py) ou "Baixar a lista do Bunpro agora" (uma
+  requisição à página pública). Para os pontos que só existem no Bunpro, "✦ Explicar com IA" escreve em português:
+  significado, a que forma se liga, como se forma, quando usar, exemplos, parecidos e erros comuns. A conjugação dos
+  verbos nessa explicação é montada pelo app (o conjugador dos exercícios), não pela IA, que errava os grupos.
 - **Leitor de mangá (build-43)**: Textos → "📖 Mangá (PDF)" abre um PDF (a lista lembra os mangás e a página onde
   você parou). Uma página por vez, deslizar ou tocar nas bordas para virar (sentido japonês por padrão, trocável no
   menu), pinça e toque duplo para ampliar. ✨ Varinha: toque num balão; o app lê a página com o OCR do celular e
